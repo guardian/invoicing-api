@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Apply refund to Zura invoice
+
+Parameters:
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+      - CODE
+      - PROD
+    Default: CODE
+
+Conditions:
+  IsProd: !Equals [!Ref "Stage", "PROD"]
+
+Resources:
+  InvoicingLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - lambda:InvokeFunction
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
+
+        - PolicyName: ReadPrivateCredentials
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub arn:aws:s3:::gu-reader-revenue-private/membership/support-service-lambdas/${Stage}/zuoraRest-${Stage}*.json
+
+  RefundLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Apply refund to Zuora invoice by adjusting invoice items
+      FunctionName: !Sub invoicing-api-refund-${Stage}
+      Code:
+        S3Bucket: invoicing-api-dist
+        S3Key: !Sub invoicing-api/${Stage}/invoicing-api.jar
+      Handler: com.gu.invoicing.refund.Lambda::handleRequest
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+      Role: !GetAtt InvoicingLambdaRole.Arn
+      MemorySize: 3008
+      Runtime: java8
+      Timeout: 900
+    DependsOn:
+      - InvoicingLambdaRole
+
+  FailedRefundAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProd
+    Properties:
+      AlarmName: invoicing-api-refund
+      AlarmDescription: Failed to apply refund to Zuora invoice. Investigate urgently and perform manual cleanup as documented [here](TODO)
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:fulfilment-dev
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref RefundLambda
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    DependsOn:
+

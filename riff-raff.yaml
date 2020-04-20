@@ -1,0 +1,19 @@
+stacks:
+  - support
+regions:
+  - eu-west-1
+deployments:
+  cfn:
+    type: cloud-formation
+    app: invoicing-api
+    parameters:
+      templatePath: cfn.yaml
+  invoicing-api:
+    type: aws-lambda
+    parameters:
+      bucket: membership-dist
+      fileName: invoicing-api.jar
+      prefixStack: false
+      functionNames:
+        - invoicing-api-
+    dependencies: [cfn]
