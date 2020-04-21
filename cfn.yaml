@@ -100,6 +100,23 @@ Resources:
       - RefundEndpoint
       - RefundLambda
 
+  InvoicingApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      DeploymentId: !Ref InvoicingApiDeployment
+      StageName: !Sub ${Stage}
+    DependsOn:
+      - RefundMethod
+
+  InvoicingApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref InvoicingApi
+    DependsOn:
+      - InvoicingApiStage
+      - RefundMethod
+
   # ****************************************************************************
   # Access control
   # ****************************************************************************
