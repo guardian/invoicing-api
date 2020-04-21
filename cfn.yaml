@@ -114,7 +114,6 @@ Resources:
     Properties:
       RestApiId: !Ref InvoicingApi
     DependsOn:
-      - InvoicingApiStage
       - RefundMethod
 
   # ****************************************************************************
