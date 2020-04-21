@@ -52,8 +52,8 @@ Resources:
       Description: Apply refund to Zuora invoice by adjusting invoice items
       FunctionName: !Sub invoicing-api-refund-${Stage}
       Code:
-        S3Bucket: invoicing-api-dist
-        S3Key: !Sub invoicing-api/${Stage}/invoicing-api.jar
+        S3Bucket: membership-dist
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.refund.Lambda::handleRequest
       Environment:
         Variables:
