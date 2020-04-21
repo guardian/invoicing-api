@@ -72,7 +72,7 @@ Resources:
       AlarmName: invoicing-api-refund
       AlarmDescription: Failed to apply refund to Zuora invoice. Investigate urgently and perform manual cleanup as documented [here](TODO)
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:fulfilment-dev
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
@@ -85,4 +85,5 @@ Resources:
       Threshold: 1
       TreatMissingData: notBreaching
     DependsOn:
+      - InvoicingLambdaRole
 
