@@ -15,5 +15,5 @@ deployments:
       fileName: invoicing-api.jar
       prefixStack: false
       functionNames:
-        - invoicing-api-
+        - invoicing-api-refund-
     dependencies: [cfn]
