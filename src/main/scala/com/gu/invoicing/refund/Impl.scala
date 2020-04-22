@@ -28,8 +28,8 @@ object Impl {
   def accessToken(): String = {
     HttpWithLongTimeout(s"$zuoraApiHost/oauth/token")
       .postForm(Seq(
-        "client_id" -> getenv("ZuoraOauthClientId"),
-        "client_secret" -> getenv("ZuoraOauthClientSecret"),
+        "client_id" -> getenv("ClientId"),
+        "client_secret" -> getenv("ClientSecret"),
         "grant_type" -> "client_credentials"
       ))
       .asString

@@ -67,8 +67,8 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          ZuoraOauthClientId: !Ref ZuoraOauthClientId
-          ZuoraOauthClientSecret: !Ref ZuoraOauthClientSecret
+          ClientId: !Ref ZuoraOauthClientId
+          ClientSecret: !Ref ZuoraOauthClientSecret
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java8
