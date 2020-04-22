@@ -2,11 +2,9 @@ package com.gu.invoicing.refund
 
 import java.lang.System.getenv
 import java.time.LocalDate
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import scalaj.http.{BaseHttp, HttpOptions}
 import upickle.default.{read, write}
 import scala.annotation.tailrec
-import scala.io.Source
 import Model._
 import scala.util.chaining._
 
@@ -15,15 +13,6 @@ import scala.util.chaining._
  */
 object Impl {
   val stage = getenv("Stage")
-
-  def readConfig(): Config = {
-    val s3Client = AmazonS3ClientBuilder.standard().withRegion("eu-west-1").build()
-    val bucketName = "gu-reader-revenue-private"
-    val key = s"membership/support-service-lambdas/$stage/zuoraRest-$stage.v1.json"
-    val inputStream = s3Client.getObject(bucketName, key).getObjectContent
-    val rawJson = Source.fromInputStream(inputStream).mkString
-    read[Config](rawJson)
-  }
 
   val zuoraApiHost: String =
     stage match { case "CODE" => "https://rest.apisandbox.zuora.com"; case "PROD" => "https://rest.zuora.com" }
@@ -37,11 +26,10 @@ object Impl {
   )
 
   def accessToken(): String = {
-    val oauthConfig = readConfig().zuoraDatalakeExport.oauth
     HttpWithLongTimeout(s"$zuoraApiHost/oauth/token")
       .postForm(Seq(
-        "client_id" -> oauthConfig.clientId,
-        "client_secret" -> oauthConfig.clientSecret,
+        "client_id" -> getenv("ZuoraOauthClientId"),
+        "client_secret" -> getenv("ZuoraOauthClientSecret"),
         "grant_type" -> "client_credentials"
       ))
       .asString
