@@ -60,15 +60,24 @@ import java.util.logging.Logger
 object Lambda {
   def handleRequest(input: InputStream, output: OutputStream): Unit = {
     input
-      .pipe { read[ApiGatewayInput](_) }
-      .body
-      .pipe { read[RefundInput](_) }
-      .tap  { refundIn => info(write(refundIn)) }
+      .pipe { deserialiseStream }
+      .tap  { info[RefundInput] }
       .pipe { program }
-      .tap  { refundOut => info(write(refundOut)) }
-      .pipe { refundOut => ApiGatewayOutput(200, write(refundOut)) }
-      .pipe { apiGatewayOut => write(apiGatewayOut) }
-      .pipe { _.getBytes }
-      .pipe { output.write }
+      .tap  { info[RefundOutput] }
+      .pipe { serialiseToStream }
+
+    def deserialiseStream(inputStream: InputStream): RefundInput = {
+      inputStream
+        .pipe { read[ApiGatewayInput](_) }
+        .body
+        .pipe { read[RefundInput](_) }
+    }
+    def serialiseToStream(refundOutput: RefundOutput): Unit  = {
+      refundOutput
+        .pipe { refundOut => ApiGatewayOutput(200, write(refundOut)) }
+        .pipe { apiGatewayOut => write(apiGatewayOut) }
+        .pipe { _.getBytes }
+        .pipe { output.write }
+    }
   }
 }
