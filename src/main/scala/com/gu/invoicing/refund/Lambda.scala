@@ -1,13 +1,14 @@
 package com.gu.invoicing.refund
 
-import java.io.{InputStream, OutputStream}
-import java.nio.charset.Charset
 import Model._
 import Impl._
 import Program._
+import Log._
 import scala.util.chaining._
 import upickle.default._
-import com.typesafe.scalalogging.LazyLogging
+import java.io.{InputStream, OutputStream}
+import java.nio.charset.Charset
+import java.util.logging.Logger
 
 /**
  * Run refund process as AWS lambda.
@@ -56,15 +57,15 @@ import com.typesafe.scalalogging.LazyLogging
  *   "body": "{\"subscriptionName\": \"A-S00045160\",\"refund\": 0.1}"
  * }
  */
-object Lambda extends LazyLogging {
+object Lambda {
   def handleRequest(input: InputStream, output: OutputStream): Unit = {
     input
       .pipe { read[ApiGatewayInput](_) }
       .body
       .pipe { read[RefundInput](_) }
-      .tap  { refundIn => logger.info(write(refundIn)) }
+      .tap  { refundIn => info(write(refundIn)) }
       .pipe { program }
-      .tap  { refundOut => logger.info(write(refundOut)) }
+      .tap  { refundOut => info(write(refundOut)) }
       .pipe { refundOut => ApiGatewayOutput(200, write(refundOut)) }
       .pipe { apiGatewayOut => write(apiGatewayOut) }
       .pipe { _.getBytes }

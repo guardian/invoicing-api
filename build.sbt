@@ -9,15 +9,14 @@ lazy val root = (project in file("."))
     organizationName := "The Guardian",
     scalaVersion := "2.13.1",
     libraryDependencies ++= List(
-      "org.scalameta" %% "munit" % "0.7.1" % Test,
-      "com.gu" %% "spy" % "0.1.1",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-      "org.scalaj" %% "scalaj-http" % "2.4.2",
-      "com.lihaoyi" %% "upickle" % "1.0.0",
+      "org.scalaj"      %% "scalaj-http"  % "2.4.2",
+      "com.lihaoyi"     %% "upickle"      % "1.1.0",
+      "org.scalameta"   %% "munit"        % "0.7.1"   % Test,
+      "com.gu"          %% "spy"          % "0.1.1"   % "provided",
     ),
     assemblyJarName := "invoicing-api.jar",
     assemblyExcludedJars in assembly := minimiseScalaAwsLambdaPackageSize.value,
+    unmanagedJars in Compile += file("lib/scala-min.jar"),
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
@@ -28,7 +27,8 @@ lazy val root = (project in file("."))
 def minimiseScalaAwsLambdaPackageSize = Def.task {
   val excludedDeps = List(
     "scala-reflect",
-    "scala-compiler"
+    "scala-compiler",
+//    "scala-library",
   )
   (fullClasspath in assembly)
     .value
