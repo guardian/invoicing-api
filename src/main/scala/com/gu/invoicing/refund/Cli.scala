@@ -5,13 +5,15 @@ import Model._
 import Impl._
 import scala.util.chaining._
 import upickle.default._
-import com.gu.spy._
+import Log._
 
 /**
  * Run refund process as CLI application
  *
  * How to run:
  *   export Stage=CODE
+ *   export ClientId=*********
+ *   export ClientSecret=*********
  *   export AWS_ACCESS_KEY_ID=*********
  *   export AWS_SECRET_ACCESS_KEY=*********
  *   export AWS_SESSION_TOKEN=*********
@@ -24,17 +26,13 @@ import com.gu.spy._
  */
 object Cli {
   def main(args: Array[String]): Unit = {
-    val start = System.nanoTime()
-
     args
       .map(read[RefundInput](_))
       .foreach { refundInput =>
         refundInput
-          .tap  { v => println(v.spy) }
+          .tap  { info[RefundInput] }
           .pipe { program }
-          .tap  { v => println(v.spy) }
-
-        println(s"Time: ${(System.nanoTime() - start) / 1000000000.0} seconds")
+          .tap  { info[RefundOutput] }
     }
   }
 }

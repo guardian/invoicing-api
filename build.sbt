@@ -1,4 +1,3 @@
-
 lazy val root = (project in file("."))
   .enablePlugins(RiffRaffArtifact)
   .settings(
@@ -12,10 +11,8 @@ lazy val root = (project in file("."))
       "org.scalaj"      %% "scalaj-http"  % "2.4.2",
       "com.lihaoyi"     %% "upickle"      % "1.1.0",
       "org.scalameta"   %% "munit"        % "0.7.1"   % Test,
-      "com.gu"          %% "spy"          % "0.1.1"   % "provided",
     ),
     assemblyJarName := "invoicing-api.jar",
-    unmanagedJars in Compile += file("lib/scala-min.jar"),
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
