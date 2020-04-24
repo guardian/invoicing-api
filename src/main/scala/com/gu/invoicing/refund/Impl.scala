@@ -144,6 +144,10 @@ object Impl {
       }
   }
 
+  /**
+   * This is likely the most complicated part of the program. It decides which invoice items to adjust and
+   * by how much by taking into account any previous adjustments already made to corresponding items.
+   */
   def spreadRefundAcrossItems(
     invoiceItems: List[InvoiceItem],
     adjustments: List[InvoiceItemAdjustment],
@@ -170,7 +174,7 @@ object Impl {
 
         case nextItem :: tail =>
           val adjustItemBy: Double => InvoiceItemAdjustmentWrite =
-            InvoiceItemAdjustmentWrite(LocalDate.parse("2020-04-14" /* FIXME */), _, refundGuid, nextItem.InvoiceId, "Credit", "InvoiceDetail", nextItem.Id)
+            InvoiceItemAdjustmentWrite(LocalDate.now(), _, refundGuid, nextItem.InvoiceId, "Credit", "InvoiceDetail", nextItem.Id)
 
           availableAmount(nextItem) match {
             case Some(availableRefundableAmount) =>

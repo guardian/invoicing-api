@@ -22,7 +22,7 @@ object Program {
     val itemsBySubscription   = getItemsByInvoice(subscriptionName)                            tap { invoiceItemsByInvoice  => s"$subscriptionName should have at least one invoice item"                   assert (invoiceItemsByInvoice.nonEmpty) }
 
     val (invoiceId, _, items) = decideRelevantInvoice(invoices, itemsBySubscription)           tap { case (_, invoice, _)   => s"$invoice should be at least posted and not negative"                       assert (invoice.Amount > 0.0 && invoice.Status == "Posted") }
-    val itemAdjustments       = getInvoiceItemAdjustments(invoiceId)                           tap { _                      => s"Invoice items of $invoiceId should be retrieved"                                         assert (true) }
+    val itemAdjustments       = getInvoiceItemAdjustments(invoiceId)                           tap { _                      => s"Invoice items of $invoiceId should be retrieved"                           assert (true) }
     val Some(paymentId)       = getInvoicePaymentId(invoiceId)                                 tap { paymentId              => s"$invoiceId should have a payment"                                          assert (paymentId.isDefined) }
     val adjustmentsUnrounded  = spreadRefundAcrossItems(items, itemAdjustments, refund, guid)  tap { adjustmentsUnrounded   => s"$adjustmentsUnrounded (un-rounded) should equal total $refund"             assert (adjustmentsUnrounded.map(_.Amount).sum == refund) }
     val adjustmentsRounded    = roundAdjustments(adjustmentsUnrounded)                         tap { adjustmentsRounded     => s"$adjustmentsRounded (rounded) amount should equal total $refund"           assert (adjustmentsRounded.map(_.Amount).sum == refund) }
