@@ -9,18 +9,17 @@ Proposed
 Keywords: lightweight, iterative improvements, inlined implementations, testing in production  
 
 * Small Scala AWS Lambda package size of less than 10 MB
-* Prefer direct inlined business logic, over abstracted indirections 
+* Prefer direct inlined business logic over abstracted indirections 
 * Use of off-the-shelf AWS infrastructural facilities instead of bespoke implementations
 * Focus on testing in production with real data instead of mocked unit tests
-* Work towards correctness iteratively by failing fast and alerting developers instead of predicting Zuora model
+* Prevent silent failures
 * Minimal custom abstractions of Zuora 
 * Usage of lightweight HTTP and JSON libraries and vanilla Scala
 
 ## Context
 
 This design is based on the observations and lessons learned over the years from various approaches taken
-to solve problems in AWS/Zuora domain. It is very specific to Guardian SX requirements and constraints, and not meant 
-to be suggestion on how to do development in general. 
+to solve problems in AWS/Zuora domain. The core idea is minimalism in tools, abstractions and indirections.
 
 ### Small Scala AWS Lambda package size of less than 10 MB
 
@@ -43,7 +42,7 @@ out-of-the-box such as logging, concurrency, error handling, etc.
 concept using vanilla facilities
 * If something can be done with couple of lines of code, there is no need to import whole library just to do that
 
-### Prefer direct inlined business logic, over abstracted indirections 
+### Prefer direct inlined business logic over abstracted indirections 
 
 * Generally speaking there is not much algorithmically complicated logic in our business domain. 
 * Essentially we need an HTTP client, JSON deserialiser, and some request orchestration code.
@@ -68,36 +67,35 @@ routers, etc.
       .pipe { program } 
       .tap  { postconditions }
     ```  
-* Reserve unit tests for complicated business logic algorithms, not for infrastructural integration checking
-* Issues such as malformed JSON or wrong HTTP request orchestration will surface quickly after deployment 
+* Reserve unit tests for complicated business logic algorithms, not plumbing
+* Issues such as malformed JSON or wrong HTTP request orchestration are likely to surface quickly after deployment 
 (as long as alarming is setup) thus ROI for unit testing these aspects is likely not worth it 
 * Runtime preconditions/postconditions is just code alongside main business logic and as such harder to ignore and 
 has lower maintenance cost relative to unit tests
 
-### Work towards correctness iteratively by failing fast and alerting developers instead of predicting Zuora model
 
-* **Avoid silent failures** by working on whitelisting as opposed to blacklisting principle
-* If system detects a scenario it cannot handle then immediately notify developers to make adjustment
-instead of trying to predict the Zuora model up-front to handle all imaginable scenarios
-* If there is no automatic error recovery possible and system cannot proceed, then not much can be gained by
-failing slow, beside perhaps error accumulation.
-* Failing slow and proceeding with computation after unrecoverable error may likely lead to further incorrect 
-processing.
+### Prevent silent failures
+
+* There have been multiple cases of silent failures introduced by handling errors with techniques that swallow 
+errors without error logging or wiring them to non-200 responses. Failing fast on unrecoverable errors hooks into AWS 
+out-of-the-box error logging and alarming at minimal cost.
+* If there is no automatic error recovery possible and system cannot proceed, why fail slow?
 * Automatic error recovery, self-healing, etc., are difficult to achieve ideals, usually not possible in Zuora. 
-If error recovery is possible, then it should not actually be modelled as an error but simply an alternative path 
-the system tries. Due to nature of Zuora, error handling in Zuora cannot be meaningfully addressed on a unit level 
-in terms of monadic error modelling or effects libraries because outages are often hours long. Instead, it should 
-be addressed on a much higher infrastructural level such as using SQS, Step Functions, etc. 
-* There have been multiple cases of silent failures introduced by developers handling errors via monadic values but
-then not logging an error or returning non-200. Failing fast on unrecoverable errors hooks into AWS out-of-the-box
-error logging and alarming at essentially no cost.
+Due to nature of Zuora outages which are hours long, error handling cannot be meaningfully addressed 
+by techniques on a unit level. Instead, they should be addressed on a much higher infrastructural level such as using 
+SQS, Step Functions, etc. 
+* If error recovery is possible, then it should **not** actually be modelled as an error but simply an alternative path 
+the system tries.
 
 ### Minimal custom abstractions of Zuora
 
+* Work on whitelisting as opposed to blacklisting principle
+  * If system detects a scenario it cannot handle then immediately notify developers to make adjustment
+    instead of trying to predict the Zuora model up-front to handle all imaginable scenarios
 * Modelling of Zuora has not been very successful over the last five+ years due to the way Guardian uses it with
 countless exceptions in the model
 * Instead use Zuora directly the way they document it which means essentially on the REST API level.
-* Instead of a custom model, we should favor preconditions and postconditions to check if we have done the right thing
+* Favor preconditions and postconditions to check if we have done the right thing
   * "Does the invoice look correct after production mutation?", as opposed to 
   * "Here is the predicted model capturing all the ways invoice can be generated, and the corresponding (mocked) unit test."
 * Zuora is hard enough to understand without developers putting another layer on top of it
@@ -127,7 +125,6 @@ in isolated segments of the codebase.
 **Arguments against**
 
 * Crucially depends on developers responsibly reacting upon receiving alarms
-* loss of purity
 
 ## Decision
 
