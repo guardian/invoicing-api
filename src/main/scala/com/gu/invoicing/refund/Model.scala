@@ -11,11 +11,6 @@ import upickle.default._
  * Data models and JSON codecs
  */
 object Model {
-  implicit class StringAssert(specification: String) {
-    def assert(predicate: Boolean): Unit = Predef.assert(predicate, specification)
-  }
-
-
   case class Oauth(clientId: String, clientSecret: String)
   case class ZuoraDatalakeExport(oauth: Oauth)
   case class Config(stage: String, baseUrl: String, zuoraDatalakeExport: ZuoraDatalakeExport)
@@ -58,7 +53,6 @@ object Model {
     AdjustmentDate: LocalDate,
     Amount: Double,
     Comments: String,
-    //    InvoiceNumber: String,
     InvoiceId: String,
     Type: String,
     SourceType: String,
@@ -83,13 +77,10 @@ object Model {
   )
   case class InvoiceItemAdjustmentsQueryResult(records: List[InvoiceItemAdjustment])
   case class Metrics(balance: Double, totalInvoiceBalance: Double, creditBalance: Double)
-//  case class Account(Id: String, AccountNumber: String, Balance: Double, CreditBalance: Double)
   case class Account(metrics: Metrics)
 
-  //  DateTimeFormatter.ISO_OFFSET_DATE_TIME
   implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
-  //  implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")))
-  implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+  implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   implicit val oauthRW: ReadWriter[Oauth] = macroRW
   implicit val zuoraDatalakeExportRW: ReadWriter[ZuoraDatalakeExport] = macroRW
   implicit val configRW: ReadWriter[Config] = macroRW

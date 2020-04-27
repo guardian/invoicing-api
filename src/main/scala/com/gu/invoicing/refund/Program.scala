@@ -2,6 +2,7 @@ package com.gu.invoicing.refund
 
 import Model._
 import Impl._
+import Assert._
 import scala.util.chaining._
 
 /**
