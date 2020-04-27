@@ -11,7 +11,7 @@ Keywords: lightweight, iterative improvements, inlined implementations, testing 
 * Small Scala AWS Lambda package size of less than 10 MB
 * Prefer direct inlined business logic over abstracted indirections 
 * Use of off-the-shelf AWS infrastructural facilities instead of bespoke implementations
-* Focus on testing in production with real data instead of mocked unit tests
+* Testing in production via preconditions-program-postconditions instead of mocked tests
 * Prevent silent failures
 * Minimal custom abstractions of Zuora 
 * Usage of lightweight HTTP and JSON libraries and vanilla Scala
@@ -58,9 +58,9 @@ and when we have to then we should be able to look up documentation
 * For example, if our stack is API Gateway + Lambda, there is no need to import web frameworks, implement custom 
 routers, etc.
 
-### Focus on testing in production with real data instead of mocked unit tests
+### Testing in production via preconditions-program-postconditions instead of mocked test
 
-* Favour runtime preconditions and postcondition checking instead of unit test with mocked HTTP/JSON.
+* Favour runtime preconditions and postcondition testing in production instead of unit test with mocked HTTP/JSON.
     ```
     input
       .tap  { preconditions }
