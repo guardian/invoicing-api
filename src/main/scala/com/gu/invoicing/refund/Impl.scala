@@ -204,18 +204,16 @@ object Impl {
       .pipe(read[List[AdjustmentResult]](_))
   }
 
-  def joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices: List[Invoice], invoiceItemsBySubscription: Map[String, List[InvoiceItem]]): List[(String, Invoice, List[InvoiceItem])] = {
-    for {
-      (invoiceId, invoice) <- invoices.map(invoice => invoice.Id -> invoice)
-      (`invoiceId`, invoiceItems) <- invoiceItemsBySubscription
-    } yield {
-      (invoiceId, invoice, invoiceItems)
-    }
+  def joinInvoiceWithInvoiceItemsOnInvoiceIdKey(
+    invoices: List[Invoice],
+    itemsByInvoiceId: Map[String, List[InvoiceItem]]
+  ): List[(String, Invoice, List[InvoiceItem])] = {
+    invoices.map(invoice => (invoice.Id, invoice, itemsByInvoiceId(invoice.Id)))
   }
 
   /** Select correct invoice to apply refund to */
-  def decideRelevantInvoice(invoices: List[Invoice], invoiceItemsBySubscription: Map[String, List[InvoiceItem]]): (String, Invoice, List[InvoiceItem]) = {
-    joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, invoiceItemsBySubscription)
+  def decideRelevantInvoice(invoices: List[Invoice], itemsByInvoiceId: Map[String, List[InvoiceItem]]): (String, Invoice, List[InvoiceItem]) = {
+    joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, itemsByInvoiceId)
       .iterator
       .filter({ case (invoiceId, invoice, invoiceItems) => invoice.Status == "Posted"})
       .filter({ case (invoiceId, invoice, invoiceItems) => invoice.Amount > 0.0})
