@@ -2,6 +2,12 @@
 
 Invoice management for supporters
 
+## Configuration
+
+* Riff-Raff project: `support:invoicing-api`
+* Artifact bucket: `membership-dist/support/PROD/invoicing-api/invoicing-api.jar`
+* Zuora API User: `invoicing-api+uat@guardian.co.uk`
+
 ## Refund
 
 ### Example request
@@ -64,7 +70,7 @@ wrong and that amount will be re-collected on the next payment run.
 
 Urgent alarm will be emailed to fulfilment.dev which needs to be actioned like so:
 
-1. First familiarise yourself with above section explaining how to manually apply refund? 
+1. First familiarise yourself with above section explaining how to manually apply refund
 1. AWS logs should indicate the exact failing runtime assertion. Because of the inlined design of the implementation this 
 should exactly indicate which steps and corresponding system mutations have happened.
 1. If no refund object has been created then there is nothing to cleanup. Follow tha above manual process from beginning.
