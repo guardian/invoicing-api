@@ -12,9 +12,9 @@ import scala.util.chaining._
  * Zuora API client and implementation details
  */
 object Impl {
-  val stage = getenv("Stage")
+  lazy val stage = getenv("Stage")
 
-  val zuoraApiHost: String =
+  lazy val zuoraApiHost: String =
     stage match { case "CODE" => "https://rest.apisandbox.zuora.com"; case "PROD" => "https://rest.zuora.com" }
 
   object HttpWithLongTimeout extends BaseHttp(
@@ -232,7 +232,11 @@ object Impl {
       .records
   }
 
-  def roundHalfUp(x: Double) = BigDecimal(x).setScale(5, BigDecimal.RoundingMode.HALF_UP).toDouble
+  /**
+   * Zuora uses Half Up rounding to two decimal places with rounding increment of 0.1
+   * Corresponds to rounding rules specified under Zuora | Billing Settings | Customize Currencies
+   */
+  def roundHalfUp(x: Double) = BigDecimal(x).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
   // https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/TB_Rounding_and_Precision
   def roundAdjustments(adjustments: List[InvoiceItemAdjustmentWrite]): List[InvoiceItemAdjustmentWrite] = {

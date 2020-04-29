@@ -10,8 +10,9 @@ lazy val root = (project in file("."))
     libraryDependencies ++= List(
       "org.scalaj"      %% "scalaj-http"  % "2.4.2",
       "com.lihaoyi"     %% "upickle"      % "1.1.0",
-      "org.scalameta"   %% "munit"        % "0.7.1"   % Test,
+      "org.scalameta"   %% "munit"        % "0.7.3"   % Test,
     ),
+    testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := "invoicing-api.jar",
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
