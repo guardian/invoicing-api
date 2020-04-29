@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Apply refund to Zura invoice
+Description: Zuora invoice management (refunds)
 
 Parameters:
   Stage:
@@ -84,6 +84,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub invoicing-api-${Stage}
+      Description: Zuora invoice management (refunds)
 
   RefundEndpoint:
     Type: AWS::ApiGateway::Resource
