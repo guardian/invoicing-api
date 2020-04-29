@@ -16,7 +16,7 @@ object Model {
   case class Config(stage: String, baseUrl: String, zuoraDatalakeExport: ZuoraDatalakeExport)
   case class AccessToken(access_token: String)
   case class Subscription(accountId: String, accountNumber: String, subscriptionNumber: String)
-  case class Invoice(Id: String, InvoiceNumber: String, Amount: Double, Balance: Double, PaymentAmount: Double, TargetDate: LocalDate, InvoiceDate: LocalDate, Status: String)
+  case class Invoice(Id: String, InvoiceNumber: String, Amount: BigDecimal, Balance: BigDecimal, PaymentAmount: BigDecimal, TargetDate: LocalDate, InvoiceDate: LocalDate, Status: String)
   case class InvoiceQueryResult(records: List[Invoice])
   case class InvoiceItem(
     ChargeName: String,
@@ -27,7 +27,7 @@ object Model {
     ProductName: String,
     ServiceStartDate: LocalDate,
     ChargeDate: LocalDateTime,
-    ChargeAmount: Double,
+    ChargeAmount: BigDecimal,
     SubscriptionNumber: String,
   )
   case class InvoiceItemQueryResult(records: List[InvoiceItem])
@@ -41,7 +41,7 @@ object Model {
     RefundDate: LocalDate,
     ReasonCode: String,
     GatewayResponse: String,
-    Amount: Double,
+    Amount: BigDecimal,
     Comment: String,
     Status: String,
     Gateway: String,
@@ -51,7 +51,7 @@ object Model {
   )
   case class InvoiceItemAdjustmentWrite(
     AdjustmentDate: LocalDate,
-    Amount: Double,
+    Amount: BigDecimal,
     Comments: String,
     InvoiceId: String,
     Type: String,
@@ -73,12 +73,13 @@ object Model {
     SourceType: String,
     Status: String,
     Type: String,
-    Amount: Double,
+    Amount: BigDecimal,
   )
   case class InvoiceItemAdjustmentsQueryResult(records: List[InvoiceItemAdjustment])
-  case class Metrics(balance: Double, totalInvoiceBalance: Double, creditBalance: Double)
+  case class Metrics(balance: BigDecimal, totalInvoiceBalance: BigDecimal, creditBalance: BigDecimal)
   case class Account(metrics: Metrics)
 
+  implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
   implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
   implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   implicit val oauthRW: ReadWriter[Oauth] = macroRW
@@ -105,13 +106,13 @@ object Model {
 
   case class RefundInput(
     subscriptionName: String,
-    refund: Double,
+    refund: BigDecimal,
     guid: String = UUID.randomUUID().toString,
     message: String = "Start processing refund"
   )
   case class RefundOutput(
     subscriptionName: String,
-    refundAmount: Double,
+    refundAmount: BigDecimal,
     invoiceId: String,
     paymentId: String,
     adjustments: List[InvoiceItemAdjustmentWrite],
