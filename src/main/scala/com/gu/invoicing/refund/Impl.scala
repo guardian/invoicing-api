@@ -46,7 +46,7 @@ object Impl {
       .pipe(read[Subscription](_))
   }
 
-  def getAccountBalance(accountId: String): Double = {
+  def getAccountBalance(accountId: String): BigDecimal = {
     HttpWithLongTimeout(s"$zuoraApiHost/v1/accounts/$accountId")
       .header("Authorization", s"Bearer ${accessToken()}")
       .asString
@@ -102,10 +102,9 @@ object Impl {
       .records
       .headOption
       .map(_.PaymentId)
-    //      .getOrElse(throw new Exception(s"There should be one invoice payment against invoice $invoiceId"))
   }
 
-  def createRefundObject(amount: Double, paymentId: String, comment: String): String = {
+  def createRefundObject(amount: BigDecimal, paymentId: String, comment: String): String = {
     HttpWithLongTimeout(s"$zuoraApiHost/v1/object/refund")
       .header("Authorization", s"Bearer ${accessToken()}")
       .header("Content-Type", "application/json")
@@ -134,7 +133,7 @@ object Impl {
       .Status
   }
 
-  def netAdjustmentsByInvoiceItemId(adjustments: List[InvoiceItemAdjustment]): Map[String, Double] = {
+  def netAdjustmentsByInvoiceItemId(adjustments: List[InvoiceItemAdjustment]): Map[String, BigDecimal] = {
     adjustments
       .groupBy(_.SourceId)
       .map { case (invoiceItemId, adjustments) =>
@@ -151,34 +150,34 @@ object Impl {
   def spreadRefundAcrossItems(
     invoiceItems: List[InvoiceItem],
     adjustments: List[InvoiceItemAdjustment],
-    totalRefundAmount: Double,
+    totalRefundAmount: BigDecimal,
     refundGuid: String,
   ): List[InvoiceItemAdjustmentWrite] = {
 
     /* Collect all item adjustments of a particular invoice item and return remaining amount that can be adjusted/refunded */
-    def availableAmount(invoiceItem: InvoiceItem): Option[Double] = {
+    def availableAmount(invoiceItem: InvoiceItem): Option[BigDecimal] = {
       netAdjustmentsByInvoiceItemId(adjustments).get(invoiceItem.Id) match {
         case Some(netAdjustment) =>
           val availableRefundableAmount = invoiceItem.ChargeAmount - netAdjustment
-          if (availableRefundableAmount <= 0.0) None else Some(availableRefundableAmount)
+          if (availableRefundableAmount <= 0) None else Some(availableRefundableAmount)
 
         case None => // this items has not been adjusted therefore the original full item amount is available
           Some(invoiceItem.ChargeAmount)
       }
     }
 
-    @tailrec def loop(remainingAmounToRefund: Double, remainingItems: List[InvoiceItem], accumulatedAdjustments: List[InvoiceItemAdjustmentWrite]): List[InvoiceItemAdjustmentWrite] = {
+    @tailrec def loop(remainingAmounToRefund: BigDecimal, remainingItems: List[InvoiceItem], accumulatedAdjustments: List[InvoiceItemAdjustmentWrite]): List[InvoiceItemAdjustmentWrite] = {
       remainingItems match {
         case Nil =>
           accumulatedAdjustments
 
         case nextItem :: tail =>
-          val adjustItemBy: Double => InvoiceItemAdjustmentWrite =
+          val adjustItemBy: BigDecimal => InvoiceItemAdjustmentWrite =
             InvoiceItemAdjustmentWrite(LocalDate.now(), _, refundGuid, nextItem.InvoiceId, "Credit", "InvoiceDetail", nextItem.Id)
 
           availableAmount(nextItem) match {
             case Some(availableRefundableAmount) =>
-              if ((remainingAmounToRefund - availableRefundableAmount) <= 0.0)
+              if ((remainingAmounToRefund - availableRefundableAmount) <= 0)
                 adjustItemBy(remainingAmounToRefund) :: accumulatedAdjustments
               else
                 loop(remainingAmounToRefund - availableRefundableAmount, tail, adjustItemBy(availableRefundableAmount) :: accumulatedAdjustments)
@@ -216,7 +215,7 @@ object Impl {
     joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, itemsByInvoiceId)
       .iterator
       .filter({ case (invoiceId, invoice, invoiceItems) => invoice.Status == "Posted"})
-      .filter({ case (invoiceId, invoice, invoiceItems) => invoice.Amount > 0.0})
+      .filter({ case (invoiceId, invoice, invoiceItems) => invoice.Amount > 0})
       .maxBy({ case (invoiceId, invoice, invoiceItems) => invoice.TargetDate })
   }
 
@@ -236,7 +235,7 @@ object Impl {
    * Zuora uses Half Up rounding to two decimal places with rounding increment of 0.1
    * Corresponds to rounding rules specified under Zuora | Billing Settings | Customize Currencies
    */
-  def roundHalfUp(x: Double) = BigDecimal(x).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  def roundHalfUp(x: BigDecimal): BigDecimal = x.setScale(2, BigDecimal.RoundingMode.HALF_UP)
 
   // https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/TB_Rounding_and_Precision
   def roundAdjustments(adjustments: List[InvoiceItemAdjustmentWrite]): List[InvoiceItemAdjustmentWrite] = {
