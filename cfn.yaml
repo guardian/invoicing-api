@@ -32,8 +32,8 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Condition: IsProd
     Properties:
-      AlarmName: invoicing-api-refund
-      AlarmDescription: Failed to apply refund to Zuora invoice. Investigate urgently and perform manual cleanup as documented [here](TODO)
+      AlarmName: "URGENT 9-5 - PROD: Failed to apply refund to Zuora invoice"
+      AlarmDescription: Urgently perform manual cleanup as documented at https://github.com/guardian/invoicing-api
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
       ComparisonOperator: GreaterThanOrEqualToThreshold
