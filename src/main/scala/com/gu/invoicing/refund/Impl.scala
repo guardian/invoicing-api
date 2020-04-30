@@ -17,6 +17,8 @@ object Impl {
   lazy val zuoraApiHost: String =
     stage match { case "CODE" => "https://rest.apisandbox.zuora.com"; case "PROD" => "https://rest.zuora.com" }
 
+  lazy val config = read[Config](getenv("Config"))
+
   object HttpWithLongTimeout extends BaseHttp(
     options = Seq(
       HttpOptions.connTimeout(5000),
@@ -28,8 +30,8 @@ object Impl {
   def accessToken(): String = {
     HttpWithLongTimeout(s"$zuoraApiHost/oauth/token")
       .postForm(Seq(
-        "client_id" -> getenv("ClientId"),
-        "client_secret" -> getenv("ClientSecret"),
+        "client_id" -> config.clientId,
+        "client_secret" -> config.clientSecret,
         "grant_type" -> "client_credentials"
       ))
       .asString

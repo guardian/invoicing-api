@@ -11,9 +11,7 @@ import upickle.default._
  * Data models and JSON codecs
  */
 object Model {
-  case class Oauth(clientId: String, clientSecret: String)
-  case class ZuoraDatalakeExport(oauth: Oauth)
-  case class Config(stage: String, baseUrl: String, zuoraDatalakeExport: ZuoraDatalakeExport)
+  case class Config(clientId: String, clientSecret: String)
   case class AccessToken(access_token: String)
   case class Subscription(accountId: String, accountNumber: String, subscriptionNumber: String)
   case class Invoice(Id: String, InvoiceNumber: String, Amount: BigDecimal, Balance: BigDecimal, PaymentAmount: BigDecimal, TargetDate: LocalDate, InvoiceDate: LocalDate, Status: String)
@@ -82,8 +80,6 @@ object Model {
   implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
   implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
   implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-  implicit val oauthRW: ReadWriter[Oauth] = macroRW
-  implicit val zuoraDatalakeExportRW: ReadWriter[ZuoraDatalakeExport] = macroRW
   implicit val configRW: ReadWriter[Config] = macroRW
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
