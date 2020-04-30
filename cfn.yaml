@@ -11,14 +11,6 @@ Parameters:
       - PROD
     Default: CODE
 
-  ZuoraOauthClientId:
-    Description: Zuora OAuth client ID for API user
-    Type: String
-
-  ZuoraOauthClientSecret:
-    Description: Zuora OAuth client secret for API user
-    Type: String
-
 Conditions:
   IsProd: !Equals [!Ref "Stage", "PROD"]
 
@@ -67,8 +59,7 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          ClientId: !Ref ZuoraOauthClientId
-          ClientSecret: !Ref ZuoraOauthClientSecret
+          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java8
