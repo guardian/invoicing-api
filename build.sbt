@@ -6,11 +6,11 @@ lazy val root = (project in file("."))
     version := "0.1.0",
     organization := "com.gu",
     organizationName := "The Guardian",
-    scalaVersion := "2.13.1",
+    scalaVersion := "2.13.3",
     libraryDependencies ++= List(
       "org.scalaj"      %% "scalaj-http"  % "2.4.2",
       "com.lihaoyi"     %% "upickle"      % "1.1.0",
-      "org.scalameta"   %% "munit"        % "0.7.3"   % Test,
+      "org.scalameta"   %% "munit"        % "0.7.9"   % Test,
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := "invoicing-api.jar",
