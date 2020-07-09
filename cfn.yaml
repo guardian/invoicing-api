@@ -89,7 +89,7 @@ Resources:
   RefundMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      ApiKeyRequired: false
+      ApiKeyRequired: true
       AuthorizationType: NONE
       RestApiId: !Ref InvoicingApi
       ResourceId: !Ref RefundEndpoint
@@ -118,6 +118,40 @@ Resources:
       RestApiId: !Ref InvoicingApi
     DependsOn:
       - RefundMethod
+
+  InvoicingApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: invoicing-api
+      ApiStages:
+        - ApiId: !Ref InvoicingApi
+          Stage: !Ref Stage
+    DependsOn:
+      - InvoicingApi
+      - InvoicingApiStage
+
+  InvoicingApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Description: Used by https://github.com/guardian/invoicing-api
+      Enabled: true
+      Name: !Sub invoicing-api-key-${Stage}
+      StageKeys:
+        - RestApiId: !Ref InvoicingApi
+          StageName: !Sub ${Stage}
+    DependsOn:
+      - InvoicingApi
+      - InvoicingApiStage
+
+  InvoicingApiUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref InvoicingApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref InvoicingApiUsagePlan
+    DependsOn:
+      - InvoicingApiKey
+      - InvoicingApiUsagePlan
 
   # ****************************************************************************
   # Access control
