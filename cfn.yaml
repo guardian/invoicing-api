@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Zuora invoice management (refunds)
+Description: Zuora invoice management such as refunds, downloading PDF invoices
 
 Parameters:
   Stage:
@@ -20,7 +20,6 @@ Resources:
   # ****************************************************************************
   # Alarms
   # ****************************************************************************
-
   FailedRefundAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: IsProd
@@ -43,6 +42,30 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  FailedInvoicesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProd
+    Properties:
+      AlarmName: "URGENT 9-5 - PROD: Failed to fetch Zuora invoice by account"
+      AlarmDescription: |
+        - manage-frontend user will not be able to see/download invoices
+        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/invoice/README.md
+        - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-invoices-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref InvoicesLambda
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    DependsOn:
+      - InvoicingLambdaRole
 
   # ****************************************************************************
   # Lambdas
@@ -68,40 +91,34 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  InvoicesLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Retrieve all invoices with payment methods by accountId
+      FunctionName: !Sub invoicing-api-invoices-${Stage}
+      Code:
+        S3Bucket: membership-dist
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+      Handler: com.gu.invoicing.invoice.Lambda::handleRequest
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+      Role: !GetAtt InvoicingLambdaRole.Arn
+      MemorySize: 3008
+      Runtime: java8
+      Timeout: 900
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # API
   # ****************************************************************************
-
   InvoicingApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub invoicing-api-${Stage}
       Description: Zuora invoice management (refunds)
-
-  RefundEndpoint:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref InvoicingApi
-      ParentId: !GetAtt InvoicingApi.RootResourceId
-      PathPart: refund
-    DependsOn: InvoicingApi
-
-  RefundMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      ApiKeyRequired: true
-      AuthorizationType: NONE
-      RestApiId: !Ref InvoicingApi
-      ResourceId: !Ref RefundEndpoint
-      HttpMethod: POST
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RefundLambda.Arn}/invocations
-    DependsOn:
-      - InvoicingApi
-      - RefundEndpoint
-      - RefundLambda
 
   InvoicingApiStage:
     Type: AWS::ApiGateway::Stage
@@ -153,6 +170,75 @@ Resources:
       - InvoicingApiKey
       - InvoicingApiUsagePlan
 
+
+  # ****************************************************************************
+  # POST /refund
+  # ****************************************************************************
+  RefundEndpoint:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !GetAtt InvoicingApi.RootResourceId
+      PathPart: refund
+    DependsOn: InvoicingApi
+
+  RefundMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: true
+      AuthorizationType: NONE
+      RestApiId: !Ref InvoicingApi
+      ResourceId: !Ref RefundEndpoint
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RefundLambda.Arn}/invocations
+    DependsOn:
+      - InvoicingApi
+      - RefundEndpoint
+      - RefundLambda
+
+  # ****************************************************************************
+  # GET /invoices/{accountId}
+  # ****************************************************************************
+  InvoicesEndpoint:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !GetAtt InvoicingApi.RootResourceId
+      PathPart: invoices
+    DependsOn: InvoicingApi
+
+  InvoicesAccountIdPath:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !Ref InvoicesEndpoint
+      PathPart: "{accountId}"
+    DependsOn:
+      - InvoicingApi
+      - InvoicesEndpoint
+
+  InvoicesEndpointGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: AWS_IAM
+      ApiKeyRequired: true
+      RestApiId: !Ref InvoicingApi
+      ResourceId: !Ref InvoicesAccountIdPath
+      HttpMethod: GET
+      RequestParameters:
+        method.request.path.accountId: true
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${InvoicesLambda.Arn}/invocations
+    DependsOn:
+      - InvoicingApi
+      - InvoicesLambda
+      - InvoicesAccountIdPath
+
   # ****************************************************************************
   # Access control
   # ****************************************************************************
@@ -166,6 +252,15 @@ Resources:
     DependsOn:
       - RefundLambda
       - RefundMethod
+
+  InvoicesLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !Sub invoicing-api-invoices-${Stage}
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - InvoicesLambda
 
   InvoicingLambdaRole:
     Type: AWS::IAM::Role
@@ -189,7 +284,9 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - lambda:InvokeFunction
-                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
+                Resource:
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-invoices-${Stage}:log-stream:*
 
         - PolicyName: ReadPrivateCredentials
           PolicyDocument:
