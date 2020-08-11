@@ -51,7 +51,6 @@ object Model extends OptionPickler {
     status: String,
     body: String,
     invoiceItems: List[InvoiceItem],
-    invoiceFiles: List[InvoiceFile],
   )
   case class InvoiceItem(
     id: String,
@@ -72,11 +71,6 @@ object Model extends OptionPickler {
     processingType: String,
     appliedToItemId: Option[String]
   )
-  case class InvoiceFile(
-    id: String,
-    versionNumber: Int,
-    pdfFileUrl: String
-  )
 
   case class InvoiceWithPayment(
     subscriptionName: String,
@@ -96,15 +90,6 @@ object Model extends OptionPickler {
       invoice: Invoice,
       paymentMethod: PaymentMethod,
     ): InvoiceWithPayment = {
-      // PDF invoice files are in reverse chronological order meaning most recent version is first
-      // https://www.zuora.com/developer/api-reference/#operation/GET_InvoiceFiles
-      val pdfPath =
-        invoice
-          .invoiceFiles
-          .headOption
-          .getOrElse(throw new AssertionError(s"PDF file should exist for each invoice: $invoice"))
-          .pdfFileUrl match { case s"/v1/files/$fileId" => s"invoices/$fileId" }
-
       // Currently we handle only invoices with single subscription, so any invoice item should do for getting the subscription name
       val subscriptionName =
         invoice
@@ -118,7 +103,7 @@ object Model extends OptionPickler {
         date = invoice.invoiceDate,
         paymentMethod = paymentMethod,
         price = invoice.amount.toDouble,
-        pdfPath = pdfPath,
+        pdfPath = s"invoices/${invoice.id}",
         invoiceId = invoice.id
       )
     }
@@ -245,7 +230,6 @@ object Model extends OptionPickler {
   implicit val invoicesRW: ReadWriter[Invoices] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val invoiceItemRW: ReadWriter[InvoiceItem] = macroRW
-  implicit val invoiceFileRW: ReadWriter[InvoiceFile] = macroRW
 
   implicit val paymentRW: ReadWriter[Payment] = macroRW
   implicit val paidInvoiceRW: ReadWriter[PaidInvoice] = macroRW

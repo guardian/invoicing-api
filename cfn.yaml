@@ -111,6 +111,26 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  PdfLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Download PDF invoice by invoiceId
+      FunctionName: !Sub invoicing-api-pdf-${Stage}
+      Code:
+        S3Bucket: membership-dist
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+      Handler: com.gu.invoicing.pdf.Lambda::handleRequest
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+      Role: !GetAtt InvoicingLambdaRole.Arn
+      MemorySize: 3008
+      Runtime: java8
+      Timeout: 900
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # API
   # ****************************************************************************
@@ -230,6 +250,38 @@ Resources:
       - InvoicesLambda
 
   # ****************************************************************************
+  # GET /invoices/{invoiceId}
+  # ****************************************************************************
+  PdfInvoiceIdPath:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !Ref InvoicesEndpoint
+      PathPart: "{invoiceId}"
+    DependsOn:
+      - InvoicingApi
+      - InvoicesEndpoint
+
+  PdfInvoiceIdPathGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: AWS_IAM
+      ApiKeyRequired: true
+      RestApiId: !Ref InvoicingApi
+      ResourceId: !Ref PdfInvoiceIdPath
+      HttpMethod: GET
+      RequestParameters:
+        method.request.path.invoiceId: true
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PdfLambda.Arn}/invocations
+    DependsOn:
+      - InvoicingApi
+      - PdfLambda
+      - PdfInvoiceIdPath
+
+  # ****************************************************************************
   # Access control
   # ****************************************************************************
 
@@ -251,6 +303,15 @@ Resources:
       Principal: apigateway.amazonaws.com
     DependsOn:
       - InvoicesLambda
+
+  PdfLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !Sub invoicing-api-pdf-${Stage}
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - PdfLambda
 
   InvoicingLambdaRole:
     Type: AWS::IAM::Role
@@ -277,6 +338,7 @@ Resources:
                 Resource:
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-invoices-${Stage}:log-stream:*
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-pdf-${Stage}:log-stream:*
 
         - PolicyName: ReadPrivateCredentials
           PolicyDocument:
