@@ -75,7 +75,7 @@ object Impl {
             .paidInvoices
             .tap(v => assert(v.length == 1, s"Payment should be associated with only one invoice: $payment"))
             .headOption
-            .map { invoice => invoice.invoiceId -> payment.paymentMethodId }
+            .map { _.invoiceId -> payment.paymentMethodId }
         }.toMap
 
     val paymentMethodById: Map[String, PaymentMethod] = paymentMethods.map(paymentMethod => paymentMethod.Id -> paymentMethod).toMap
