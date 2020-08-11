@@ -83,7 +83,7 @@ object Model extends OptionPickler {
     date: LocalDate,
     paymentMethod: PaymentMethod,
     price: Double,
-    downloadUrl: String,
+    pdfFileId: String, // used to download the file
     invoiceId: String
   )
 
@@ -98,7 +98,7 @@ object Model extends OptionPickler {
     ): InvoiceWithPayment = {
       // PDF invoice files are in reverse chronological order meaning most recent version is first
       // https://www.zuora.com/developer/api-reference/#operation/GET_InvoiceFiles
-      val downloadUrl =
+      val pdfFileId =
         invoice
           .invoiceFiles
           .headOption
@@ -118,7 +118,7 @@ object Model extends OptionPickler {
         date = invoice.invoiceDate,
         paymentMethod = paymentMethod,
         price = invoice.amount.toDouble,
-        downloadUrl = downloadUrl,
+        pdfFileId = pdfFileId,
         invoiceId = invoice.id
       )
     }
@@ -144,7 +144,7 @@ object Model extends OptionPickler {
         invoiceId = invoiceWithPayment.invoiceId,
         subscriptionName = invoiceWithPayment.subscriptionName,
         date = invoiceWithPayment.date,
-        downloadUrl = invoiceWithPayment.downloadUrl,
+        downloadUrl = invoiceWithPayment.pdfFileId,
         price = invoiceWithPayment.price,
         paymentMethod = invoiceWithPayment.paymentMethod.Type
       )
