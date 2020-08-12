@@ -31,6 +31,29 @@ object Impl {
       .access_token
   }
 
+  private def stripZoqlMargins(str: String): String =
+    str.stripMargin.linesIterator.map(_.trim).mkString(" ").trim
+
+  def getAccountIds(identityId: String) = {
+    Http(s"$zuoraApiHost/v1/action/query")
+      .header("Authorization", s"Bearer ${accessToken}")
+      .header("Content-Type", "application/json")
+      .postData(
+        s"""{
+           |  "queryString":
+           |    "select Id
+           |    from Account
+           |    where IdentityId__c = '$identityId'"
+           |}""".pipe(stripZoqlMargins)
+      )
+      .method("POST")
+      .asString
+      .body
+      .pipe(read[Accounts](_))
+      .records
+      .map(_.Id)
+  }
+
   def getInvoices(account: String): List[Invoice] = {
     Http(s"$zuoraApiHost/v1/transactions/invoices/accounts/$account")
       .header("Authorization", s"Bearer ${accessToken}")
@@ -86,26 +109,6 @@ object Impl {
       }.toMap
 
     paymentMethodByInvoiceId(invoiceId)
-  }
-
-  def getAccountIds(identityId: String) = {
-    Http(s"$zuoraApiHost/v1/action/query")
-      .header("Authorization", s"Bearer ${accessToken}")
-      .header("Content-Type", "application/json")
-      .postData(
-        s"""{
-           |  "queryString":
-           |    "select Id
-           |    from Account
-           |    where IdentityId__c = '$identityId'"
-           |}""".stripMargin.linesIterator.map(_.trim).mkString(" ").trim
-      )
-      .method("POST")
-      .asString
-      .body
-      .pipe(read[Accounts](_))
-      .records
-      .map(_.Id)
   }
 
   def time[R](block: => R): R = {
