@@ -9,9 +9,20 @@ import Impl._
 import com.gu.spy._
 
 object Program { /** Main business logic */
-  def program(input: InvoicesInput): Future[InvoicesOutput] = async {
-    val InvoicesInput(accountId) = input
+  /**
+   * Single identity can have multiple subscriptions where each subscription
+   * belongs to a different account, hence we first retrieve all accountIds
+   * belonging to identityId, and then all invoices belonging to each accountId.
+   * This represents Guardian model on top of Zuora model.
+   */
+  def program(input: InvoicesInput): Future[InvoicesOutput] = {
+    Future
+      .traverse(getAccountIds(input.identityId))(invoicesByAccountId)
+      .map(v => InvoicesOutput(v.flatten))
+  }
 
+  // This directly maps to Zuora model where invoices belong to a single account.
+  private def invoicesByAccountId(accountId: String): Future[List[MmaInvoiceWithPayment]] = async {
     val invoicesF              = async(getInvoices(accountId))
     val paymentsF              = async(getPayments(accountId))
     val paymentMethodsF        = async(getPaymentMethods(accountId))
@@ -21,7 +32,8 @@ object Program { /** Main business logic */
     val _                      = allInvoicesShouldHaveASingleSubscription(positiveInvoices)
     val invoicesWithPayment    = joinInvoicesWithPayment(positiveInvoices, payments, paymentMethods)
     val mmaInvoicesWithPayment = transformToMmaExpectedFormat(invoicesWithPayment)
-
-    InvoicesOutput(mmaInvoicesWithPayment)
+    mmaInvoicesWithPayment
   }
 }
+
+

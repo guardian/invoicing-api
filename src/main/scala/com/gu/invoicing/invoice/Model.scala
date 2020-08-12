@@ -83,7 +83,7 @@ object Model extends OptionPickler {
     date: LocalDate,
     paymentMethod: PaymentMethod,
     price: Double,
-    pdfPath: String, /* invoices/{accountId}/{fileId} */
+    pdfPath: String, /* invoices/{fileId} */
     invoiceId: String
   )
 
@@ -103,7 +103,7 @@ object Model extends OptionPickler {
           .invoiceFiles
           .headOption
           .getOrElse(throw new AssertionError(s"PDF file should exist for each invoice: $invoice"))
-          .pdfFileUrl match { case s"/v1/files/$fileId" => s"invoices/${invoice.accountId}/$fileId" }
+          .pdfFileUrl match { case s"/v1/files/$fileId" => s"invoices/$fileId" }
 
       // Currently we handle only invoices with single subscription, so any invoice item should do for getting the subscription name
       val subscriptionName =
@@ -171,7 +171,7 @@ object Model extends OptionPickler {
     invoices: List[MmaInvoiceWithPayment]
   )
   case class InvoicesInput(
-    accountId: String
+    identityId: String
   )
   case class Payment(
     id: String,
@@ -237,9 +237,19 @@ object Model extends OptionPickler {
     size: Int
   )
 
+  case class Account(Id: String)
+  case class Accounts(
+    records: List[Account],
+    done: Boolean,
+    size: Int
+  )
+
   implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
   implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
   implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+
+  implicit val AccountRW: ReadWriter[Account] = macroRW
+  implicit val AccountsRW: ReadWriter[Accounts] = macroRW
 
   implicit val configRW: ReadWriter[Config] = macroRW
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
@@ -260,13 +270,11 @@ object Model extends OptionPickler {
   implicit val mmaInvoiceWithPaymentRW: ReadWriter[MmaInvoiceWithPayment] = macroRW
 
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-  case class AccountId(accountId: String)
-  case class ApiGatewayInput(pathParameters: AccountId)
+  case class ApiGatewayInput(headers: Map[String, String])
 
   // https://aws.amazon.com/premiumsupport/knowledge-center/malformed-502-api-gateway/
   case class ApiGatewayOutput(statusCode: Int, body: String)
 
-  implicit val AccountIdRW: ReadWriter[AccountId] = macroRW
   implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
   implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
   implicit val invoicesInputRW: ReadWriter[InvoicesInput] = macroRW

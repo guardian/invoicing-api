@@ -200,7 +200,7 @@ Resources:
       - RefundLambda
 
   # ****************************************************************************
-  # GET /invoices/{accountId}
+  # GET /invoices
   # ****************************************************************************
   InvoicesEndpoint:
     Type: AWS::ApiGateway::Resource
@@ -210,23 +210,13 @@ Resources:
       PathPart: invoices
     DependsOn: InvoicingApi
 
-  InvoicesAccountIdPath:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref InvoicingApi
-      ParentId: !Ref InvoicesEndpoint
-      PathPart: "{accountId}"
-    DependsOn:
-      - InvoicingApi
-      - InvoicesEndpoint
-
   InvoicesEndpointGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: AWS_IAM
       ApiKeyRequired: true
       RestApiId: !Ref InvoicingApi
-      ResourceId: !Ref InvoicesAccountIdPath
+      ResourceId: !Ref InvoicesEndpoint
       HttpMethod: GET
       RequestParameters:
         method.request.path.accountId: true
@@ -236,8 +226,8 @@ Resources:
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${InvoicesLambda.Arn}/invocations
     DependsOn:
       - InvoicingApi
+      - InvoicesEndpoint
       - InvoicesLambda
-      - InvoicesAccountIdPath
 
   # ****************************************************************************
   # Access control

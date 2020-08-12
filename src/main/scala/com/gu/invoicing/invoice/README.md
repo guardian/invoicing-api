@@ -1,15 +1,15 @@
-## Get all invoices by account
+## Get all invoices by identityId
 
-The request requires api key as well as AWS Signature
-
-Example client manage-frontend PR: https://github.com/guardian/manage-frontend/pull/465
+- Identity is provided by `x-identity-id` header
+- The request requires api key as well as AWS Signature. Example client manage-frontend PR: https://github.com/guardian/manage-frontend/pull/465
 
 **Request:**
 
 ```
-GET /invoices/{accountId}
+GET /invoices
 Host: https://{apiGatewayId}.execute-api.{region}.amazonaws.com/{STAGE}
 Content-Type: application/json
+x-identity-id: 123456
 x-api-key: ********
 X-Amz-Security-Token: ******** 
 X-Amz-Date: ********
@@ -25,7 +25,7 @@ Authorization: ********
             "invoiceId": "1234567899qwertyuio",
             "subscriptionName": "A-S0000000",
             "date": "2020-08-05",
-            "pdfPath": "invoices/anAccountId/afileId",
+            "pdfPath": "invoices/afileId",
             "price": 813.48,
             "paymentMethod": "BankTransfer",
             "last4": "9911"
@@ -53,8 +53,8 @@ Authorization: ********
 1. In AWS Lambda console create test event with reflects `GET /invoices/{accountId}`
     ```
     {
-      "pathParameters": {
-        "accountId": "1234567qwerty"
+      "headers": {
+        "x-identity-id": "123456"
       }
     }
     ```
