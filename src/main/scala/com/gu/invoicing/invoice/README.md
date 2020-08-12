@@ -25,7 +25,7 @@ Authorization: ********
             "invoiceId": "1234567899qwertyuio",
             "subscriptionName": "A-S0000000",
             "date": "2020-08-05",
-            "downloadUrl": "9876543jhgfdshgfds",
+            "pdfFileUrl": "invoices/anAccountId/afileId",
             "price": 813.48,
             "paymentMethod": "BankTransfer",
             "last4": "9911"
