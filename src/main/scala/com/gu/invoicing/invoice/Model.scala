@@ -83,7 +83,7 @@ object Model extends OptionPickler {
     date: LocalDate,
     paymentMethod: PaymentMethod,
     price: Double,
-    pdfFileId: String, // used to download the file
+    pdfFileUrl: String, /* invoices/{accountId}/{fileId} */
     invoiceId: String
   )
 
@@ -98,12 +98,12 @@ object Model extends OptionPickler {
     ): InvoiceWithPayment = {
       // PDF invoice files are in reverse chronological order meaning most recent version is first
       // https://www.zuora.com/developer/api-reference/#operation/GET_InvoiceFiles
-      val pdfFileId =
+      val pdfFileUrl =
         invoice
           .invoiceFiles
           .headOption
           .getOrElse(throw new AssertionError(s"PDF file should exist for each invoice: $invoice"))
-          .pdfFileUrl match { case s"/v1/files/$fileId" => fileId }
+          .pdfFileUrl match { case s"/v1/files/$fileId" => s"invoices/${invoice.accountId}/$fileId" }
 
       // Currently we handle only invoices with single subscription, so any invoice item should do for getting the subscription name
       val subscriptionName =
@@ -118,7 +118,7 @@ object Model extends OptionPickler {
         date = invoice.invoiceDate,
         paymentMethod = paymentMethod,
         price = invoice.amount.toDouble,
-        pdfFileId = pdfFileId,
+        pdfFileUrl = pdfFileUrl,
         invoiceId = invoice.id
       )
     }
@@ -132,7 +132,7 @@ object Model extends OptionPickler {
     invoiceId: String,
     subscriptionName: String,
     date: LocalDate,
-    downloadUrl: String,
+    pdfFileUrl: String,
     price: Double,
     paymentMethod: String,
     last4: Option[String] = None // for card and direct debit
@@ -144,7 +144,7 @@ object Model extends OptionPickler {
         invoiceId = invoiceWithPayment.invoiceId,
         subscriptionName = invoiceWithPayment.subscriptionName,
         date = invoiceWithPayment.date,
-        downloadUrl = invoiceWithPayment.pdfFileId,
+        pdfFileUrl = invoiceWithPayment.pdfFileUrl,
         price = invoiceWithPayment.price,
         paymentMethod = invoiceWithPayment.paymentMethod.Type
       )
