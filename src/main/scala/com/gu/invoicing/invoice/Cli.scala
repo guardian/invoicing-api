@@ -19,7 +19,7 @@ import com.gu.spy._
 object Cli {
   def main(args: Array[String]): Unit = {
     (1 to 4).foreach { _ =>
-      time { Await.result(program(InvoicesInput("someAccountId")), Inf) }
+      time { Await.result(program(InvoicesInput("someIdentityId")), Inf) }
     }
   }
 }

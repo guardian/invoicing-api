@@ -12,8 +12,8 @@ import scala.util.chaining._
 /**
  * Example test event for running the lambda from AWS Console
  * {
- *   "pathParameters": {
- *     "accountId": "123456qwerty"
+ *   "headers": {
+ *     "x-identity-id": "123456qwerty"
  *   }
  * }
  */
@@ -30,8 +30,8 @@ object Lambda {
     def deserialiseStream(inputStream: InputStream): InvoicesInput = {
       inputStream
         .pipe { read[ApiGatewayInput](_) }
-        .pathParameters
-        .accountId
+        .headers
+        .getOrElse("x-identity-id", throw new Error("x-identity-id header should be provided"))
         .pipe { InvoicesInput }
     }
     def serialiseToStream(invoicesOutput: InvoicesOutput): Unit  = {
