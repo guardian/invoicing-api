@@ -202,18 +202,6 @@ object Model extends OptionPickler {
   case class PaymentMethod(
     Id: String,
     AccountId: String,
-    LastTransactionDateTime: LocalDateTime,
-    NumConsecutiveFailures: Int,
-    TotalNumberOfProcessedPayments: Int,
-    UpdatedById: String,
-    CreatedDate: LocalDateTime,
-    UseDefaultRetryRule: Boolean,
-    LastTransactionStatus: String,
-    PaymentMethodStatus: String,
-    UpdatedDate: LocalDateTime,
-    CreatedById: String,
-    TotalNumberOfErrorPayments: Int,
-    Active: Boolean,
     Type: String,
 
     // Bank Account (Direct Debit)
@@ -226,10 +214,10 @@ object Model extends OptionPickler {
 
     // Credit Card
     CreditCardMaskNumber: Option[String] = None,
-    CreditCardExpirationMonth: Option[String] = None,
-    CreditCardExpirationYear: Option[String] = None,
+    CreditCardExpirationMonth: Option[Int] = None,
+    CreditCardExpirationYear: Option[Int] = None,
     CreditCardType: Option[String] = None,
-   )
+  )
 
   case class PaymentMethods(
     records: List[PaymentMethod],

@@ -61,7 +61,10 @@ object Impl {
       .body
       .pipe(read[Invoices](_))
       .invoices
+      .iterator
       .filter { _.amount >= 0.0 }
+      .filter { _.status == "Posted" }
+      .toList
   }
 
   def getPayments(account: String): List[Payment] = {
@@ -71,13 +74,31 @@ object Impl {
       .body
       .pipe(read[Payments](_))
       .payments
+      .filter(_.paidInvoices.nonEmpty)
   }
 
   def getPaymentMethods(accountId: String): List[PaymentMethod] = {
     Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer ${accessToken}")
       .header("Content-Type", "application/json")
-      .postData(s"""{"queryString": "select BankTransferType, CreditCardExpirationMonth, CreditCardExpirationYear, BankTransferAccountNumberMask, LastFailedSaleTransactionDate, LastTransactionDateTime, LastTransactionStatus, Name, NumConsecutiveFailures, PaymentMethodStatus, Type, ID, MandateID, PaypalBAID, SecondTokenID, TokenID, AccountID, Active, Country, CreatedById, CreatedDate, CreditCardType, DeviceSessionId, IdentityNumber, MandateCreationDate, MandateReceived, MandateUpdateDate, MaxConsecutivePaymentFailures, PaymentRetryWindow, TotalNumberOfErrorPayments, TotalNumberOfProcessedPayments, UpdatedById, UpdatedDate, UseDefaultRetryRule, CreditCardMaskNumber from PaymentMethod where AccountId = '$accountId'"}""")
+      .postData(
+        s"""{
+           |  "queryString":
+           |    "select
+           |      Id,
+           |      Type,
+           |      AccountId,
+           |      BankCode,
+           |      BankTransferAccountName,
+           |      BankTransferAccountNumberMask,
+           |      PaypalEmail,
+           |      CreditCardMaskNumber,
+           |      CreditCardExpirationMonth,
+           |      CreditCardExpirationYear,
+           |      CreditCardType
+           |    from PaymentMethod
+           |    where AccountId = '$accountId'"
+           |}""".pipe(stripZoqlMargins))
       .method("POST")
       .asString
       .body
@@ -90,22 +111,26 @@ object Impl {
     invoices: List[Invoice],
     payments: List[Payment],
     paymentMethods: List[PaymentMethod]
-  ): PaymentMethod = {
+  ): Option[PaymentMethod] = {
     val paymentMethodIdByInvoiceId: Map[String, String] =
       payments
         .flatMap { payment =>
           payment
             .paidInvoices
-            .tap(v => assert(v.length == 1, s"Payment should be associated with only one invoice: $payment"))
+            .tap(v => assert(v.length == 1, s"Payment should be associated with only one invoice: ${payment.spy}"))
             .headOption
             .map { _.invoiceId -> payment.paymentMethodId }
         }.toMap
 
-    val paymentMethodById: Map[String, PaymentMethod] = paymentMethods.map(paymentMethod => paymentMethod.Id -> paymentMethod).toMap
+    val paymentMethodById: Map[String, PaymentMethod] =
+      paymentMethods.map(paymentMethod => paymentMethod.Id -> paymentMethod).toMap
 
-    val paymentMethodByInvoiceId: Map[String, PaymentMethod] =
+    val paymentMethodByInvoiceId: Map[String, Option[PaymentMethod]] =
       invoices.map { invoice =>
-        invoice.id -> paymentMethodById(paymentMethodIdByInvoiceId(invoice.id))
+        paymentMethodIdByInvoiceId.get(invoiceId) match { // invoice might not be (yet) associated with payment
+          case Some(paymentMethodId) => invoice.id -> paymentMethodById.get(paymentMethodId)
+          case None => invoice.id -> None
+        }
       }.toMap
 
     paymentMethodByInvoiceId(invoiceId)
@@ -124,11 +149,9 @@ object Impl {
     payments: List[Payment],
     paymentMethods: List[PaymentMethod],
   ): List[InvoiceWithPayment] = {
-    invoices.map { invoice =>
-      InvoiceWithPayment(
-        invoice,
-        getPaymentMethod(invoice.id, invoices, payments, paymentMethods),
-      )
+    invoices.flatMap { invoice => // filter out invoices with no associated payment methods
+      getPaymentMethod(invoice.id, invoices, payments, paymentMethods)
+        .map { InvoiceWithPayment(invoice, _) }
     }
   }
 
