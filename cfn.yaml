@@ -16,7 +16,6 @@ Conditions:
   IsProd: !Equals [!Ref "Stage", "PROD"]
 
 Resources:
-
   # ****************************************************************************
   # Alarms
   # ****************************************************************************
@@ -67,10 +66,34 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  FailedPdfAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProd
+    Properties:
+      AlarmName: "URGENT 9-5 - PROD: Failed to download invoice PDF"
+      AlarmDescription: |
+        - manage-frontend user will not be able to download invoice PDF
+        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/pdf/README.md
+        - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-pdf-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PdfLambda
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # Lambdas
   # ****************************************************************************
-
   RefundLambda:
     Type: AWS::Lambda::Function
     Properties:
