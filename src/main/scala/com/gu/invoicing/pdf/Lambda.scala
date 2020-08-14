@@ -5,6 +5,7 @@ import java.util.Base64
 
 import com.gu.invoicing.pdf.Log._
 import com.gu.invoicing.pdf.Model._
+import com.gu.invoicing.pdf.Impl._
 import com.gu.invoicing.pdf.Program._
 
 import scala.concurrent.Await
@@ -30,7 +31,7 @@ object Lambda {
       .pipe { PdfInput.apply }
       .tap  { info[PdfInput] }
       .pipe { program }
-      .pipe { ApiGatewayOutput(200, _, true, Map("Content-Type" -> "application/pdf;charset=UTF-8")) }
+      .pipe { ApiGatewayOutput(200, _, true, Map("Content-Type" -> "application/pdf;charset=UTF-8") ++ noCache ) }
       .pipe { write(_) }
       .pipe { _.getBytes }
       .pipe { output.write }

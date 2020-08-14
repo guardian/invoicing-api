@@ -41,4 +41,10 @@ object Impl {
       .pipe(read[Account](_))
       .basicInfo
       .IdentityId__c
+
+  val noCache = Map( // https://stackoverflow.com/a/2068407/5205022
+    "Cache-Control" -> "no-cache, no-store, must-revalidate",
+    "Pragma" -> "no-cache",
+    "Expires" -> "0"
+  )
 }
