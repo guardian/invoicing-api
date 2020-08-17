@@ -1,24 +1,8 @@
 package com.gu.invoicing.pdf
 
-/**
- * Needed for upickle to handle optional fields
- * http://www.lihaoyi.com/upickle/#CustomConfiguration
- */
-class OptionPickler extends upickle.AttributeTagged {
-  implicit def optionWriter[T: Writer]: Writer[Option[T]] =
-    implicitly[Writer[T]].comap[Option[T]] {
-      case None => null.asInstanceOf[T]
-      case Some(x) => x
-    }
+import com.gu.invoicing.common.JsonSupport
 
-  implicit def optionReader[T: Reader]: Reader[Option[T]] = {
-    new Reader.Delegate[Any, Option[T]](implicitly[Reader[T]].map(Some(_))){
-      override def visitNull(index: Int) = None
-    }
-  }
-}
-
-object Model extends OptionPickler {
+object Model extends JsonSupport {
   case class Config(clientId: String, clientSecret: String)
   case class AccessToken(access_token: String)
 

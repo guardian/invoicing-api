@@ -1,7 +1,7 @@
 package com.gu.invoicing.invoice
 
-import java.lang.System.getenv
-import java.time.LocalDate
+
+import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.invoice.Model._
 import scalaj.http.Http
 import scala.util.chaining._
@@ -11,26 +11,6 @@ import com.gu.spy._
  * Zuora API client and implementation details
  */
 object Impl {
-  lazy val stage = getenv("Stage")
-
-  lazy val zuoraApiHost: String =
-    stage match { case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com"; case "PROD" => "https://rest.zuora.com" }
-
-  lazy val config = read[Config](getenv("Config"))
-
-  lazy val accessToken: String = {
-    Http(s"$zuoraApiHost/oauth/token")
-      .postForm(Seq(
-        "client_id" -> config.clientId,
-        "client_secret" -> config.clientSecret,
-        "grant_type" -> "client_credentials"
-      ))
-      .asString
-      .body
-      .pipe(read[AccessToken](_))
-      .access_token
-  }
-
   private def stripZoqlMargins(str: String): String =
     str.stripMargin.linesIterator.map(_.trim).mkString(" ").trim
 

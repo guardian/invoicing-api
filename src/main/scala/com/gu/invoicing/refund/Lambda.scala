@@ -3,9 +3,7 @@ package com.gu.invoicing.refund
 import Model._
 import Impl._
 import Program._
-import Log._
 import scala.util.chaining._
-import upickle.default._
 import java.io.{InputStream, OutputStream}
 import java.nio.charset.Charset
 import java.util.logging.Logger

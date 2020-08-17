@@ -1,6 +1,5 @@
 package com.gu.invoicing.pdf
 
-import com.gu.invoicing.invoice.Log._
 import com.gu.invoicing.invoice.Model._
 import scala.util.chaining._
 import Impl._

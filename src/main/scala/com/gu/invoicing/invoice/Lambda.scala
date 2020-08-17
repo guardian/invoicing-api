@@ -2,7 +2,6 @@ package com.gu.invoicing.invoice
 
 import java.io.{InputStream, OutputStream}
 
-import com.gu.invoicing.invoice.Log._
 import com.gu.invoicing.invoice.Model._
 import com.gu.invoicing.invoice.Program._
 import scala.concurrent.Await

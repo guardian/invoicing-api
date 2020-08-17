@@ -5,12 +5,12 @@ import java.time.format.DateTimeFormatter.ofPattern
 import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 
-import upickle.default._
+import com.gu.invoicing.common.JsonSupport
 
 /**
  * Data models and JSON codecs
  */
-object Model {
+object Model extends JsonSupport {
   case class Config(clientId: String, clientSecret: String)
   case class AccessToken(access_token: String)
   case class Subscription(accountId: String, accountNumber: String, subscriptionNumber: String)

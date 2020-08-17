@@ -3,34 +3,11 @@ package com.gu.invoicing.invoice
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
 import java.time.{LocalDate, LocalDateTime}
-import java.util.UUID
+
+import com.gu.invoicing.common.JsonSupport
 import com.gu.spy._
 
-/**
- * Needed for upickle to handle optional fields
- * http://www.lihaoyi.com/upickle/#CustomConfiguration
- */
-class OptionPickler extends upickle.AttributeTagged {
-  implicit def optionWriter[T: Writer]: Writer[Option[T]] =
-    implicitly[Writer[T]].comap[Option[T]] {
-      case None => null.asInstanceOf[T]
-      case Some(x) => x
-    }
-
-  implicit def optionReader[T: Reader]: Reader[Option[T]] = {
-    new Reader.Delegate[Any, Option[T]](implicitly[Reader[T]].map(Some(_))){
-      override def visitNull(index: Int) = None
-    }
-  }
-}
-
-/**
- * Data models and JSON codecs
- */
-object Model extends OptionPickler {
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
-
+object Model extends JsonSupport {
   case class Invoices(
     invoices: List[Invoice],
     success: Boolean
@@ -223,9 +200,6 @@ object Model extends OptionPickler {
 
   implicit val AccountRW: ReadWriter[Account] = macroRW
   implicit val AccountsRW: ReadWriter[Accounts] = macroRW
-
-  implicit val configRW: ReadWriter[Config] = macroRW
-  implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
 
   implicit val invoicesRW: ReadWriter[Invoices] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
