@@ -9,7 +9,10 @@ object Impl {
   lazy val stage = getenv("Stage")
 
   lazy val zuoraApiHost: String =
-    stage match { case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com"; case "PROD" => "https://rest.zuora.com" }
+    stage match {
+      case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com"
+      case "PROD"         => "https://rest.zuora.com"
+    }
 
   lazy val config = read[Config](getenv("Config"))
 

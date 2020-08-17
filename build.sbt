@@ -35,6 +35,6 @@ deployAwsLambda := {
     "invoicing-api-invoices",
     "invoicing-api-pdf",
   ) foreach { name =>
-    s"aws lambda update-function-code --function-name $name-CODE --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
+    s"aws lambda update-function-code --function-name $name-DEV --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
   }
 }
