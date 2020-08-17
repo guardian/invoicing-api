@@ -26,8 +26,10 @@ lazy val root = (project in file("."))
     )
   )
 
-lazy val deployAwsLambda = taskKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
+lazy val deployAwsLambda = inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
 deployAwsLambda := {
+  import complete.DefaultParsers._
+  val stage = (Space ~> StringBasic).examples("<DEV | CODE | PROD>").parsed
   import scala.sys.process._
   assembly.value
   List(
@@ -35,6 +37,6 @@ deployAwsLambda := {
     "invoicing-api-invoices",
     "invoicing-api-pdf",
   ) foreach { name =>
-    s"aws lambda update-function-code --function-name $name-DEV --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
+    s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
   }
 }

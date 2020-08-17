@@ -40,7 +40,7 @@ Content-Type: application/pdf;charset=UTF-8
 
 1. Get fresh Janus credentials
 1. `Program.scala` contains main business logic 
-1. `deployAwsLambda` will upload modified lambda package
+1. `deployAwsLambda CODE` will upload modified lambda package
 1. In AWS Lambda console create test event that reflects `GET /invoices/{invoiceId}`
     ```
     {
