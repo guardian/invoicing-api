@@ -85,6 +85,6 @@ warning in step 7.
 
 1. For faster feedback cycle skip riffraff by assembling and deploying lambda directly
 1. Import Janus credentials 
-1. Execute `sbt deployAwsLambda` which should update `invoicing-api-refund-CODE`
+1. Execute `sbt "deployAwsLambda CODE"` which should update `invoicing-api-refund-CODE`
 1. Use postman to hit the corresponding endpoint
 
