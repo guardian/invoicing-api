@@ -63,3 +63,9 @@ Content-Type: application/pdf;charset=UTF-8
 1. Get fresh janus credentials
 1. Paste them in `Postman | Auth | AWS Signature`
 1. Don't forget also the API key `x-api-key`
+
+### Configure PDF binary response in API Gateway
+
+1. Add `application/pdf` under `Settings | Binary Media Types` and then re-deploy the API.
+1. https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
+1. https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-binarymediatypes

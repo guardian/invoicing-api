@@ -161,7 +161,9 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub invoicing-api-${Stage}
-      Description: Zuora invoice management (refunds)
+      Description: Zuora invoice management (refunds, list invoices, download PDF)
+      BinaryMediaTypes:
+        - application/pdf
 
   InvoicingApiStage:
     Type: AWS::ApiGateway::Stage

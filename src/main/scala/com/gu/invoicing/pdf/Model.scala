@@ -58,6 +58,7 @@ object Model extends OptionPickler {
   /**
    * https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html
    * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
+   * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-binarymediatypes
    *
    * {
    *   "status": 200,
