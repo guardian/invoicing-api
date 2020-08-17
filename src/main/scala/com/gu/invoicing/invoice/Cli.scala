@@ -1,6 +1,5 @@
 package com.gu.invoicing.invoice
 
-import com.gu.invoicing.invoice.Log._
 import com.gu.invoicing.invoice.Model._
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, ExecutionContext, Future}

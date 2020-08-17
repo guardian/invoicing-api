@@ -1,15 +1,9 @@
 package com.gu.invoicing.pdf
 
 import java.io.{InputStream, OutputStream}
-import java.util.Base64
-
-import com.gu.invoicing.pdf.Log._
 import com.gu.invoicing.pdf.Model._
 import com.gu.invoicing.pdf.Impl._
 import com.gu.invoicing.pdf.Program._
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration.Inf
 import scala.util.chaining._
 import com.gu.spy._
 

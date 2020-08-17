@@ -4,8 +4,6 @@ import Program._
 import Model._
 import Impl._
 import scala.util.chaining._
-import upickle.default._
-import Log._
 
 /**
  * Run refund process as CLI application
