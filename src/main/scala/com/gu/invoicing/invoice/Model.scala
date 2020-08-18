@@ -1,9 +1,6 @@
 package com.gu.invoicing.invoice
 
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatter.ofPattern
-import java.time.{LocalDate, LocalDateTime}
-
+import java.time.LocalDate
 import com.gu.invoicing.common.JsonSupport
 import com.gu.spy._
 
@@ -14,41 +11,15 @@ object Model extends JsonSupport {
   )
   case class Invoice(
     id: String,
-    accountId: String,
-    accountNumber: String,
-    accountName: String,
-    invoiceDate: LocalDate,
     invoiceNumber: String,
-    dueDate: LocalDate,
-    invoiceTargetDate: LocalDate,
+    invoiceDate: LocalDate,
     amount: BigDecimal,
-    balance: BigDecimal,
-    creditBalanceAdjustmentAmount: BigDecimal,
-    createdBy: String,
     status: String,
-    body: String,
     invoiceItems: List[InvoiceItem],
   )
   case class InvoiceItem(
-    id: String,
     subscriptionName: String,
-    subscriptionId: String,
-    serviceStartDate: LocalDate,
-    serviceEndDate: LocalDate,
-    chargeAmount: BigDecimal,
-    chargeDescription: String,
-    chargeName: String,
-    chargeId: String,
-    productName: String,
-    quantity: BigDecimal,
-    taxAmount: BigDecimal,
-    unitOfMeasure: String,
-    chargeDate: String, // FIXME this has different format from other kinds of localdatetimes
-    chargeType: String,
-    processingType: String,
-    appliedToItemId: Option[String]
   )
-
   case class InvoiceWithPayment(
     subscriptionName: String,
     date: LocalDate,
@@ -148,24 +119,12 @@ object Model extends JsonSupport {
     identityId: String
   )
   case class Payment(
-    id: String,
-    accountId: String,
-    accountNumber: String,
-    accountName: String,
-    `type`: String,
-    effectiveDate: LocalDate,
-    paymentNumber: String,
     paymentMethodId: String,
-    amount: BigDecimal,
     paidInvoices: List[PaidInvoice],
-    gatewayTransactionNumber: String,
-    status: String,
   )
-
   case class PaidInvoice(
     invoiceId: String,
     invoiceNumber: String,
-    appliedPaymentAmount: BigDecimal
   )
 
   case class Payments(
@@ -175,7 +134,6 @@ object Model extends JsonSupport {
 
   case class PaymentMethod(
     Id: String,
-    AccountId: String,
     Type: String, // DebitCard, PayPal
     BankTransferAccountNumberMask: Option[String] = None,
     CreditCardMaskNumber: Option[String] = None,
@@ -195,9 +153,6 @@ object Model extends JsonSupport {
     size: Int
   )
 
-  implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
-  implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
-  implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 
   implicit val AccountRW: ReadWriter[Account] = macroRW
   implicit val AccountsRW: ReadWriter[Accounts] = macroRW
