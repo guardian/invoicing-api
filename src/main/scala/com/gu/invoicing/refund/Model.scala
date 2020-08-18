@@ -1,10 +1,7 @@
 package com.gu.invoicing.refund
 
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatter.ofPattern
 import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
-
 import com.gu.invoicing.common.JsonSupport
 
 /**
@@ -77,9 +74,6 @@ object Model extends JsonSupport {
   case class Metrics(balance: BigDecimal, totalInvoiceBalance: BigDecimal, creditBalance: BigDecimal)
   case class Account(metrics: Metrics)
 
-  implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
-  implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
-  implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   implicit val configRW: ReadWriter[Config] = macroRW
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
