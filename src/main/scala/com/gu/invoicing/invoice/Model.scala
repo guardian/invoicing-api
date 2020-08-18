@@ -97,7 +97,8 @@ object Model extends JsonSupport {
     pdfPath: String,
     price: Double,
     paymentMethod: String,
-    last4: Option[String] = None // for card and direct debit
+    last4: Option[String] = None, // for card and direct debit
+    cardType: Option[String] = None // Visa, MasterCard
   )
 
   object MmaInvoiceWithPayment {
@@ -115,18 +116,29 @@ object Model extends JsonSupport {
       import paymentMethod._
       paymentMethod.Type match {// ACH, BankTransfer, Cash, Check, CreditCard, CreditCardReferenceTransaction, DebitCard, Other, PayPal, WireTransfer
         case "CreditCard" | "CreditCardReferenceTransaction" | "DebitCard" =>
-          mmaResponse.copy(last4 = CreditCardMaskNumber)
-
+          mmaResponse.copy(
+            last4 = CreditCardMaskNumber.map(dropMaskPrefix),
+            cardType = CreditCardType,
+            paymentMethod = "Card"
+          )
         case "BankTransfer" =>
-          mmaResponse.copy(last4 = BankTransferAccountNumberMask.map(_.dropWhile(_ == '*')))
+          mmaResponse.copy(
+            last4 = BankTransferAccountNumberMask.map(dropMaskPrefix),
+            paymentMethod = "DirectDebit"
+          )
 
         case "PayPal" =>
-          mmaResponse.copy(last4 = None)
+          mmaResponse.copy(
+            last4 = None,
+            paymentMethod = "PayPal"
+          )
 
         case _ =>
           throw new RuntimeException(s"Unexpected payment method: ${paymentMethod.spy}")
       }
     }
+
+    private def dropMaskPrefix(s: String): String = s.dropWhile(_ == '*')
   }
 
   case class InvoicesOutput(
@@ -164,21 +176,10 @@ object Model extends JsonSupport {
   case class PaymentMethod(
     Id: String,
     AccountId: String,
-    Type: String,
-
-    // Bank Account (Direct Debit)
-    BankCode: Option[String] = None,
-    BankTransferAccountName: Option[String] = None,
+    Type: String, // DebitCard, PayPal
     BankTransferAccountNumberMask: Option[String] = None,
-
-    // PayPal
-    PaypalEmail: Option[String] = None,
-
-    // Credit Card
     CreditCardMaskNumber: Option[String] = None,
-    CreditCardExpirationMonth: Option[Int] = None,
-    CreditCardExpirationYear: Option[Int] = None,
-    CreditCardType: Option[String] = None,
+    CreditCardType: Option[String] = None, // Visa, MasterCard
   )
 
   case class PaymentMethods(
