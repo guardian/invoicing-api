@@ -29,8 +29,8 @@ object Program { /** Main business logic */
     val positiveInvoices       = await(invoicesF)
     val payments               = await(paymentsF)
     val paymentMethods         = await(paymentMethodsF)
-    val _                      = allInvoicesShouldHaveASingleSubscription(positiveInvoices)
-    val invoicesWithPayment    = joinInvoicesWithPayment(positiveInvoices, payments, paymentMethods)
+    val lalala                      = tmp(positiveInvoices)
+    val invoicesWithPayment    = joinInvoicesWithPayment(lalala, payments, paymentMethods)
     val mmaInvoicesWithPayment = transformToMmaExpectedFormat(invoicesWithPayment)
     mmaInvoicesWithPayment
   }

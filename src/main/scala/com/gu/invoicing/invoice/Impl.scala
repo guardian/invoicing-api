@@ -148,6 +148,18 @@ object Impl {
     }
   }
 
+  /**
+   * Currently we can handle invoices that have only one Subscriptions, so make sure
+   * all the invoice items have the same subscriptionId field, and return on of them
+   */
+  def tmp(invoices: List[Invoice]): List[Invoice] = {
+    invoices.flatMap { invoice =>
+      invoice.invoiceItems.groupBy(_.subscriptionName).keys.toList.map{ subName =>
+        invoice.copy(invoiceItems = List[InvoiceItem](InvoiceItem(subName)))
+      }
+    }
+  }
+
   def transformToMmaExpectedFormat(
     invoicesWithPayment: List[InvoiceWithPayment]
   ): List[MmaInvoiceWithPayment] = {
