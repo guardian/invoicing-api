@@ -136,28 +136,35 @@ object Impl {
   }
 
   /**
-   * Currently we can handle invoices that have only one Subscriptions, so make sure
-   * all the invoice items have the same subscriptionId field, and return on of them
+   * The following two methods handle the rare edge case of user being invoiced for
+   * multiple subscriptions in a single invoice. Such invoices have a single price,
+   * however MMA design displays invoices grouped by product. This happens in the following cases:
+   *   - customer has been through a conversation with a CSR on the phone who would have explained that there would be a product transition in their next bill; or
+   *   - it's a result of some kind of manual account for a special reason (e.g. GW agent)
+   *
+   * This scenario can be simulated/tested by
+   *   1. find existing account in Zuora
+   *   2. create multiple subscriptions via 'create new subscription' button with same contract/acceptance date
+   *   3. bill run with acceptance date
+   *   4. post invoices
+   *   5. process payment
    */
-  def allInvoicesShouldHaveASingleSubscription(invoices: List[Invoice]): Unit = {
-    invoices.foreach { invoice =>
-      assert(
-        invoice.invoiceItems.groupBy(_.subscriptionName).keys.size == 1,
-        s"There should be only a single subscription per invoice: $invoices"
-      )
+  def supportInvoicesWithMultipleSubscriptions(invoices: List[Invoice]): List[Invoice] = {
+    invoices.flatMap { invoice =>
+      invoice
+        .invoiceItems
+        .groupBy(_.subscriptionName)
+        .keys
+        .toList
+        .map { subName => invoice.copy(invoiceItems = List(InvoiceItem(subName))) }
     }
   }
-
-  /**
-   * Currently we can handle invoices that have only one Subscriptions, so make sure
-   * all the invoice items have the same subscriptionId field, and return on of them
-   */
-  def tmp(invoices: List[Invoice]): List[Invoice] = {
-    invoices.flatMap { invoice =>
-      invoice.invoiceItems.groupBy(_.subscriptionName).keys.toList.map{ subName =>
-        invoice.copy(invoiceItems = List[InvoiceItem](InvoiceItem(subName)))
-      }
-    }
+  def tagMultiSubInvoices(invoices: List[MmaInvoiceWithPayment]): List[MmaInvoiceWithPayment] = {
+    invoices
+      .groupBy(_.invoiceId)
+      .flatMap { case (id, invoices) =>
+        invoices.map(_.copy(hasMultipleSubs = invoices.length > 1))
+      }.toList
   }
 
   def transformToMmaExpectedFormat(

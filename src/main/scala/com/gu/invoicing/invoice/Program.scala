@@ -29,10 +29,11 @@ object Program { /** Main business logic */
     val positiveInvoices       = await(invoicesF)
     val payments               = await(paymentsF)
     val paymentMethods         = await(paymentMethodsF)
-    val lalala                      = tmp(positiveInvoices)
-    val invoicesWithPayment    = joinInvoicesWithPayment(lalala, payments, paymentMethods)
+    val invoices               = supportInvoicesWithMultipleSubscriptions(positiveInvoices)
+    val invoicesWithPayment    = joinInvoicesWithPayment(invoices, payments, paymentMethods)
     val mmaInvoicesWithPayment = transformToMmaExpectedFormat(invoicesWithPayment)
-    mmaInvoicesWithPayment
+    val multiSubTaggedInvoices = tagMultiSubInvoices(mmaInvoicesWithPayment)
+    multiSubTaggedInvoices
   }
 }
 
