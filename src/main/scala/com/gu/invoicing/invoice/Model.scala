@@ -69,7 +69,8 @@ object Model extends JsonSupport {
     price: Double,
     paymentMethod: String,
     last4: Option[String] = None, // for card and direct debit
-    cardType: Option[String] = None // Visa, MasterCard
+    cardType: Option[String] = None, // Visa, MasterCard
+    hasMultipleSubs: Boolean // to handle edge case of multiple subscriptions within a single invoice
   )
 
   object MmaInvoiceWithPayment {
@@ -80,7 +81,8 @@ object Model extends JsonSupport {
         date = invoiceWithPayment.date,
         pdfPath = invoiceWithPayment.pdfPath,
         price = invoiceWithPayment.price,
-        paymentMethod = invoiceWithPayment.paymentMethod.Type
+        paymentMethod = invoiceWithPayment.paymentMethod.Type,
+        hasMultipleSubs = false
       )
 
       val paymentMethod = invoiceWithPayment.paymentMethod
