@@ -2,9 +2,10 @@ package com.gu.invoicing.common
 
 import java.lang.System.getenv
 import java.util.{Timer, TimerTask}
-
+import com.gu.invoicing.common.Retry._
 import scala.util.chaining._
 import scalaj.http.Http
+import scala.util.{Failure, Success}
 
 object ZuoraAuth extends JsonSupport {
   case class Config(clientId: String, clientSecret: String)
@@ -41,9 +42,24 @@ object ZuoraAuth extends JsonSupport {
       .access_token
   }
   private val timer = new Timer()
+  private def ZuoraOutageWarning(cause: Throwable) = new RuntimeException(
+    """
+      |Failed to authenticate with Zuora after multiple retries.
+      |Possible zuora outage. Investigate ASAP! https://trust.zuora.com
+      |""".stripMargin,
+    cause
+  )
   timer.schedule(
-    new TimerTask { def run(): Unit = accessToken = getAccessToken() },
+    new TimerTask {
+      def run(): Unit = {
+        retry(getAccessToken()) // do not update cache on failure
+          .foreach(token => accessToken = token)
+      }
+    },
     0, 5 * 60 * 1000 // refresh token every 5 min
   )
-  accessToken = getAccessToken() // set token on initialization
+  retry(3)(getAccessToken()) match { // set token on initialization
+    case Success(token) => accessToken = token
+    case Failure(e) => throw ZuoraOutageWarning(e)
+  }
 }
