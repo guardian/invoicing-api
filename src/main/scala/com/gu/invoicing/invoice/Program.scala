@@ -7,6 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.chaining._
 import Impl._
 import com.gu.spy._
+import com.gu.invoicing.common.Retry._
 
 object Program { /** Main business logic */
   /**
@@ -15,7 +16,7 @@ object Program { /** Main business logic */
    * belonging to identityId, and then all invoices belonging to each accountId.
    * This represents Guardian model on top of Zuora model.
    */
-  def program(input: InvoicesInput): Future[InvoicesOutput] = {
+  def program(input: InvoicesInput): Future[InvoicesOutput] = retry {
     Future
       .traverse(getAccountIds(input.identityId))(invoicesByAccountId)
       .map(v => InvoicesOutput(v.flatten))

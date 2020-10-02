@@ -58,7 +58,7 @@ object ZuoraAuth extends JsonSupport {
     },
     0, 5 * 60 * 1000 // refresh token every 5 min
   )
-  retry(3)(getAccessToken()) match { // set token on initialization
+  retry(getAccessToken()) match { // set token on initialization
     case Success(token) => accessToken = token
     case Failure(e) => throw ZuoraOutageWarning(e)
   }
