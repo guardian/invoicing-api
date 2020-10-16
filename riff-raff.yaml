@@ -16,4 +16,6 @@ deployments:
       prefixStack: false
       functionNames:
         - invoicing-api-refund-
+        - invoicing-api-invoices-
+        - invoicing-api-pdf-
     dependencies: [cfn]
