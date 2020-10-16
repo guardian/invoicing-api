@@ -8,12 +8,13 @@ lazy val root = (project in file("."))
     organizationName := "The Guardian",
     scalaVersion := "2.13.3",
     libraryDependencies ++= List(
+      "org.scalameta"          %% "munit"        % "0.7.14"   % Test,
       "org.scalaj"             %% "scalaj-http"  % "2.4.2",
       "com.lihaoyi"            %% "upickle"      % "1.1.0",
-      "org.scalameta"          %% "munit"        % "0.7.9"   % Test,
       "com.gu"                 %% "spy"          % "0.1.1",
-      "org.scala-lang.modules" %% "scala-async"  % "1.0.0-M1"
-    ),
+      "org.scala-lang.modules" %% "scala-async"  % "1.0.0-M1",
+      "com.lihaoyi"            %% "pprint"       % "0.6.0",
+),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := "invoicing-api.jar",
     riffRaffPackageType := assembly.value,
@@ -36,6 +37,7 @@ deployAwsLambda := {
     "invoicing-api-refund",
     "invoicing-api-invoices",
     "invoicing-api-pdf",
+    "invoicing-api-nextinvoicedate",
   ) foreach { name =>
     s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
   }
