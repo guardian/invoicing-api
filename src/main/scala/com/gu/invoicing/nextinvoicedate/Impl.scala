@@ -41,9 +41,12 @@ object Impl {
     invoiceItems: List[InvoiceItem]
   ): List[InvoiceItem] = {
     invoiceItems
+      .iterator
       .filter(_.subscriptionName == subscriptionName)
+      .filterNot(_.productName == "Discounts")
       .filterNot(_.chargeAmount < 0.0)
       .filterNot(v => v.serviceStartDate == v.serviceEndDate)
+      .toList
       .sortBy(_.serviceStartDate)
   }
 

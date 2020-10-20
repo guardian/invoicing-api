@@ -15,6 +15,7 @@ object Model extends JsonSupport {
     serviceStartDate: LocalDate,
     serviceEndDate: LocalDate,
     chargeAmount: Double,
+    productName: String,
   )
 
   case class BillingPreview(
