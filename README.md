@@ -11,8 +11,9 @@ Invoice management for supporters
 
 ## Structure
 
-| Project                                                     | Description                                  |                                    
-| ----------------------------------------------------------- | -------------------------------------------- |
-| [refund](src/main/scala/com/gu/invoicing/refund)            | Apply automated refund                       |
-| [invoices](src/main/scala/com/gu/invoicing/invoice)         | List all invoices by identityId              |
-| [pdf](src/main/scala/com/gu/invoicing/pdf)                  | Download PDF invoice                         |
+| Project                                                           | Description                                     |                                    
+| ----------------------------------------------------------------- | ----------------------------------------------- |
+| [refund](src/main/scala/com/gu/invoicing/refund)                  | Apply automated refund                          |
+| [invoices](src/main/scala/com/gu/invoicing/invoice)               | List all invoices by identityId                 |
+| [pdf](src/main/scala/com/gu/invoicing/pdf)                        | Download PDF invoice                            |
+| [nextinvoicedate](src/main/scala/com/gu/invoicing/nextinvoicedate)| First day of the next billing period            |
