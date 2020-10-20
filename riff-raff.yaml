@@ -18,4 +18,5 @@ deployments:
         - invoicing-api-refund-
         - invoicing-api-invoices-
         - invoicing-api-pdf-
+        - invoicing-api-nextinvoicedate-
     dependencies: [cfn]
