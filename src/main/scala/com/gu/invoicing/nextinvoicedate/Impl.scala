@@ -25,7 +25,7 @@ object Impl {
           |{
           |    "accountId": "$accountId",
           |    "targetDate": "${LocalDate.now.plusMonths(13)}",
-          |    "assumeRenewal": "All"
+          |    "assumeRenewal": "Autorenew"
           |}
           |""".stripMargin
       )
