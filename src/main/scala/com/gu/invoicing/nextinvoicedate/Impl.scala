@@ -47,19 +47,15 @@ object Impl {
       .filterNot(_.chargeAmount < 0.0)
       .filterNot(v => v.serviceStartDate == v.serviceEndDate)
       .toList
-      .sortBy(_.serviceStartDate)
   }
 
   def findNextInvoiceDate(
     items: List[InvoiceItem],
     today: LocalDate = LocalDate.now()
-  ): Option[LocalDate] = {
+  ): Option[LocalDate] =
     items
-      .sliding(2, 2)
-      .collectFirst { case List(current, next) if isActiveInvoicedPeriod(current, today) => next }
+      .filter(_.serviceStartDate.isAfter(today))
+      .sortBy(_.serviceStartDate)
+      .headOption
       .map(_.serviceStartDate)
-  }
-
-  private def isActiveInvoicedPeriod(item: InvoiceItem, today: LocalDate): Boolean =
-    today.isBefore(item.serviceEndDate) || today.isEqual(item.serviceEndDate)
 }
