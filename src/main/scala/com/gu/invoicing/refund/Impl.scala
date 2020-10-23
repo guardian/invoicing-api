@@ -2,7 +2,7 @@ package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import java.time.LocalDate
-import scalaj.http.{BaseHttp, HttpOptions}
+import com.gu.invoicing.common.Http
 import scala.annotation.tailrec
 import Model._
 import scala.util.chaining._
@@ -11,16 +11,8 @@ import scala.util.chaining._
  * Zuora API client and implementation details
  */
 object Impl {
-  object HttpWithLongTimeout extends BaseHttp(
-    options = Seq(
-      HttpOptions.connTimeout(5000),
-      HttpOptions.readTimeout(5 * 60 * 1000),
-      HttpOptions.followRedirects(false)
-    )
-  )
-
   def getSubscription(name: String): Subscription = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/subscriptions/$name")
+    Http(s"$zuoraApiHost/v1/subscriptions/$name")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
@@ -28,7 +20,7 @@ object Impl {
   }
 
   def getAccountBalance(accountId: String): BigDecimal = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/accounts/$accountId")
+    Http(s"$zuoraApiHost/v1/accounts/$accountId")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
@@ -38,7 +30,7 @@ object Impl {
   }
 
   def getInvoices(accountId: String): List[Invoice] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/action/query")
+    Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "select Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status from Invoice where AccountId = '$accountId'"}""")
@@ -50,7 +42,7 @@ object Impl {
   }
 
   def getInvoiceItems(invoiceId: String): List[InvoiceItem] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/invoices/$invoiceId/items")
+    Http(s"$zuoraApiHost/v1/invoices/$invoiceId/items")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
@@ -59,7 +51,7 @@ object Impl {
   }
 
   def getItemsByInvoice(subscriptionName: String): Map[String, List[InvoiceItem]] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/action/query")
+    Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin)
@@ -72,7 +64,7 @@ object Impl {
   }
 
   def getInvoicePaymentId(invoiceId: String): Option[String] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/action/query")
+    Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer $accessToken}")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "select Id, invoiceId, paymentId from InvoicePayment where invoiceId = '$invoiceId'"}""")
@@ -86,7 +78,7 @@ object Impl {
   }
 
   def createRefundObject(amount: BigDecimal, paymentId: String, comment: String): String = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/object/refund")
+    Http(s"$zuoraApiHost/v1/object/refund")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(
@@ -106,7 +98,7 @@ object Impl {
   }
 
   def getRefundStatus(refundId: String): String = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/object/refund/$refundId")
+    Http(s"$zuoraApiHost/v1/object/refund/$refundId")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
@@ -174,7 +166,7 @@ object Impl {
   }
 
   def applyRefundOverItemAdjustments(invoiceItems: List[InvoiceItemAdjustmentWrite]): List[AdjustmentResult] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/action/create")
+    Http(s"$zuoraApiHost/v1/action/create")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(write(InvoiceItemAdjustmentsWriteRequest(objects = invoiceItems, `type` = "InvoiceItemAdjustment")))
@@ -201,7 +193,7 @@ object Impl {
   }
 
   def getInvoiceItemAdjustments(invoiceId: String): List[InvoiceItemAdjustment] = {
-    HttpWithLongTimeout(s"$zuoraApiHost/v1/action/query")
+    Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "select Id, InvoiceId, InvoiceItemName, SourceId, SourceType, Status, Type, Amount FROM InvoiceItemAdjustment where InvoiceId = '$invoiceId'"}""")
