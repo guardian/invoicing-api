@@ -3,7 +3,7 @@ package com.gu.invoicing.nextinvoicedate
 import java.time.LocalDate
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.nextinvoicedate.Model._
-import scalaj.http.Http
+import com.gu.invoicing.common.Http
 import scala.util.chaining._
 import pprint._
 

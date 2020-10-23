@@ -2,7 +2,7 @@ package com.gu.invoicing.pdf
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.pdf.Model._
-import scalaj.http.Http
+import com.gu.invoicing.common.Http
 import scala.util.chaining._
 
 object Impl {

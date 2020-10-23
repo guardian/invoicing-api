@@ -3,7 +3,7 @@ package com.gu.invoicing.invoice
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.invoice.Model._
-import scalaj.http.Http
+import com.gu.invoicing.common.Http
 import scala.util.chaining._
 import com.gu.spy._
 
