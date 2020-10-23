@@ -2,7 +2,7 @@ package com.gu.invoicing.common
 
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{DayOfWeek, LocalDate, LocalDateTime}
 
 class JsonSupport extends upickle.AttributeTagged {
   /* Option - http://www.lihaoyi.com/upickle/#CustomConfiguration */
@@ -21,6 +21,9 @@ class JsonSupport extends upickle.AttributeTagged {
   implicit val bigDecimalRW: ReadWriter[BigDecimal] = readwriter[Double].bimap[BigDecimal](_.toDouble, double => BigDecimal(double.toString))
   implicit val localDateRW: ReadWriter[LocalDate] = readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
   implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](_.toString, LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+
+  /* Java Time DayOfWeek */
+  implicit val dayOfWeekR: ReadWriter[DayOfWeek] = readwriter[String].bimap(_.name, v => DayOfWeek.valueOf(v.toUpperCase))
 
   /* Logging json */
   def info[P <: Product : Writer](p: P): Unit = info(write(p))
