@@ -1,7 +1,8 @@
 package com.gu.invoicing.preview
 
 import java.time.{DayOfWeek, LocalDate}
-import java.time.temporal.TemporalAdjusters
+import java.time.temporal.{ChronoUnit, TemporalAdjusters}
+import java.time.temporal.ChronoUnit.WEEKS
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.preview.Model._
 import com.gu.invoicing.common.Http
@@ -9,6 +10,7 @@ import com.gu.invoicing.common.DateOps._
 import scala.util.chaining._
 import pprint._
 import scala.annotation.tailrec
+import scala.math.BigDecimal.RoundingMode
 
 object Impl {
   def getAccountId(name: String): String = {
@@ -100,7 +102,8 @@ object Impl {
       item.serviceEndDate.plusDays(1),
       item.productName,
       item.chargeName,
-      chargeNameToDay(item.chargeName)
+      chargeNameToDay(item.chargeName),
+      pricePerPublication(item),
     )
 
   def chargeNameToDay(name: String): DayOfWeek = {
@@ -140,6 +143,7 @@ object Impl {
             invoiceItem.productName,
             invoiceItem.chargeName,
             chargeNameToDay(invoiceItem.chargeName),
+            pricePerPublication(invoiceItem),
           ) :: publications
         )
       }
@@ -151,6 +155,28 @@ object Impl {
       chargeNameToDay(invoiceItem.chargeName),
       Nil,
     )
+  }
+
+  /**
+   * Predict approximate price per publication by determining number of weeks in a service period and
+   * then dividing by invoice item charge amount.
+   */
+  def pricePerPublication(invoiceItem: InvoiceItem): Double = {
+    def round2Places(d: Double): Double = BigDecimal(d).setScale(2, RoundingMode.UP).toDouble
+    def roundedWeeks(weeks: Long): Long = weeks match {
+      case 12 | 13 => 13 // Quarter
+      case 51 | 52 => 52 // Annual
+      case 25 | 26 => 26 // Semi_annual
+      case  3 |  4 => 4  // Month
+      case  5 |  6 => 6  // 6 for 6
+      case  v =>
+        warn(s"Double check price per publication for $invoiceItem due to unusual billing period of $weeks weeks")
+        v
+    }
+    val approxBillingPeriodInWeeks =
+      roundedWeeks(WEEKS.between(invoiceItem.serviceStartDate, invoiceItem.serviceEndDate.plusDays(1)))
+
+    round2Places(invoiceItem.chargeAmount / approxBillingPeriodInWeeks)
   }
 
   /**

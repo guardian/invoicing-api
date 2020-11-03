@@ -1,8 +1,7 @@
 package com.gu.invoicing.preview
 
-import java.time.temporal.{TemporalAdjuster, TemporalAdjusters}
+import java.time.temporal.TemporalAdjusters
 import java.time.{DayOfWeek, LocalDate}
-
 import com.gu.invoicing.common.JsonSupport
 
 object Model extends JsonSupport {
@@ -29,6 +28,7 @@ object Model extends JsonSupport {
     productName: String,
     chargeName: String,
     dayOfWeek: DayOfWeek,
+    price: Double,
   ) {
     def previous: Publication = { /* get corresponding date of the same day last week */
       this.copy(publicationDate = this.publicationDate.`with`(TemporalAdjusters.previous(dayOfWeek)))
