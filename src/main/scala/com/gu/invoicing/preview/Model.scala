@@ -61,6 +61,18 @@ object Model extends JsonSupport {
     accountId: String,
     invoiceItems: List[InvoiceItem],
   )
+  case class Invoice(
+    id: String,
+    invoiceNumber: String,
+    invoiceDate: LocalDate,
+    amount: BigDecimal,
+    status: String,
+    invoiceItems: List[InvoiceItem],
+  )
+  case class Invoices(
+    invoices: List[Invoice],
+    success: Boolean
+  )
 
   // ************************************************************************
   // API Gateway Lambda for proxy integration input and output models
@@ -88,6 +100,8 @@ object Model extends JsonSupport {
   implicit val subscription: ReadWriter[Subscription] = macroRW
   implicit val invoiceItem: ReadWriter[InvoiceItem] = macroRW
   implicit val billingPreview: ReadWriter[BillingPreview] = macroRW
+  implicit val invoice: ReadWriter[Invoice] = macroRW
+  implicit val invoices: ReadWriter[Invoices] = macroRW
   implicit val subscriptionNumber: ReadWriter[SubscriptionName] = macroRW
   implicit val rangeRW: ReadWriter[Range] = macroRW
   implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW

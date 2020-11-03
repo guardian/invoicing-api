@@ -19,7 +19,7 @@ object Impl {
       .accountId
   }
 
-  def getBillingPreview(accountId: String): List[InvoiceItem] = {
+  def getFutureInvoiceItems(accountId: String, startDate: LocalDate): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
@@ -27,7 +27,7 @@ object Impl {
         s"""
            |{
            |    "accountId": "$accountId",
-           |    "targetDate": "${LocalDate.now.plusMonths(13)}",
+           |    "targetDate": "${startDate.plusMonths(13)}",
            |    "assumeRenewal": "Autorenew"
            |}
            |""".stripMargin
@@ -39,10 +39,25 @@ object Impl {
       .invoiceItems
   }
 
+  def getPastInvoiceItems(account: String, subscriptionName: String, startDate: LocalDate): List[InvoiceItem] =
+    Http(s"$zuoraApiHost/v1/transactions/invoices/accounts/$account")
+      .header("Authorization", s"Bearer ${accessToken}")
+      .asString
+      .body
+      .pipe(read[Invoices](_))
+      .invoices
+      .iterator
+      .filter { _.amount >= 0.0 }
+      .filter { _.status == "Posted" }
+      .toList
+      .flatMap(_.invoiceItems)
+      .filter(_.subscriptionName == subscriptionName)
+      .filter(v => v.serviceStartDate.isEqual(startDate) || v.serviceStartDate.isAfter(startDate))
+
   def collectRelevantInvoiceItems(
     subscriptionName: String,
     invoiceItems: List[InvoiceItem]
-  ): List[InvoiceItem] = {
+  ): List[InvoiceItem] =
     invoiceItems
       .iterator
       .filter(_.subscriptionName == subscriptionName)
@@ -50,7 +65,7 @@ object Impl {
       .filterNot(_.chargeAmount < 0.0)
       .filterNot(v => v.serviceStartDate == v.serviceEndDate)
       .toList
-  }
+      .sortBy(_.serviceStartDate)
 
   def findNextInvoiceDate(
     items: List[InvoiceItem],
@@ -63,11 +78,14 @@ object Impl {
       .map(_.serviceStartDate)
 
   def findAffectedPublicationsWithRange(
-    items: List[InvoiceItem],
+    publications: List[Publication],
     start: LocalDate,
     end: LocalDate,
-  ): List[InvoiceItem] = {
-    items.filter(itemIsWithinRange(_, start, end)).sortBy(_.serviceStartDate)
+  ): List[Publication] = {
+    publications
+      .filter(i => (i.publicationDate.isEqual(start) || i.publicationDate.isAfter(start)) && (i.publicationDate.isEqual(end) || i.publicationDate.isBefore(end)))
+      .sortBy(_.publicationDate)
+      .distinct
   }
 
   def itemIsWithinRange(item: InvoiceItem, start: LocalDate, end: LocalDate): Boolean =
@@ -128,7 +146,7 @@ object Impl {
     }
 
     loop(
-      invoiceItem.serviceStartDate.`with`(TemporalAdjusters.next(chargeNameToDay(invoiceItem.chargeName))),
+      invoiceItem.serviceStartDate,
       invoiceItem.serviceEndDate,
       chargeNameToDay(invoiceItem.chargeName),
       Nil,
@@ -150,7 +168,7 @@ object Impl {
    * Note this method is a sister method to splitInvoiceItemIntoPublications which handles calculation
    * of publicationDates for issues starting next invoice date (which uses Zuora billing-preview).
    */
-  def rewind(publications: List[Publication]): List[Publication] = {
+  @deprecated("In favour of getPastInvoiceItems") def rewind(publications: List[Publication]): List[Publication] = {
     @tailrec def loop(n: Int, pubs: List[Publication]): List[Publication] = {
       pubs match {
         case pub :: t if n > 0 => loop(n - 1, pub.previous :: pubs)

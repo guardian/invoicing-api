@@ -16,6 +16,6 @@ import com.gu.spy._
  */
 object Cli {
   def main(args: Array[String]): Unit = {
-    program(PreviewInput("A-S00000000", LocalDate.now, LocalDate.now))
+    program(PreviewInput("A-S00104932", LocalDate.parse("2020-11-13"), LocalDate.parse("2020-12-25")))
   }
 }

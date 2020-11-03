@@ -15,27 +15,17 @@ import pprint._
  * always rely on chargedThroughDate is because we do not perform bill run in real-time
  * at point of acquisition.
  */
-
 object Program { /** Main business logic */
   def program(input: PreviewInput): PreviewOutput = retryUnsafe {
     val PreviewInput(subscriptionName, start, end) = input
-    val accountId            = getAccountId(subscriptionName)
-    val allInvoiceItems      = getBillingPreview(accountId)
-    val invoiceItems         = collectRelevantInvoiceItems(subscriptionName, allInvoiceItems) tap (pprintln(_))
-    val nextInvoiceDate      = findNextInvoiceDate(invoiceItems) tap (pprintln(_))
-    val affectedInvoiceItems = findAffectedPublicationsWithRange(invoiceItems, start, end) tap (pprintln(_))
-//    val affectedPublications = affectedInvoiceItems.map(invoiceItemToPublication) tap (pprintln(_))
-    val affectedPublications = affectedInvoiceItems.flatMap(splitInvoiceItemIntoPublications) tap (pprintln(_))
-    val rewinded = rewind(affectedPublications.sortBy(_.publicationDate))
-    pprint.pprintln(input)
-    PreviewOutput(
-      subscriptionName,
-      nextInvoiceDate,
-      start,
-      end,
-      rewinded
-        .filter(i => (i.publicationDate.isEqual(start) || i.publicationDate.isAfter(start)) && ((i.publicationDate.isEqual(end)) || (i.publicationDate.isBefore(end))))
-        .sortBy(_.publicationDate)
-    )
+    val accountId             = getAccountId(subscriptionName)
+    val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start)
+    val futureInvoiceItems    = getFutureInvoiceItems(accountId, start)
+    val allInvoiceItems       = pastInvoiceItems ++ futureInvoiceItems
+    val invoiceItems          = collectRelevantInvoiceItems(subscriptionName, allInvoiceItems)
+    val nextInvoiceDate       = findNextInvoiceDate(invoiceItems)
+    val publications          = invoiceItems.flatMap(splitInvoiceItemIntoPublications)
+    val affectedPublications  = findAffectedPublicationsWithRange(publications, start, end)
+    PreviewOutput(subscriptionName, nextInvoiceDate, start, end, affectedPublications) tap (log(_))
   }
 }
