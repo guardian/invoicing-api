@@ -5,6 +5,7 @@ import java.time.temporal.TemporalAdjusters
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.preview.Model._
 import com.gu.invoicing.common.Http
+import com.gu.invoicing.common.DateOps._
 import scala.util.chaining._
 import pprint._
 import scala.annotation.tailrec
@@ -39,7 +40,11 @@ object Impl {
       .invoiceItems
   }
 
-  def getPastInvoiceItems(account: String, subscriptionName: String, startDate: LocalDate): List[InvoiceItem] =
+  def getPastInvoiceItems(
+    account: String,
+    subscriptionName: String,
+    startDate: LocalDate
+  ): List[InvoiceItem] =
     Http(s"$zuoraApiHost/v1/transactions/invoices/accounts/$account")
       .header("Authorization", s"Bearer ${accessToken}")
       .asString
@@ -47,12 +52,12 @@ object Impl {
       .pipe(read[Invoices](_))
       .invoices
       .iterator
-      .filter { _.amount >= 0.0 }
-      .filter { _.status == "Posted" }
+      .filter  { _.amount >= 0.0                        }
+      .filter  { _.status == "Posted"                   }
+      .flatMap { _.invoiceItems                         }
+      .filter  { _.subscriptionName == subscriptionName }
+      .filter  { _.serviceStartDate >= startDate        }
       .toList
-      .flatMap(_.invoiceItems)
-      .filter(_.subscriptionName == subscriptionName)
-      .filter(v => v.serviceStartDate.isEqual(startDate) || v.serviceStartDate.isAfter(startDate))
 
   def collectRelevantInvoiceItems(
     subscriptionName: String,
@@ -83,14 +88,10 @@ object Impl {
     end: LocalDate,
   ): List[Publication] = {
     publications
-      .filter(i => (i.publicationDate.isEqual(start) || i.publicationDate.isAfter(start)) && (i.publicationDate.isEqual(end) || i.publicationDate.isBefore(end)))
+      .filter(_.publicationDate.inClosedInterval(start, end))
       .sortBy(_.publicationDate)
       .distinct
   }
-
-  def itemIsWithinRange(item: InvoiceItem, start: LocalDate, end: LocalDate): Boolean =
-    (item.serviceStartDate.isEqual(start) || item.serviceStartDate.isAfter(start)) &&
-      (item.serviceStartDate.isEqual(end) || item.serviceStartDate.isBefore(end))
 
   def invoiceItemToPublication(item: InvoiceItem): Publication =
     Publication(
@@ -101,7 +102,6 @@ object Impl {
       item.chargeName,
       chargeNameToDay(item.chargeName)
     )
-
 
   def chargeNameToDay(name: String): DayOfWeek = {
     name match {
