@@ -1,6 +1,5 @@
 package com.gu.invoicing.preview
 
-import java.time.LocalDate
 import com.gu.invoicing.preview.Model._
 import com.gu.invoicing.preview.Impl._
 import com.gu.invoicing.common.Retry._
@@ -26,6 +25,6 @@ object Program { /** Main business logic */
     val nextInvoiceDate       = findNextInvoiceDate(invoiceItems)
     val publications          = invoiceItems.flatMap(splitInvoiceItemIntoPublications)
     val affectedPublications  = findAffectedPublicationsWithRange(publications, start, end)
-    PreviewOutput(subscriptionName, nextInvoiceDate, start, end, affectedPublications) tap (log(_))
+    PreviewOutput(subscriptionName, nextInvoiceDate, start, end, affectedPublications)
   }
 }

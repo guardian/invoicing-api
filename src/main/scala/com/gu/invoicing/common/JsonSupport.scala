@@ -30,9 +30,9 @@ class JsonSupport extends upickle.AttributeTagged {
   def info[P <: Product : Writer](p: P): Unit = info(write(p))
   def warn[P <: Product : Writer](p: P): Unit = warn(write(p))
   def error[P <: Product : Writer](p: P): Unit = error(write(p))
-  val logger: Logger = java.util.logging.Logger.getGlobal
+  private val logger: Logger = java.util.logging.Logger.getGlobal
   private object ErrorLevel extends java.util.logging.Level("ERROR", 950)
-  def info(s: String): Unit = logger.info(s)
-  def warn(s: String): Unit = logger.warning(s)
-  def error(s: String): Unit = logger.log(ErrorLevel, s)
+  private def info(s: String): Unit = logger.info(s)
+  private def warn(s: String): Unit = logger.warning(s)
+  private def error(s: String): Unit = logger.log(ErrorLevel, s)
 }

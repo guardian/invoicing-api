@@ -1,6 +1,5 @@
 package com.gu.invoicing.preview
 
-import java.time.temporal.TemporalAdjusters
 import java.time.{DayOfWeek, LocalDate}
 import com.gu.invoicing.common.JsonSupport
 
@@ -11,7 +10,7 @@ object Model extends JsonSupport {
   case class PreviewInput(
     subscriptionName: String,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
   )
   object PreviewInput {
     def apply(apiGatewayInput: ApiGatewayInput): PreviewInput =
@@ -21,33 +20,36 @@ object Model extends JsonSupport {
         LocalDate.parse(apiGatewayInput.queryStringParameters.endDate),
       )
   }
-  case class Publication(
-    publicationDate: LocalDate,
-    invoiceDate: LocalDate,
-    nextInvoiceDate: LocalDate,
-    productName: String,
-    chargeName: String,
-    dayOfWeek: DayOfWeek,
-    price: Double,
-  ) {
-    def previous: Publication = { /* get corresponding date of the same day last week */
-      this.copy(publicationDate = this.publicationDate.`with`(TemporalAdjusters.previous(dayOfWeek)))
-    }
-  }
   case class PreviewOutput(
     subscriptionName: String,
     nextInvoiceDateAfterToday: Option[LocalDate] = None,
     rangeStartDate: LocalDate,
     rangeEndDate: LocalDate,
-    publicationsWithRange: List[Publication] = Nil
+    publicationsWithinRange: List[Publication] = Nil
   )
 
   // ************************************************************************
   // Implementation detail models
   // ************************************************************************
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
-  case class Subscription(accountId: String)
+  case class Config(
+    clientId: String,
+    clientSecret: String
+  )
+  case class AccessToken(
+    access_token: String
+  )
+  case class Subscription(
+    accountId: String
+  )
+  case class Publication(       /* Contrast with InvoiceItem                               */
+    publicationDate: LocalDate, /* Date of paper printed on cover                          */
+    invoiceDate: LocalDate,     /* Publication falls on this invoice                       */
+    nextInvoiceDate: LocalDate, /* The invoice on which this publication would be credited */
+    productName: String,        /* For example Newspaper Delivery                          */
+    chargeName: String,         /* For example Sunday                                      */
+    dayOfWeek: DayOfWeek,       /* Strongly typed day of publication                       */
+    price: Double,              /* Charge of single publication                            */
+  )
   case class InvoiceItem(
     id: String,
     subscriptionName: String,

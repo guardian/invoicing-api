@@ -1,7 +1,7 @@
 package com.gu.invoicing.preview
 
 import java.time.{DayOfWeek, LocalDate}
-import java.time.temporal.{ChronoUnit, TemporalAdjusters}
+import java.time.temporal.TemporalAdjusters.next
 import java.time.temporal.ChronoUnit.WEEKS
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 import com.gu.invoicing.preview.Model._
@@ -69,10 +69,20 @@ object Impl {
       .iterator
       .filter(_.subscriptionName == subscriptionName)
       .filterNot(_.productName == "Discounts")
+      .filterNot(isDigitalProduct)
       .filterNot(_.chargeAmount < 0.0)
       .filterNot(v => v.serviceStartDate == v.serviceEndDate)
       .toList
       .sortBy(_.serviceStartDate)
+
+  /** Some products are outright digital (Contribution) and some have a digital component (paper + digital) */
+  def isDigitalProduct(item: InvoiceItem): Boolean = {
+    List(
+      "digi",
+      "contrib",
+      "support",
+    ).exists(item.chargeName.toLowerCase.contains)
+  }
 
   def findNextInvoiceDate(
     items: List[InvoiceItem],
@@ -119,6 +129,12 @@ object Impl {
     }
   }
 
+  /**
+   * Publication is of higher granularity than InvoiceItem. The InvoiceItem is a Zuora model representing a charge
+   * that spans a service period, that is, a billing period, whilst Publication is a Guardian model representing
+   * a single publication on a particular day in a week. For example, a single InvoiceItem of a Sunday Home Delivery
+   * with service period spanning one month actually represents four separate Sunday publications.
+   */
   def splitInvoiceItemIntoPublications(
     invoiceItem: InvoiceItem,
   ): List[Publication] = {
@@ -133,7 +149,7 @@ object Impl {
         publications
       } else {
         loop(
-          currentStart.`with`(TemporalAdjusters.next(day)),
+          currentStart `with` next(day),
           endDateInclusive,
           day,
           Publication(
@@ -169,43 +185,15 @@ object Impl {
       case 25 | 26 => 26 // Semi_annual
       case  3 |  4 => 4  // Month
       case  5 |  6 => 6  // 6 for 6
-      case  v =>
-        warn(s"Double check price per publication for $invoiceItem due to unusual billing period of $weeks weeks")
-        v
+      case  v => log(invoiceItem, s"WARN: Check publication price for unusual billing period of $weeks"); v
     }
-    val approxBillingPeriodInWeeks =
-      roundedWeeks(WEEKS.between(invoiceItem.serviceStartDate, invoiceItem.serviceEndDate.plusDays(1)))
 
+    val approxBillingPeriodInWeeks = roundedWeeks(
+      WEEKS.between( // plus one because between is exclusive on right bound but serviceEndDate is inclusive
+        invoiceItem.serviceStartDate,
+        invoiceItem.serviceEndDate.plusDays(1)
+      )
+    )
     round2Places(invoiceItem.chargeAmount / approxBillingPeriodInWeeks)
-  }
-
-  /**
-   * Unfold publications falling within current invoice period from publications at the head
-   * of the next invoiced period by rewinding back publication date few weeks.
-   *
-   * For example, given 2020-10-28 Wednesday, it will generate 4 previous Wednesday publications
-   * on 21st, 14th, etc.
-   *
-   * This is needed because billing-preview does not generate current invoice period, but there could be
-   * holiday stops requests still within current invoiced period. For such stops which are scheduled for
-   * before next invoiced period, we know that they will always be credited in the next invoice period,
-   * so we do not have to adjust nextInvoiceDate, and instead we just copy and mutate publicationDate.
-   *
-   * Note this method is a sister method to splitInvoiceItemIntoPublications which handles calculation
-   * of publicationDates for issues starting next invoice date (which uses Zuora billing-preview).
-   */
-  @deprecated("In favour of getPastInvoiceItems") def rewind(publications: List[Publication]): List[Publication] = {
-    @tailrec def loop(n: Int, pubs: List[Publication]): List[Publication] = {
-      pubs match {
-        case pub :: t if n > 0 => loop(n - 1, pub.previous :: pubs)
-        case _ => pubs
-      }
-    }
-
-    DayOfWeek.values.toList.flatMap { day =>
-      publications
-        .sortBy(_.publicationDate)
-        .collectFirst { case pub if pub.dayOfWeek == day => loop(4, List(pub)) }
-    }.flatten ++ publications
   }
 }
