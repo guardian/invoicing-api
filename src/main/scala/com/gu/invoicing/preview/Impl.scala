@@ -105,17 +105,6 @@ object Impl {
       .distinct
   }
 
-  def invoiceItemToPublication(item: InvoiceItem): Publication =
-    Publication(
-      item.serviceStartDate,
-      item.serviceEndDate,
-      item.serviceEndDate.plusDays(1),
-      item.productName,
-      item.chargeName,
-      chargeNameToDay(item),
-      pricePerPublication(item),
-    )
-
   def chargeNameToDay(item: InvoiceItem): DayOfWeek = {
     item.chargeName match {
       case _ if isDigitalProduct(item) => throw new RuntimeException(s"Non physical paper products should not be handled: $item")

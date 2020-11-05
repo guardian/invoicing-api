@@ -122,7 +122,7 @@ Resources:
     Properties:
       AlarmName: "URGENT 9-5 - PROD: Failed to preview affected publications within date range"
       AlarmDescription: |
-        - At least holiday-stop-api will not be able to predict which invoice will have the credit
+        - At least holiday-stop-api will not be able to predict which publications should be suspended
         - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/preview/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-preview-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:

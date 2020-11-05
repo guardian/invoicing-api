@@ -19,4 +19,5 @@ deployments:
         - invoicing-api-invoices-
         - invoicing-api-pdf-
         - invoicing-api-nextinvoicedate-
+        - invoicing-api-preview-
     dependencies: [cfn]

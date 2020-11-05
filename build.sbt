@@ -34,10 +34,10 @@ deployAwsLambda := {
   import scala.sys.process._
   assembly.value
   List(
-//    "invoicing-api-refund",
-//    "invoicing-api-invoices",
-//    "invoicing-api-pdf",
-//    "invoicing-api-nextinvoicedate",
+    "invoicing-api-refund",
+    "invoicing-api-invoices",
+    "invoicing-api-pdf",
+    "invoicing-api-nextinvoicedate",
     "invoicing-api-preview",
   ) foreach { name =>
     s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
