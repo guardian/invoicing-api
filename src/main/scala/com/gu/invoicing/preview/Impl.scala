@@ -112,12 +112,13 @@ object Impl {
       item.serviceEndDate.plusDays(1),
       item.productName,
       item.chargeName,
-      chargeNameToDay(item.chargeName),
+      chargeNameToDay(item),
       pricePerPublication(item),
     )
 
-  def chargeNameToDay(name: String): DayOfWeek = {
-    name match {
+  def chargeNameToDay(item: InvoiceItem): DayOfWeek = {
+    item.chargeName match {
+      case _ if isDigitalProduct(item) => throw new RuntimeException(s"Non physical paper products should not be handled: $item")
       case "Monday" => DayOfWeek.MONDAY
       case "Tuesday" => DayOfWeek.TUESDAY
       case "Wednesday" => DayOfWeek.WEDNESDAY
@@ -158,7 +159,7 @@ object Impl {
             nextInvoiceDate = invoiceItem.serviceEndDate.plusDays(1),
             invoiceItem.productName,
             invoiceItem.chargeName,
-            chargeNameToDay(invoiceItem.chargeName),
+            chargeNameToDay(invoiceItem),
             pricePerPublication(invoiceItem),
           ) :: publications
         )
@@ -168,7 +169,7 @@ object Impl {
     loop(
       invoiceItem.serviceStartDate,
       invoiceItem.serviceEndDate,
-      chargeNameToDay(invoiceItem.chargeName),
+      chargeNameToDay(invoiceItem),
       Nil,
     )
   }
