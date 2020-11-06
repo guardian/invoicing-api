@@ -7,3 +7,4 @@ src_managed/
 project/boot/
 project/plugins/project/
 metals.sbt
+.sc

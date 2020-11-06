@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Zuora invoice management such as refunds, downloading PDF invoices, next invoice date
+Description: Zuora invoice management such as refunds, downloading PDF invoices, invoice preview
 
 Parameters:
   Stage:
@@ -116,6 +116,31 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  PreviewAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProd
+    Properties:
+      AlarmName: "URGENT 9-5 - PROD: Failed to preview affected publications within date range"
+      AlarmDescription: |
+        - At least holiday-stop-api will not be able to predict which publications should be suspended
+        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/preview/README.md
+        - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-preview-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PreviewLambda
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # Lambdas
   # ****************************************************************************
@@ -199,6 +224,26 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  PreviewLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Preview affected publications within date range
+      FunctionName: !Sub invoicing-api-preview-${Stage}
+      Code:
+        S3Bucket: membership-dist
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+      Handler: com.gu.invoicing.preview.Lambda::handleRequest
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+      Role: !GetAtt InvoicingLambdaRole.Arn
+      MemorySize: 3008
+      Runtime: java8
+      Timeout: 900
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # API
   # ****************************************************************************
@@ -206,7 +251,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: !Sub invoicing-api-${Stage}
-      Description: Zuora invoice management (refunds, list invoices, download PDF)
+      Description: Zuora invoice management (refunds, list invoices, download PDF, invoice preview)
       BinaryMediaTypes:
         - application/pdf
 
@@ -394,6 +439,50 @@ Resources:
       - NextInvoiceDatePath
 
   # ****************************************************************************
+  # GET /preview/{subscriptionName}?startDate=yyyy-mm-dd&endDate=yyyy-mm-dd
+  # ****************************************************************************
+  PreviewEndpoint: # /preview path
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !GetAtt InvoicingApi.RootResourceId
+      PathPart: preview
+    DependsOn:
+      - InvoicingApi
+
+  PreviewEndpointPath: # {subscriptionName} path parameter
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !Ref PreviewEndpoint
+      PathPart: "{subscriptionName}"
+    DependsOn:
+      - InvoicingApi
+      - PreviewEndpoint
+
+  PreviewEndpointPathGetMethod: # GET verb
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      ApiKeyRequired: true
+      RestApiId: !Ref InvoicingApi
+      ResourceId: !Ref PreviewEndpointPath
+      HttpMethod: GET
+      RequestParameters:
+        method.request.path.subscriptionName: true
+        method.request.querystring.startDate: true
+        method.request.querystring.endDate: true
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PreviewLambda.Arn}/invocations
+    DependsOn:
+      - PreviewLambda
+      - InvoicingApi
+      - PreviewEndpoint
+      - PreviewEndpointPath
+
+  # ****************************************************************************
   # Access control
   # ****************************************************************************
 
@@ -434,6 +523,15 @@ Resources:
     DependsOn:
       - NextInvoiceDateLambda
 
+  PreviewLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !Sub invoicing-api-preview-${Stage}
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - PreviewLambda
+
   InvoicingLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -461,6 +559,7 @@ Resources:
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-invoices-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-pdf-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-nextinvoicedate-${Stage}:log-stream:*
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-preview-${Stage}:log-stream:*
 
         - PolicyName: ReadPrivateCredentials
           PolicyDocument:
