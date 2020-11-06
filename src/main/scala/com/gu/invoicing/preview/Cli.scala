@@ -7,6 +7,7 @@ import Impl._
 import Program._
 import com.gu.invoicing.preview.Model._
 import com.gu.spy._
+import pprint._
 
 /**
  * Create environmental variables with Zuora OAuth credentials:
@@ -15,7 +16,6 @@ import com.gu.spy._
  *   export Config = { "clientId": "******", "clientSecret": "*****"}
  */
 object Cli {
-  def main(args: Array[String]): Unit = {
-    program(PreviewInput("A-S00000000", LocalDate.parse("2020-11-13"), LocalDate.parse("2020-12-25")))
-  }
+  def main(args: Array[String]): Unit =
+    program(PreviewInput("A-S00000000", LocalDate.parse("2020-11-13"), LocalDate.parse("2020-12-25"))) tap(log(_))
 }

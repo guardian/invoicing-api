@@ -58,7 +58,7 @@ object Impl {
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }
       .filter  { _.subscriptionName == subscriptionName }
-      .filter  { _.serviceStartDate >= startDate        }
+      .filter  { i => startDate.inClosedInterval(i.serviceStartDate, i.serviceEndDate) }
       .toList
 
   def collectRelevantInvoiceItems(
