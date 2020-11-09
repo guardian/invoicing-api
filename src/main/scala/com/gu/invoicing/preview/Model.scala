@@ -38,8 +38,14 @@ object Model extends JsonSupport {
   case class AccessToken(
     access_token: String
   )
+  case class RatePlanCharge(
+    originalChargeId: String,
+    price: Double /* Includes tax */
+  )
+  case class RatePlan(ratePlanCharges: List[RatePlanCharge])
   case class Subscription(
-    accountId: String
+    accountId: String,
+    ratePlans: List[RatePlan],
   )
   case class Publication(       /* Contrast with InvoiceItem                               */
     publicationDate: LocalDate, /* Date of paper printed on cover                          */
@@ -48,16 +54,18 @@ object Model extends JsonSupport {
     productName: String,        /* For example Newspaper Delivery                          */
     chargeName: String,         /* For example Sunday                                      */
     dayOfWeek: DayOfWeek,       /* Strongly typed day of publication                       */
-    price: Double,              /* Charge of single publication                            */
+    price: Double,              /* Charge of single publication (including tax)            */
   )
   case class InvoiceItem(
     id: String,
     subscriptionName: String,
     serviceStartDate: LocalDate,
     serviceEndDate: LocalDate,
-    chargeAmount: Double,
+    chargeAmount: Double,         /* Does NOT include tax! */
     productName: String,
     chargeName: String,
+    taxAmount: Double,            /* Not provided by billing-preview but will be available on past invoice items */
+    chargeId: String,             /* We use this to determine chargeAmount including tax from RatePlanCharge */
   )
   case class BillingPreview(
     accountId: String,
@@ -99,7 +107,9 @@ object Model extends JsonSupport {
   // ************************************************************************
   // Codecs
   // ************************************************************************
-  implicit val subscription: ReadWriter[Subscription] = macroRW
+  implicit val ratePlanRW: ReadWriter[RatePlan] = macroRW
+  implicit val ratePlanChargeRW: ReadWriter[RatePlanCharge] = macroRW
+  implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
   implicit val invoiceItem: ReadWriter[InvoiceItem] = macroRW
   implicit val billingPreview: ReadWriter[BillingPreview] = macroRW
   implicit val invoice: ReadWriter[Invoice] = macroRW

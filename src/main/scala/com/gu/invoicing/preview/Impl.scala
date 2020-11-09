@@ -22,6 +22,17 @@ object Impl {
       .accountId
   }
 
+  /* Needed to obtain chargeAmount with tax included as billing-preview is not inclusive of tax */
+  def getRatePlanCharges(subscriptionName: String, startDate: LocalDate) =
+    Http(s"$zuoraApiHost/v1/subscriptions/$subscriptionName?specific-segment&as-of-date=$startDate")
+      .header("Authorization", s"Bearer $accessToken")
+      .asString
+      .body
+      .pipe(read[Subscription](_))
+      .ratePlans
+      .flatMap(_.ratePlanCharges)
+      .filterNot(_.price < 0.0)
+
   def getFutureInvoiceItems(accountId: String, startDate: LocalDate): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
       .header("Authorization", s"Bearer $accessToken")
@@ -186,4 +197,15 @@ object Impl {
     )
     round2Places(invoiceItem.chargeAmount / approxBillingPeriodInWeeks)
   }
+
+  /**
+   * Unfortunately billing-preview does not include tax so as a workaround we obtain the charge amount
+   * from RatePlanCharge which does includes tax.
+   */
+  def addTax(invoiceItem: InvoiceItem, ratePlanCharges: List[RatePlanCharge]): InvoiceItem =
+    ratePlanCharges
+      .find(_.originalChargeId == invoiceItem.chargeId)
+      .map(_.price)
+      .getOrElse(throw new RuntimeException(s"Failed to determine price including tax for $invoiceItem from $ratePlanCharges"))
+      .pipe(priceWithTax => invoiceItem.copy(chargeAmount = priceWithTax, taxAmount = priceWithTax - invoiceItem.taxAmount))
 }
