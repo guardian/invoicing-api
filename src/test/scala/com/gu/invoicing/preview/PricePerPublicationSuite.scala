@@ -14,6 +14,8 @@ class PricePerPublicationSuite extends munit.FunSuite {
       6.000000000,
       "Guardian Weekly - Domestic",
       "GW Oct 18 - First 6 issues - Domestic",
+      0.0,
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 1.0)
   }
@@ -26,6 +28,8 @@ class PricePerPublicationSuite extends munit.FunSuite {
       37.500000000,
       "Guardian Weekly - Domestic",
       "GW Oct 18 - Quarterly - Domestic",
+      0.0,
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 2.89)
   }
@@ -38,6 +42,8 @@ class PricePerPublicationSuite extends munit.FunSuite {
       8.16,
       "Newspaper Delivery",
       "Friday",
+      0.0,
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 2.04)
   }
