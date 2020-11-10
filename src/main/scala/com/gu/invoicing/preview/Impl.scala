@@ -31,7 +31,7 @@ object Impl {
       .pipe(read[Subscription](_))
       .ratePlans
       .flatMap(_.ratePlanCharges)
-      .filterNot(_.price < 0.0)
+      .filter(_.price > 0.0)
 
   def getFutureInvoiceItems(accountId: String, startDate: LocalDate): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
