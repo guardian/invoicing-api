@@ -55,7 +55,10 @@ object Model extends JsonSupport {
     chargeName: String,         /* For example Sunday                                      */
     dayOfWeek: DayOfWeek,       /* Strongly typed day of publication                       */
     price: Double,              /* Charge of single publication (including tax)            */
-  )
+    invoiceItemId: String,      /* InvoiceItem associated with this publication            */
+  ) {
+    require(publicationDate.getDayOfWeek == dayOfWeek, s"publicationDate should match dayOfWeek: $this")
+  }
   case class InvoiceItem(
     id: String,
     subscriptionName: String,
