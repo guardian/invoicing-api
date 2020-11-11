@@ -14,13 +14,14 @@ object Program { /** Main business logic */
     val PreviewInput(subscriptionName, start, end) = input
     val accountId             = getAccountId(subscriptionName)
     val ratePlanCharges       = getRatePlanCharges(subscriptionName, start)
-    val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start)
-    val futureInvoiceItems    = getFutureInvoiceItems(accountId, start)
-    val allInvoiceItems       = pastInvoiceItems ++ futureInvoiceItems
-    val invoiceItems          = collectRelevantInvoiceItems(subscriptionName, allInvoiceItems)
-    val itemsWithTax          = invoiceItems.map(addTax(_, ratePlanCharges))
-    val nextInvoiceDate       = findNextInvoiceDate(itemsWithTax)
-    val publications          = itemsWithTax.flatMap(splitInvoiceItemIntoPublications)
+    val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start).map(addTaxToPastInvoiceItems)
+    val futureInvoiceItems    = getFutureInvoiceItems(accountId, start).map(addTaxToFutureInvoiceItems(_, ratePlanCharges))
+    val pastItemsWithTax      = pastInvoiceItems.map(addTaxToPastInvoiceItems)
+    val futureItemsWithTax    = futureInvoiceItems.map(addTaxToFutureInvoiceItems(_, ratePlanCharges))
+    val allItemsWithTax       = pastItemsWithTax ++ futureItemsWithTax
+    val invoiceItems          = collectRelevantInvoiceItems(subscriptionName, allItemsWithTax)
+    val nextInvoiceDate       = findNextInvoiceDate(invoiceItems)
+    val publications          = invoiceItems.flatMap(splitInvoiceItemIntoPublications)
     val affectedPublications  = findAffectedPublicationsWithRange(publications, start, end)
     PreviewOutput(subscriptionName, nextInvoiceDate, start, end, affectedPublications)
   }
