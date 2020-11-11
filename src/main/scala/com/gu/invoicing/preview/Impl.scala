@@ -170,17 +170,17 @@ object Impl {
 
 
     // This is needed because first publication date might not fall exactly on serviceStartDate
-    val initDay = chargeNameToDay(invoiceItem)
-    val initPubDate =
-      if (invoiceItem.serviceStartDate.getDayOfWeek == initDay)
+    val publicationDayOfWeek = chargeNameToDay(invoiceItem)
+    val firstPublicationDateInPeriod =
+      if (invoiceItem.serviceStartDate.getDayOfWeek == publicationDayOfWeek)
         invoiceItem.serviceStartDate
       else
-        invoiceItem.serviceStartDate `with` initDay
+        invoiceItem.serviceStartDate `with` next(publicationDayOfWeek)
 
     loop(
-      initPubDate,
+      firstPublicationDateInPeriod,
       invoiceItem.serviceEndDate,
-      initDay,
+      publicationDayOfWeek,
       Nil,
     )
   }
