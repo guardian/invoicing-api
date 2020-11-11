@@ -162,15 +162,25 @@ object Impl {
             invoiceItem.chargeName,
             chargeNameToDay(invoiceItem),
             pricePerPublication(invoiceItem),
+            invoiceItem.id,
           ) :: publications
         )
       }
     }
 
+
+    // This is needed because first publication date might not fall exactly on serviceStartDate
+    val initDay = chargeNameToDay(invoiceItem)
+    val initPubDate =
+      if (invoiceItem.serviceStartDate.getDayOfWeek == initDay)
+        invoiceItem.serviceStartDate
+      else
+        invoiceItem.serviceStartDate `with` initDay
+
     loop(
-      invoiceItem.serviceStartDate,
+      initPubDate,
       invoiceItem.serviceEndDate,
-      chargeNameToDay(invoiceItem),
+      initDay,
       Nil,
     )
   }
