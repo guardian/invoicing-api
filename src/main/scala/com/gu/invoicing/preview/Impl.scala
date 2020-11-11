@@ -51,6 +51,7 @@ object Impl {
       .body
       .pipe(read[BillingPreview](_))
       .invoiceItems
+      .filter(_.chargeAmount > 0.0)
   }
 
   def getPastInvoiceItems(
@@ -202,10 +203,21 @@ object Impl {
    * Unfortunately billing-preview does not include tax so as a workaround we obtain the charge amount
    * from RatePlanCharge which does includes tax.
    */
-  def addTax(invoiceItem: InvoiceItem, ratePlanCharges: List[RatePlanCharge]): InvoiceItem =
+  def addTaxToFutureInvoiceItems(invoiceItem: InvoiceItem, ratePlanCharges: List[RatePlanCharge]): InvoiceItem =
     ratePlanCharges
       .find(_.originalChargeId == invoiceItem.chargeId)
       .map(_.price)
       .getOrElse(throw new RuntimeException(s"Failed to determine price including tax for $invoiceItem from $ratePlanCharges"))
       .pipe(priceWithTax => invoiceItem.copy(chargeAmount = priceWithTax, taxAmount = priceWithTax - invoiceItem.taxAmount))
+
+  /**
+   * Past InvoiceItems come from past invoices for which Zuora does provide taxAmount
+   * (unlike for InvoiceItems from billing-preview). We have to do this because originalChargeId
+   * might mutate in the future so some elements of List[RatePlanCharge] might not be mappable to old
+   * InvoiceItems.
+   */
+  def addTaxToPastInvoiceItems(invoiceItem: InvoiceItem): InvoiceItem =
+    invoiceItem.copy(chargeAmount = invoiceItem.chargeAmount + invoiceItem.taxAmount)
+
+
 }
