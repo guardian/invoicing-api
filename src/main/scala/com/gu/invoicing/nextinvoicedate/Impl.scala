@@ -32,7 +32,6 @@ object Impl {
       .method("POST")
       .asString
       .body
-      .tap(println)
       .pipe(read[BillingPreview](_))
       .invoiceItems
   }

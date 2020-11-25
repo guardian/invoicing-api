@@ -10,3 +10,4 @@ docker run -v "$(pwd -P)/target/scala-2.13":/tmp/target -v "$(pwd -P)/dist":/tmp
 rm invoicing-api-native-linux.zip
 zip -r -j invoicing-api-native-linux.zip dist/*
 
+6
