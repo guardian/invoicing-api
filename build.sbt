@@ -1,5 +1,8 @@
 lazy val root = (project in file("."))
-  .enablePlugins(RiffRaffArtifact)
+  .enablePlugins(
+    RiffRaffArtifact,
+    NativeImagePlugin,
+  )
   .settings(
     name := "invoicing-api",
     description := "Zuora Invoice management for supporters (refund, etc.)",
@@ -24,7 +27,13 @@ lazy val root = (project in file("."))
     riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml"),
     scalacOptions ++= Seq(
       "-Xasync"
-    )
+    ),
+    Compile / mainClass := Some("bootstrap"),
+    nativeImageOptions ++= Seq(
+      "--enable-http",
+      "--enable-https",
+      "--no-fallback",
+    ),
   )
 
 lazy val deployAwsLambda = inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")

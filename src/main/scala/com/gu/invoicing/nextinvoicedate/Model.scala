@@ -29,8 +29,7 @@ object Model extends JsonSupport {
 
   case class SubscriptionName(subscriptionName: String)
   case class ApiGatewayInput(
-    pathParameters: SubscriptionName,
-    headers: Map[String, String]
+    pathParameters: SubscriptionName
   )
   case class NextInvoiceDateInput(subscriptionName: String)
   object NextInvoiceDateInput {
