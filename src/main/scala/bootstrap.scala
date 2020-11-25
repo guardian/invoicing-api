@@ -84,21 +84,17 @@ object bootstrap extends upickle.AttributeTagged {
       println(sys.env("AWS_LAMBDA_RUNTIME_API"))
       println(sys.env("_HANDLER"))
       println(r.body)
-      val result = com.gu.invoicing.nextinvoicedate.Lambda.handleRequest(r.body)
-      println(s"ratatata = $result")
-      val requestEvent = r.body.pipe(read[RequestEvent](_))
-      val statusCode = for {
-        deadlineMs <- getRequiredHeader(r, "lambda-runtime-deadline-ms").map(_.toLong)
-        requestId <- getRequiredHeader(r, "lambda-runtime-aws-request-id")
-        statusCode = handleRequest(runtimeApiHost, requestEvent, requestId, deadlineMs)
-      } yield statusCode
-
-      if (statusCode.isEmpty) {
-        Console.err.println(s"Could not handle event: $r")
+      val requestId = r.header("lambda-runtime-aws-request-id").getOrElse(throw new RuntimeException("Missing lambda-runtime-aws-request-id. Fix ASAP!"))
+      println(s"requestId = $requestId")
+      val result = sys.env("_HANDLER") match {
+        case "com.gu.invoicing.nextinvoicedate.Lambda::handleRequest" => com.gu.invoicing.nextinvoicedate.Lambda.handleRequest(r.body)
+        case handler => throw new RuntimeException(s"Unknown function handler in custom runtime: $handler")
       }
+      println(s"ratatata = $result")
+      val awsRuntimeResult = Http(getResponseUrl(runtimeApiHost, requestId)).postData(result).asString
+      println(s"awsRuntimeResult = $awsRuntimeResult")
     }
   }
-
 
   // Retrieve the specified header from the response. If not available, report the header as missing
   def getRequiredHeader(nextEventResponse: HttpResponse[String], header: String): Option[String] = {
