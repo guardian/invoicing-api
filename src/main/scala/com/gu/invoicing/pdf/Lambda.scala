@@ -19,7 +19,7 @@ import com.gu.spy._
  * }
  */
 object Lambda {
-  def handleRequest(input: InputStream, output: OutputStream): Unit =
+  def handleRequest(input: String): String =
     input
       .pipe { read[ApiGatewayInput](_) }
       .pipe { PdfInput.apply }
@@ -27,6 +27,4 @@ object Lambda {
       .pipe { program }
       .pipe { ApiGatewayOutput(200, _, true, Map("Content-Type" -> "application/pdf;charset=UTF-8") ++ noCache ) }
       .pipe { write(_) }
-      .pipe { _.getBytes }
-      .pipe { output.write }
 }

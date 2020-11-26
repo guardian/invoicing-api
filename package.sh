@@ -1,10 +1,10 @@
 targetDir=target/scala-2.13
 
 echo "
-  FROM oracle/graalvm-ce:20.2.0-java11-ol8
+  FROM oracle/graalvm-ce:20.3.0-java11
   RUN gu install native-image
   WORKDIR /${targetDir}
-  CMD native-image -jar invoicing-api.jar --enable-url-protocols=https,http --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime --initialize-at-build-time=scala.runtime.Statics$VM bootstrap
+  CMD native-image -jar invoicing-api.jar --enable-url-protocols=https,http --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime bootstrap
 " | docker build -f - --tag linux-native-image .
 docker run -v "$(pwd -P)/${targetDir}":/${targetDir} linux-native-image
 if [ $? -ne 0 ]; then
