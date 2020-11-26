@@ -1,9 +1,13 @@
 #!/bin/sh
 # Compiles to Java classes, builds a jar, and then compiles to a native Linux executable
 
-set -e
+targetDir=target/scala-2.13
 
-sbt clean assembly
-docker build -f linuxbuild.dockerfile -t linuxbuild .
-docker run -v "$(pwd -P)/target/scala-2.13":/target/scala-2.13 linuxbuild
-zip -r -j target/scala-2.13/invoicing-api-native-linux.zip target/scala-2.13/bootstrap
+echo "
+  FROM oracle/graalvm-ce
+  RUN gu install native-image
+  WORKDIR /${targetDir}
+  CMD native-image -jar invoicing-api.jar --enable-url-protocols=https,http --no-fallback --allow-incomplete-classpath bootstrap
+" | docker build -f - --tag linux-native-image .
+docker run -v "$(pwd -P)/${targetDir}":/${targetDir} linux-native-image
+zip -r -j ${targetDir}/invoicing-api.zip ${targetDir}/bootstrap
