@@ -3,11 +3,7 @@
 
 set -e
 
-mkdir -p dist
 sbt clean assembly
 docker build -f linuxbuild.dockerfile -t linuxbuild .
-docker run -v "$(pwd -P)/target/scala-2.13":/tmp/target -v "$(pwd -P)/dist":/tmp/dist linuxbuild
-rm invoicing-api-native-linux.zip
-zip -r -j invoicing-api-native-linux.zip dist/*
-
-6
+docker run -v "$(pwd -P)/target/scala-2.13":/target/scala-2.13 linuxbuild
+zip -r -j target/scala-2.13/invoicing-api-native-linux.zip target/scala-2.13/bootstrap
