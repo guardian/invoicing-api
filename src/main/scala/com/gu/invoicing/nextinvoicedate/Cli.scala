@@ -14,6 +14,6 @@ import com.gu.spy._
  */
 object Cli {
   def main(args: Array[String]): Unit = {
-    program(NextInvoiceDateInput("A-S00115658"))
+    program(NextInvoiceDateInput("A-S00000000"))
   }
 }

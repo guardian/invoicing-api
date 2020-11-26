@@ -16,7 +16,6 @@ import scala.util.chaining._
 
 object Program { /** Main business logic */
   def program(input: NextInvoiceDateInput): NextInvoiceDateOutput = retryUnsafe {
-    println("holy macaroni!")
     val NextInvoiceDateInput(subscriptionName) = input
     val accountId           = getAccountId(subscriptionName)
     val allInvoiceItems     = getBillingPreview(accountId)

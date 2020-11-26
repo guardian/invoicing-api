@@ -54,13 +54,13 @@ object bootstrap {
       .tap { response => assert(response.header("lambda-runtime-aws-request-id").isDefined) }
   }
 
-  // https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-response
   private def getRequestId(invocationEvent: HttpResponse[String]): String = {
     invocationEvent
       .header("lambda-runtime-aws-request-id")
       .getOrElse(throw new RuntimeException("Missing lambda-runtime-aws-request-id. Fix ASAP!"))
   }
 
+  // https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-response
   private def postInvocationResult(requestId: String, output: String): Unit = {
     Http(s"$customRuntimeUrl/$requestId/response")
       .postData(output)
