@@ -12,7 +12,7 @@ deployments:
     type: aws-lambda
     parameters:
       bucket: membership-dist
-      fileName: invoicing-api.jar
+      fileName: invoicing-api.zip
       prefixStack: false
       functionNames:
         - invoicing-api-refund-

@@ -22,6 +22,15 @@ object bootstrap {
       case "com.gu.invoicing.nextinvoicedate.Lambda::handleRequest" =>
         com.gu.invoicing.nextinvoicedate.Lambda.handleRequest(input)
 
+      case "com.gu.invoicing.preview.Lambda::handleRequest" =>
+        com.gu.invoicing.preview.Lambda.handleRequest(input)
+
+      case "com.gu.invoicing.invoice.Lambda::handleRequest" =>
+        com.gu.invoicing.invoice.Lambda.handleRequest(input)
+
+      case "com.gu.invoicing.refund.Lambda::handleRequest" =>
+        com.gu.invoicing.refund.Lambda.handleRequest(input)
+
       case unknownHandler =>
         throw new RuntimeException(s"Unknown function handler in custom runtime: $unknownHandler")
     }

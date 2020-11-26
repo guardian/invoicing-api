@@ -17,28 +17,17 @@ import scala.util.chaining._
  * }
  */
 object Lambda {
-  def handleRequest(input: InputStream, output: OutputStream): Unit = {
+  def handleRequest(input: String): String = {
     input
-      .pipe { deserialiseStream    }
+      .pipe { read[ApiGatewayInput](_) }
+      .headers
+      .getOrElse("x-identity-id", throw new Error("x-identity-id header should be provided"))
+      .pipe { InvoicesInput }
       .tap  { info[InvoicesInput]  }
       .pipe { program              }
       .pipe { Await.result(_, Inf) }
       .tap  { info[InvoicesOutput] }
-      .pipe { serialiseToStream    }
-
-    def deserialiseStream(inputStream: InputStream): InvoicesInput = {
-      inputStream
-        .pipe { read[ApiGatewayInput](_) }
-        .headers
-        .getOrElse("x-identity-id", throw new Error("x-identity-id header should be provided"))
-        .pipe { InvoicesInput }
-    }
-    def serialiseToStream(invoicesOutput: InvoicesOutput): Unit  = {
-      invoicesOutput
-        .pipe { invoicesOut => ApiGatewayOutput(200, write(invoicesOut)) }
-        .pipe { apiGatewayOut => write(apiGatewayOut) }
-        .pipe { _.getBytes }
-        .pipe { output.write }
-    }
+      .pipe { invoicesOut => ApiGatewayOutput(200, write(invoicesOut)) }
+      .pipe { apiGatewayOut => write(apiGatewayOut) }
   }
 }

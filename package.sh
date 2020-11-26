@@ -1,6 +1,3 @@
-#!/bin/sh
-# Compiles to Java classes, builds a jar, and then compiles to a native Linux executable
-
 targetDir=target/scala-2.13
 
 echo "

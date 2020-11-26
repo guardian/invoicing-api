@@ -151,7 +151,7 @@ Resources:
       FunctionName: !Sub invoicing-api-refund-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
       Handler: com.gu.invoicing.refund.Lambda::handleRequest
       Environment:
         Variables:
@@ -159,7 +159,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: java8
+      Runtime: provided
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -171,7 +171,7 @@ Resources:
       FunctionName: !Sub invoicing-api-invoices-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
       Handler: com.gu.invoicing.invoice.Lambda::handleRequest
       Environment:
         Variables:
@@ -179,7 +179,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: java8
+      Runtime: provided
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -191,7 +191,7 @@ Resources:
       FunctionName: !Sub invoicing-api-pdf-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
       Handler: com.gu.invoicing.pdf.Lambda::handleRequest
       Environment:
         Variables:
@@ -199,7 +199,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: java8
+      Runtime: provided
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -211,7 +211,7 @@ Resources:
       FunctionName: !Sub invoicing-api-nextinvoicedate-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
       Handler: com.gu.invoicing.nextinvoicedate.Lambda::handleRequest
       Environment:
         Variables:
@@ -219,7 +219,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: java8
+      Runtime: provided
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -231,7 +231,7 @@ Resources:
       FunctionName: !Sub invoicing-api-preview-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
       Handler: com.gu.invoicing.preview.Lambda::handleRequest
       Environment:
         Variables:
@@ -239,7 +239,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: java8
+      Runtime: provided
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
