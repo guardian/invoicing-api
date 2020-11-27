@@ -1,5 +1,5 @@
 lazy val root = (project in file("."))
-  .enablePlugins(RiffRaffArtifact)
+  .enablePlugins(RiffRaffArtifact, NativeImagePlugin)
   .settings(
     name := "invoicing-api",
     description := "Zuora Invoice management for supporters (refund, etc.)",
@@ -26,6 +26,11 @@ lazy val root = (project in file("."))
       "-Xasync"
     ),
     Compile / mainClass := Some("bootstrap"), // AWS custom runtime entry point
+    nativeImageOptions ++= Seq(
+      "--enable-http",
+      "--enable-https",
+      "--no-fallback",
+    ),
   )
 
 lazy val deployAwsLambda = inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
@@ -45,8 +50,4 @@ deployAwsLambda := {
   }
 }
 
-lazy val packageNativeAwsImage = inputKey[Unit]("Build GraalVM native image and package in AWS custom runtime format")
-packageNativeAwsImage := {
-  import scala.sys.process._
-  s"sh ${baseDirectory.value}/package.sh" !
-}
+addCommandAlias("packageNativeAwsImage", "nativeImageCopy target/scala-2.13/bootstrap")
