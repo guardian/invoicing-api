@@ -20,7 +20,7 @@ import com.gu.spy._
  * }
  */
 object Lambda {
-  def handleRequest(input: InputStream, output: OutputStream): Unit =
+  def handleRequest(input: String): String =
     input
       .pipe { read[ApiGatewayInput](_) }
       .pipe { PreviewInput.apply }
@@ -29,6 +29,4 @@ object Lambda {
       .tap  { info[PreviewOutput] }
       .pipe { invoiceDateOutput => ApiGatewayOutput(200, write(invoiceDateOutput)) }
       .pipe { write(_) }
-      .pipe { _.getBytes }
-      .pipe { output.write }
 }

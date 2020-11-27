@@ -16,15 +16,16 @@ lazy val root = (project in file("."))
       "com.lihaoyi"            %% "pprint"       % "0.6.0",
 ),
     testFrameworks += new TestFramework("munit.Framework"),
-    assemblyJarName := "invoicing-api.jar",
-    riffRaffPackageType := assembly.value,
+    assemblyJarName := s"${name.value}.jar",
+    riffRaffPackageType := crossTarget.value / s"${name.value}.zip",
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := "support:invoicing-api",
     riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml"),
     scalacOptions ++= Seq(
       "-Xasync"
-    )
+    ),
+    Compile / mainClass := Some("bootstrap"), // AWS custom runtime entry point
   )
 
 lazy val deployAwsLambda = inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
@@ -40,6 +41,12 @@ deployAwsLambda := {
     "invoicing-api-nextinvoicedate",
     "invoicing-api-preview",
   ) foreach { name =>
-    s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.jar --profile membership --region eu-west-1".!
+    s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.zip --profile membership --region eu-west-1".!
   }
+}
+
+lazy val packageNativeAwsImage = inputKey[Unit]("Build GraalVM native image and package in AWS custom runtime format")
+packageNativeAwsImage := {
+  import scala.sys.process._
+  s"sh ${baseDirectory.value}/package.sh" !
 }
