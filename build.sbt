@@ -33,21 +33,25 @@ lazy val root = (project in file("."))
     ),
   )
 
+/** This uses Docker to enable building a linux image from any platform */
 lazy val deployAwsLambda = inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
 deployAwsLambda := {
   import complete.DefaultParsers._
   val stage = (Space ~> StringBasic).examples("<DEV | CODE | PROD>").parsed
+  val lambdaNativeZip = s"""${crossTarget.value}/${name.value}.zip"""  /* target/scala-2.13/invoicing-api.zip */
   import scala.sys.process._
-  assembly.value
-  List(
-    "invoicing-api-refund",
-    "invoicing-api-invoices",
-    "invoicing-api-pdf",
-    "invoicing-api-nextinvoicedate",
-    "invoicing-api-preview",
-  ) foreach { name =>
-    s"aws lambda update-function-code --function-name $name-$stage --zip-file fileb://target/scala-2.13/invoicing-api.zip --profile membership --region eu-west-1".!
-  }
+  def updateLambda(functionName: String) =
+    s"aws lambda update-function-code --function-name $functionName-$stage --zip-file fileb://$lambdaNativeZip --profile membership --region eu-west-1"
+
+  """docker build -t invoicing-api ."""
+    .#&&(s"""docker run -v ${baseDirectory.value}:/invoicing-api invoicing-api""")
+    .#&&(s"""zip -r -j $lambdaNativeZip ${crossTarget.value}/bootstrap""")
+    .#&&(updateLambda("invoicing-api-refund"))
+    .#&&(updateLambda("invoicing-api-invoices"))
+    .#&&(updateLambda("invoicing-api-pdf"))
+    .#&&(updateLambda("invoicing-api-nextinvoicedate"))
+    .#&&(updateLambda("invoicing-api-preview"))
+    .!
 }
 
 addCommandAlias("packageNativeAwsImage", "nativeImageCopy target/scala-2.13/bootstrap")
