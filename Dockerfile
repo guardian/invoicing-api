@@ -2,15 +2,15 @@
 FROM oracle/graalvm-ce:20.2.0-java11
 
 # Intended for: zip -r -j target/scala-2.13/invoicing-api.zip target/scala-2.13/bootstrap
-RUN yum -y install zip
+RUN yum -y install zip unzip
 
-# Install sbt and coursier via www.scala-lang.org/2020/06/29/one-click-install.html
-RUN curl -Lo /opt/cs https://git.io/coursier-cli-linux && chmod +x opt/cs
-RUN ./opt/cs setup --yes
-ENV PATH="/root/.local/share/coursier/bin:$PATH"
+# Install sbt
+RUN set -x \
+  && SBT_VER="1.4.4" \
+  && curl -Ls https://github.com/sbt/sbt/releases/download/v${SBT_VER}/sbt-$SBT_VER.tgz > /opt/sbt-${SBT_VER}.tgz \
+  && tar -zxf /opt/sbt-${SBT_VER}.tgz -C /opt
 
-# Manage JVM with coursier
-RUN cs java-home --jvm graalvm-java11:20.2.0
+ENV PATH="/opt/sbt/bin:$PATH"
 
 # Intended for: docker run -v "$(pwd -P)":/invoicing-api invoicing-api
 WORKDIR /invoicing-api
