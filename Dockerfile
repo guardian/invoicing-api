@@ -8,6 +8,7 @@ RUN yum -y install zip unzip
 RUN set -x \
   && SBT_VER="1.4.4" \
   && curl -Ls https://github.com/sbt/sbt/releases/download/v${SBT_VER}/sbt-$SBT_VER.tgz > /opt/sbt-${SBT_VER}.tgz \
+  && echo "2efae0876119af7bfce8b3621b43b08c51381352916ac9de6156b1251ec26d45 /opt/sbt-${SBT_VER}.tgz" | sha256sum --check \
   && tar -zxf /opt/sbt-${SBT_VER}.tgz -C /opt
 
 ENV PATH="/opt/sbt/bin:$PATH"
