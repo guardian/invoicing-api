@@ -1,8 +1,9 @@
 package com.gu.invoicing.preview
 
-import java.time.LocalDate
+import java.time.{DayOfWeek, LocalDate}
 import com.gu.invoicing.preview.Model._
 import com.gu.invoicing.preview.Impl._
+import scala.io.Source
 
 class PricePerPublicationSuite extends munit.FunSuite {
   test("Guardian Weekly 6 for 6 per publication price should be predicted") {
@@ -46,5 +47,39 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 2.04)
+  }
+
+  test("Publication price should take into account any percentage discounts") {
+    val raw = Source.fromResource("preview/apply-discount-to-publication-price.json").getLines().mkString
+    val publication = Publication(
+      publicationDate = LocalDate.parse("2021-01-08"),
+      LocalDate.parse("2021-01-08"),
+      LocalDate.parse("2022-01-08"),
+      "Guardian Weekly - Domestic",
+      "GW Oct 18 - Annual - Domestic",
+      DayOfWeek.FRIDAY,
+      price = 5.77,
+      ""
+    )
+    val allRatePlanCharges = read[Subscription](raw).ratePlans.flatMap(_.ratePlanCharges)
+    val actualDiscountedPrice = applyAnyDiscounts(allRatePlanCharges, publication).price
+    assertEquals(actualDiscountedPrice, expected = 5.2)
+  }
+
+  test("Publication price should not change if there are no percentage discounts") {
+    val raw = Source.fromResource("preview/no-percentage-discount-should-not-change-price.json").getLines().mkString
+    val publication = Publication(
+      publicationDate = LocalDate.parse("2021-01-08"),
+      LocalDate.parse("2021-01-08"),
+      LocalDate.parse("2022-01-08"),
+      "Guardian Weekly - Domestic",
+      "GW Oct 18 - Annual - Domestic",
+      DayOfWeek.FRIDAY,
+      price = 5.77,
+      ""
+    )
+    val allRatePlanCharges = read[Subscription](raw).ratePlans.flatMap(_.ratePlanCharges)
+    val actualDiscountedPrice = applyAnyDiscounts(allRatePlanCharges, publication).price
+    assertEquals(actualDiscountedPrice, expected = 5.77)
   }
 }

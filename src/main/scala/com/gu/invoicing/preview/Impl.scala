@@ -23,7 +23,7 @@ object Impl {
   }
 
   /* Needed to obtain chargeAmount with tax included as billing-preview is not inclusive of tax */
-  def getRatePlanCharges(subscriptionName: String, startDate: LocalDate) =
+  def getRatePlanCharges(subscriptionName: String, startDate: LocalDate): List[RatePlanCharge] =
     Http(s"$zuoraApiHost/v1/subscriptions/$subscriptionName?specific-segment&as-of-date=$startDate")
       .header("Authorization", s"Bearer $accessToken")
       .asString
@@ -31,7 +31,38 @@ object Impl {
       .pipe(read[Subscription](_))
       .ratePlans
       .flatMap(_.ratePlanCharges)
-      .filter(_.price > 0.0)
+
+  /** Calculate publication price by taking into account potential discounts, otherwise return original price */
+  def applyAnyDiscounts(ratePlanCharges: List[RatePlanCharge], publication: Publication): Publication = {
+    import scala.math._
+
+    def round2Places(d: Double): Double = BigDecimal(d).setScale(2, RoundingMode.UP).toDouble
+
+    def isActiveDiscount(start: LocalDate, end: LocalDate): Boolean =
+      (start.isEqual(publication.publicationDate) || start.isBefore(publication.publicationDate)) && end.isAfter(publication.publicationDate)
+
+    val discounts: List[Double] =
+      ratePlanCharges
+        .filter(_.model.contains("DiscountPercentage")) // this excludes holiday/delivery FlatFee credits
+        .map(rpc => (rpc.discountPercentage, rpc.effectiveStartDate, rpc.effectiveEndDate))
+        .collect { case (percent, start, end) if percent.isDefined && isActiveDiscount(start, end) => percent }
+        .flatten
+        .map(_ / 100)
+
+    def verify(discountedPublicationPrice: Double): Double = {
+      discountedPublicationPrice
+        .tap(v => assert(abs(v) <= abs(publication.price), "Discounted publication price should not be more than un-discounted"))
+        .tap(v => assert(v.toString.dropWhile(_ != '.').tail.length <= 2, "Publication price should have up to two decimal places"))
+        .tap(v => assert(abs(v) < 10.0, "Publication price should not go beyond maximum bound"))
+        .tap(v => if (discounts.isEmpty) assert(v == publication.price, "Publication price should not be affected if there are no discounts"))
+    }
+
+    discounts
+      .foldLeft(publication.price) { case (acc, next) => acc * (1 - next) }
+      .pipe(round2Places)
+      .pipe(verify)
+      .pipe(discountedPublicationPrice => publication.copy(price = discountedPublicationPrice))
+  }
 
   def getFutureInvoiceItems(accountId: String, startDate: LocalDate): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")

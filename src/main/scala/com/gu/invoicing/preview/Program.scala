@@ -8,21 +8,28 @@ import pprint._
 
 /**
  * Split (paper) invoice items in any date range into higher granularity publications.
+ *
+ * Implementation has to account for
+ *   - billing-preview not returning past invoice items
+ *   - billing-preview not returning price with tax
+ *   - any active percentage discounts
  */
 object Program { /** Main business logic */
   def program(input: PreviewInput): PreviewOutput = retryUnsafe {
     val PreviewInput(subscriptionName, start, end) = input
     val accountId             = getAccountId(subscriptionName)
-    val ratePlanCharges       = getRatePlanCharges(subscriptionName, start)
+    val allRatePlanCharges    = getRatePlanCharges(subscriptionName, start)
+    val paidRatePlanCharges   = allRatePlanCharges.filter(_.price > 0.0)
     val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start).map(addTaxToPastInvoiceItems)
-    val futureInvoiceItems    = getFutureInvoiceItems(accountId, start).map(addTaxToFutureInvoiceItems(_, ratePlanCharges))
+    val futureInvoiceItems    = getFutureInvoiceItems(accountId, start).map(addTaxToFutureInvoiceItems(_, paidRatePlanCharges))
     val pastItemsWithTax      = pastInvoiceItems.map(addTaxToPastInvoiceItems)
-    val futureItemsWithTax    = futureInvoiceItems.map(addTaxToFutureInvoiceItems(_, ratePlanCharges))
+    val futureItemsWithTax    = futureInvoiceItems.map(addTaxToFutureInvoiceItems(_, paidRatePlanCharges))
     val allItemsWithTax       = pastItemsWithTax ++ futureItemsWithTax
     val invoiceItems          = collectRelevantInvoiceItems(subscriptionName, allItemsWithTax)
     val nextInvoiceDate       = findNextInvoiceDate(invoiceItems)
     val publications          = invoiceItems.flatMap(splitInvoiceItemIntoPublications)
     val affectedPublications  = findAffectedPublicationsWithRange(publications, start, end)
-    PreviewOutput(subscriptionName, nextInvoiceDate, start, end, affectedPublications)
+    val discountedPubs        = affectedPublications.map(applyAnyDiscounts(allRatePlanCharges, _))
+    PreviewOutput(subscriptionName, nextInvoiceDate, start, end, discountedPubs)
   }
 }
