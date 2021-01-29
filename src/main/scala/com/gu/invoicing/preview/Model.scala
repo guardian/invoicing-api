@@ -40,7 +40,11 @@ object Model extends JsonSupport {
   )
   case class RatePlanCharge(
     originalChargeId: String,
-    price: Double /* Includes tax */
+    price: Double /* Includes tax */,
+    discountPercentage: Option[Double],
+    effectiveStartDate: LocalDate,
+    effectiveEndDate: LocalDate,
+    model: Option[String], /* Used to determine discounts DiscountPercentage */
   )
   case class RatePlan(ratePlanCharges: List[RatePlanCharge])
   case class Subscription(
