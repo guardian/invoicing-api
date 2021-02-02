@@ -72,7 +72,7 @@ object Impl {
         s"""
            |{
            |    "accountId": "$accountId",
-           |    "targetDate": "${startDate.plusMonths(13)}",
+           |    "targetDate": "${startDate.plusYears(3)}",
            |    "assumeRenewal": "Autorenew"
            |}
            |""".stripMargin
@@ -88,7 +88,8 @@ object Impl {
   def getPastInvoiceItems(
     account: String,
     subscriptionName: String,
-    startDate: LocalDate
+    startDate: LocalDate,
+    endDate: LocalDate,
   ): List[InvoiceItem] =
     Http(s"$zuoraApiHost/v1/transactions/invoices/accounts/$account")
       .header("Authorization", s"Bearer ${accessToken}")
@@ -101,8 +102,9 @@ object Impl {
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }
       .filter  { _.subscriptionName == subscriptionName }
-      .filter  { item => startDate.inClosedInterval(item.serviceStartDate, item.serviceEndDate) }
+      .filter  { item => List(item.serviceStartDate, item.serviceEndDate).exists(_.inClosedInterval(startDate, endDate)) }
       .toList
+      .sortBy(_.serviceStartDate)
 
   def collectRelevantInvoiceItems(
     subscriptionName: String,
