@@ -133,12 +133,12 @@ object Impl {
   def findNextInvoiceDate(
     items: List[InvoiceItem],
     today: LocalDate = LocalDate.now()
-  ): Option[LocalDate] =
+  ): Option[LocalDate] = {
     items
-      .filter(_.serviceStartDate.isAfter(today))
       .sortBy(_.serviceStartDate)
-      .headOption
-      .map(_.serviceStartDate)
+      .find(item => today.inClosedInterval(item.serviceStartDate, item.serviceEndDate))
+      .map(_.serviceEndDate.plusDays(1))
+  }
 
   def findAffectedPublicationsWithRange(
     publications: List[Publication],
