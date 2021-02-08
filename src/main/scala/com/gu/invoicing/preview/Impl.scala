@@ -102,7 +102,8 @@ object Impl {
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }
       .filter  { _.subscriptionName == subscriptionName }
-      .filter  { item => List(item.serviceStartDate, item.serviceEndDate).exists(_.inClosedInterval(startDate, endDate)) }
+      .filterNot { _.serviceEndDate.isBefore(startDate) }
+      .filterNot { _.serviceStartDate.isAfter(endDate)  }
       .toList
       .sortBy(_.serviceStartDate)
 

@@ -16,6 +16,11 @@ import pprint._
  *   export Config = { "clientId": "******", "clientSecret": "*****"}
  */
 object Cli {
-  def main(args: Array[String]): Unit =
-    program(PreviewInput("A-S00000000", LocalDate.parse("2020-11-13"), LocalDate.parse("2020-12-25"))) tap(log(_))
+  def main(args: Array[String]): Unit = {
+    val input = """A-S0000000?startDate=2021-02-14&endDate=2021-02-15"""
+    input match {
+      case s"$sub?startDate=$startDate&endDate=$endDate" =>
+        program(PreviewInput(sub, LocalDate.parse(startDate), LocalDate.parse(endDate))) tap(log(_))
+    }
+  }
 }
