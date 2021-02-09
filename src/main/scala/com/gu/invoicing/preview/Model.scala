@@ -25,7 +25,7 @@ object Model extends JsonSupport {
     nextInvoiceDateAfterToday: Option[LocalDate] = None,
     rangeStartDate: LocalDate,
     rangeEndDate: LocalDate,
-    publicationsWithinRange: List[Publication] = Nil
+    publicationsWithinRange: List[Publication]
   )
 
   // ************************************************************************
