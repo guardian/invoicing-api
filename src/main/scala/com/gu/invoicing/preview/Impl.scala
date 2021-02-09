@@ -64,7 +64,11 @@ object Impl {
       .pipe(discountedPublicationPrice => publication.copy(price = discountedPublicationPrice))
   }
 
-  def getFutureInvoiceItems(accountId: String, startDate: LocalDate): List[InvoiceItem] = {
+  def getFutureInvoiceItems(
+    accountId: String,
+    subscriptionName: String,
+    startDate: LocalDate
+  ): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
@@ -83,6 +87,7 @@ object Impl {
       .pipe(read[BillingPreview](_))
       .invoiceItems
       .filter(_.chargeAmount > 0.0)
+      .filter(_.subscriptionName == subscriptionName)
   }
 
   def getPastInvoiceItems(
