@@ -139,10 +139,11 @@ object Impl {
     items: List[InvoiceItem],
     today: LocalDate = LocalDate.now()
   ): Option[LocalDate] = {
-    items
-      .sortBy(_.serviceStartDate)
+    val sortedItems = items.sortBy(_.serviceStartDate)
+    sortedItems
       .find(item => today.inClosedInterval(item.serviceStartDate, item.serviceEndDate))
       .map(_.serviceEndDate.plusDays(1))
+      .orElse(sortedItems.headOption.map(_.serviceStartDate)) // first invoice item might be in the future
   }
 
   def findAffectedPublicationsWithRange(
