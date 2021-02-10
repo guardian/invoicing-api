@@ -108,7 +108,6 @@ object Impl {
       .flatMap { _.invoiceItems                         }
       .filter  { _.subscriptionName == subscriptionName }
       .filterNot { _.serviceEndDate.isBefore(startDate) }
-      .filterNot { _.serviceStartDate.isAfter(endDate)  }
       .toList
       .sortBy(_.serviceStartDate)
 
