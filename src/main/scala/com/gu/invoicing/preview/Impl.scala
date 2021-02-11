@@ -103,7 +103,6 @@ object Impl {
       .pipe(read[Invoices](_))
       .invoices
       .iterator
-      .filter  { _.amount >= 0.0                        }
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }
       .filter  { _.subscriptionName == subscriptionName }
