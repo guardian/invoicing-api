@@ -236,6 +236,7 @@ object Impl {
       case 25 | 26 => 26 // Semi_annual
       case  3 |  4 => 4  // Month
       case  5 |  6 => 6  // 6 for 6
+      case       7 => 6  // 6 for 6 (7 weeks billing period might happen during Christmas time when have to extend to account for missing issue)
       case  v => log(invoiceItem, s"WARN: Check publication price for unusual billing period of $weeks"); v
     }
 
