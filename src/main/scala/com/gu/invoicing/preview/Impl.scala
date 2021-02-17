@@ -67,7 +67,7 @@ object Impl {
   def getFutureInvoiceItems(
     accountId: String,
     subscriptionName: String,
-    startDate: LocalDate
+    targetDate: LocalDate
   ): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
       .header("Authorization", s"Bearer $accessToken")
@@ -76,7 +76,7 @@ object Impl {
         s"""
            |{
            |    "accountId": "$accountId",
-           |    "targetDate": "${startDate.plusYears(3)}",
+           |    "targetDate": "${targetDate.plusDays(1)}",
            |    "assumeRenewal": "Autorenew"
            |}
            |""".stripMargin

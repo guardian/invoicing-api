@@ -21,7 +21,7 @@ object Program { /** Main business logic */
     val allRatePlanCharges    = getRatePlanCharges(subscriptionName, start)
     val paidRatePlanCharges   = allRatePlanCharges.filter(_.price > 0.0)
     val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start, end)
-    val futureInvoiceItems    = getFutureInvoiceItems(accountId, subscriptionName, start)
+    val futureInvoiceItems    = getFutureInvoiceItems(accountId, subscriptionName, end)
     val pastItemsWithTax      = pastInvoiceItems.map(addTaxToPastInvoiceItems)
     val futureItemsWithTax    = futureInvoiceItems.map(addTaxToFutureInvoiceItems(_, paidRatePlanCharges))
     val allItemsWithTax       = pastItemsWithTax ++ futureItemsWithTax
