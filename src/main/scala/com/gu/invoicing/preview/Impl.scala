@@ -108,7 +108,7 @@ object Impl {
       val response = fetchNextPage(nextPage)
       response.nextPage match {
         case Some(nextPageUrl) => go(nextPageUrl, acc ++ response.invoices)
-        case None => acc
+        case None => acc ++ response.invoices
       }
     }
 
