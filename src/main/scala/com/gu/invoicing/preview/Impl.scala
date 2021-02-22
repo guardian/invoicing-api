@@ -95,13 +95,24 @@ object Impl {
     subscriptionName: String,
     startDate: LocalDate,
     endDate: LocalDate,
-  ): List[InvoiceItem] =
-    Http(s"$zuoraApiHost/v1/transactions/invoices/accounts/$account")
-      .header("Authorization", s"Bearer ${accessToken}")
-      .asString
-      .body
-      .pipe(read[Invoices](_))
-      .invoices
+  ): List[InvoiceItem] = {
+    def fetchNextPage(nextPageUrl: String) = {
+      Http(s"$zuoraApiHost/$nextPageUrl")
+        .header("Authorization", s"Bearer $accessToken")
+        .asString
+        .body
+        .pipe(read[Invoices](_))
+    }
+
+    @tailrec def go(nextPage: String, acc: List[Invoice]): List[Invoice] = {
+      val response = fetchNextPage(nextPage)
+      response.nextPage match {
+        case Some(nextPageUrl) => go(nextPageUrl, acc ++ response.invoices)
+        case None => acc
+      }
+    }
+
+    go(s"v1/transactions/invoices/accounts/$account?pageSize=40", Nil)
       .iterator
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }
@@ -109,6 +120,7 @@ object Impl {
       .filterNot { _.serviceEndDate.isBefore(startDate) }
       .toList
       .sortBy(_.serviceStartDate)
+  }
 
   def collectRelevantInvoiceItems(
     subscriptionName: String,
