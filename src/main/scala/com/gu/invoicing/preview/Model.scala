@@ -88,7 +88,8 @@ object Model extends JsonSupport {
   )
   case class Invoices(
     invoices: List[Invoice],
-    success: Boolean
+    success: Boolean,
+    nextPage: Option[String] = None,
   )
 
   // ************************************************************************
