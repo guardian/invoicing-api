@@ -13,13 +13,13 @@ import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 object Impl {
-  def getAccountId(name: String): String = {
+  def getInvoiceOwnerAccountId(name: String): String = {
     Http(s"$zuoraApiHost/v1/subscriptions/$name")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
       .pipe(read[Subscription](_))
-      .accountId
+      .invoiceOwnerAccountId
   }
 
   /* Needed to obtain chargeAmount with tax included as billing-preview is not inclusive of tax */
@@ -65,7 +65,7 @@ object Impl {
   }
 
   def getFutureInvoiceItems(
-    accountId: String,
+    invoiceOwnerAccountId: String,
     subscriptionName: String,
     targetDate: LocalDate
   ): List[InvoiceItem] = {
@@ -75,7 +75,7 @@ object Impl {
       .postData(
         s"""
            |{
-           |    "accountId": "$accountId",
+           |    "accountId": "$invoiceOwnerAccountId",
            |    "targetDate": "${targetDate.plusDays(1)}",
            |    "assumeRenewal": "Autorenew"
            |}
@@ -91,7 +91,7 @@ object Impl {
   }
 
   def getPastInvoiceItems(
-    account: String,
+    invoiceOwnerAccountId: String,
     subscriptionName: String,
     startDate: LocalDate,
     endDate: LocalDate,
@@ -112,7 +112,7 @@ object Impl {
       }
     }
 
-    go(s"v1/transactions/invoices/accounts/$account?pageSize=40", Nil)
+    go(s"v1/transactions/invoices/accounts/$invoiceOwnerAccountId?pageSize=40", Nil)
       .iterator
       .filter  { _.status == "Posted"                   }
       .flatMap { _.invoiceItems                         }

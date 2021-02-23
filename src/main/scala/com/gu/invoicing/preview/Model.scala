@@ -48,7 +48,7 @@ object Model extends JsonSupport {
   )
   case class RatePlan(ratePlanCharges: List[RatePlanCharge])
   case class Subscription(
-    accountId: String,
+    invoiceOwnerAccountId: String,
     ratePlans: List[RatePlan],
   )
   case class Publication(       /* Contrast with InvoiceItem                               */

@@ -17,11 +17,11 @@ import pprint._
 object Program { /** Main business logic */
   def program(input: PreviewInput): PreviewOutput = retryUnsafe {
     val PreviewInput(subscriptionName, start, end) = input
-    val accountId             = getAccountId(subscriptionName)
+    val invoiceOwnerAccountId = getInvoiceOwnerAccountId(subscriptionName)
     val allRatePlanCharges    = getRatePlanCharges(subscriptionName, start)
     val paidRatePlanCharges   = allRatePlanCharges.filter(_.price > 0.0)
-    val pastInvoiceItems      = getPastInvoiceItems(accountId, subscriptionName, start, end)
-    val futureInvoiceItems    = getFutureInvoiceItems(accountId, subscriptionName, end)
+    val pastInvoiceItems      = getPastInvoiceItems(invoiceOwnerAccountId, subscriptionName, start, end)
+    val futureInvoiceItems    = getFutureInvoiceItems(invoiceOwnerAccountId, subscriptionName, end)
     val pastItemsWithTax      = pastInvoiceItems.map(addTaxToPastInvoiceItems)
     val futureItemsWithTax    = futureInvoiceItems.map(addTaxToFutureInvoiceItems(_, paidRatePlanCharges))
     val allItemsWithTax       = pastItemsWithTax ++ futureItemsWithTax
