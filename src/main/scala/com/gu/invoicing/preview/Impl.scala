@@ -149,11 +149,15 @@ object Impl {
     items: List[InvoiceItem],
     today: LocalDate = LocalDate.now()
   ): Option[LocalDate] = {
+    def verifyNextInvoiceDate(nextInvoiceDate: LocalDate): Unit =
+      assert(nextInvoiceDate >= today, s"nextInvoiceDate $nextInvoiceDate should not be before today $today for ${items.headOption.map(_.subscriptionName)}")
+
     val sortedItems = items.sortBy(_.serviceStartDate)
     sortedItems
       .find(item => today.inClosedInterval(item.serviceStartDate, item.serviceEndDate))
       .map(_.serviceEndDate.plusDays(1))
       .orElse(sortedItems.headOption.map(_.serviceStartDate)) // first invoice item might be in the future
+      .tap(_.map(verifyNextInvoiceDate))
   }
 
   def findAffectedPublicationsWithRange(
