@@ -48,7 +48,7 @@ Resources:
       AlarmName: "URGENT 9-5 - PROD: Failed to fetch Zuora invoice by account"
       AlarmDescription: |
         - manage-frontend user will not be able to see/download invoices
-        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/invoice/README.md
+        - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/invoice/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-invoices-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
@@ -73,7 +73,7 @@ Resources:
       AlarmName: "URGENT 9-5 - PROD: Failed to download invoice PDF"
       AlarmDescription: |
         - manage-frontend user will not be able to download invoice PDF
-        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/pdf/README.md
+        - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/pdf/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-pdf-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
@@ -98,7 +98,7 @@ Resources:
       AlarmName: "URGENT 9-5 - PROD: Failed to determine next invoice date"
       AlarmDescription: |
         - At least holiday or delivery problem credit processor will not be able to determine when to apply the credit
-        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/nextinvoicedate/README.md
+        - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/nextinvoicedate/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-nextinvoicedate-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
@@ -123,7 +123,7 @@ Resources:
       AlarmName: "URGENT 9-5 - PROD: Failed to preview affected publications within date range"
       AlarmDescription: |
         - At least holiday-stop-api will not be able to predict which publications should be suspended
-        - https://github.com/guardian/invoicing-api/blob/master/src/main/scala/com/gu/invoicing/preview/README.md
+        - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/preview/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-preview-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
@@ -567,3 +567,9 @@ Resources:
               - Effect: Allow
                 Action: s3:GetObject
                 Resource: !Sub arn:aws:s3:::gu-reader-revenue-private/membership/support-service-lambdas/${Stage}/zuoraRest-${Stage}*.json
+        - PolicyName: ReadFromDeploymentBucket
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: arn:aws:s3::*:membership-dist/*
