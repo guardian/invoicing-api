@@ -97,7 +97,10 @@ object Model extends JsonSupport {
         case "BankTransfer" =>
           mmaResponse.copy(
             last4 = BankTransferAccountNumberMask.map(dropMaskPrefix),
-            paymentMethod = "DirectDebit"
+            paymentMethod = paymentMethod.BankTransferType match {
+              case Some("SEPA") => "Sepa"
+              case _ => "DirectDebit"
+            }
           )
 
         case "PayPal" =>
@@ -137,6 +140,7 @@ object Model extends JsonSupport {
   case class PaymentMethod(
     Id: String,
     Type: String, // DebitCard, PayPal
+    BankTransferType: Option[String] = None,
     BankTransferAccountNumberMask: Option[String] = None,
     CreditCardMaskNumber: Option[String] = None,
     CreditCardType: Option[String] = None, // Visa, MasterCard

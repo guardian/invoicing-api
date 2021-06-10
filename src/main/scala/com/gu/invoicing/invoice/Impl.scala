@@ -69,6 +69,7 @@ object Impl {
            |      Type,
            |      AccountId,
            |      BankCode,
+           |      BankTransferType,
            |      BankTransferAccountName,
            |      BankTransferAccountNumberMask,
            |      PaypalEmail,
