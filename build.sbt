@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
       "org.scalaj"             %% "scalaj-http"  % "2.4.2",
       "com.lihaoyi"            %% "upickle"      % "1.3.15",
       "com.gu"                 %% "spy"          % "0.1.1",
-      "org.scala-lang.modules" %% "scala-async"  % "1.0.0-M1",
+      "org.scala-lang.modules" %% "scala-async"  % "1.0.1",
       "com.lihaoyi"            %% "pprint"       % "0.6.6",
 ),
     testFrameworks += new TestFramework("munit.Framework"),
