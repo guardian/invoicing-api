@@ -6,7 +6,7 @@ lazy val root = (project in file("."))
     version := "0.1.0",
     organization := "com.gu",
     organizationName := "The Guardian",
-    scalaVersion := "2.13.6",
+    scalaVersion := "2.13.7",
     libraryDependencies ++= List(
       "org.scalameta"          %% "munit"        % "0.7.27"   % Test,
       "org.scalaj"             %% "scalaj-http"  % "2.4.2",
