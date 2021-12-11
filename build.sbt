@@ -10,7 +10,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= List(
       "org.scalameta"          %% "munit"        % "0.7.27"   % Test,
       "org.scalaj"             %% "scalaj-http"  % "2.4.2",
-      "com.lihaoyi"            %% "upickle"      % "1.4.2",
+      "com.lihaoyi"            %% "upickle"      % "1.4.3",
       "com.gu"                 %% "spy"          % "0.1.1",
       "org.scala-lang.modules" %% "scala-async"  % "1.0.0-M1",
       "com.lihaoyi"            %% "pprint"       % "0.6.6",
