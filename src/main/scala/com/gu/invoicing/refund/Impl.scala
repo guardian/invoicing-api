@@ -65,7 +65,7 @@ object Impl {
 
   def getInvoicePaymentId(invoiceId: String): Option[String] = {
     Http(s"$zuoraApiHost/v1/action/query")
-      .header("Authorization", s"Bearer $accessToken}")
+      .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "select Id, invoiceId, paymentId from InvoicePayment where invoiceId = '$invoiceId'"}""")
       .method("POST")
