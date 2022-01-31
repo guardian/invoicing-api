@@ -17,7 +17,7 @@ Content-Type: application/json
     "accountId": "A-S12345678",
     "invoiceNumber": "INV123456",
     "paymentId": "p123",
-    "invoiceAmount": 0.69
+    "invoiceAmount": 0.69,
     "comment": "???"
 }
 ```
