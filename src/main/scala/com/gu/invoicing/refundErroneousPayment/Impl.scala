@@ -52,24 +52,21 @@ object Impl {
       .Status
   }
 
-  def getBalancingInvoice(accountId: String, invoiceAmount:BigDecimal):String = {
-    val body = Http(s"$zuoraApiHost/v1/action/query")
+  def getBalancingInvoice(accountId: String, invoiceAmount:BigDecimal):String =
+    Http(s"$zuoraApiHost/v1/action/query")
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(s"""{"queryString": "SELECT Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status FROM Invoice WHERE AccountId = '$accountId' AND status = 'Posted'"}""")
       .method("POST")
       .asString
       .body
-    val value = body
       .pipe(read[InvoiceQueryResult](_))
       .records
       .sortBy(_.InvoiceDate)
       .reverse
-      .take(2)
-    value match {
+      .take(2) match {
       case neg :: pos :: Nil if neg.Amount == -invoiceAmount && pos.Amount == invoiceAmount => neg.InvoiceNumber
     }
-  }
 
   def transferToCreditBalance(invoiceNumber:String, invoiceAmount:BigDecimal, comment:String):Unit =
     Http(s"$zuoraApiHost/v1/object/credit-balance-adjustment")
