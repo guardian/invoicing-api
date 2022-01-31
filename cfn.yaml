@@ -362,7 +362,7 @@ Resources:
     Properties:
       RestApiId: !Ref InvoicingApi
       ParentId: !GetAtt InvoicingApi.RootResourceId
-      PathPart: refundErroneousPayment
+      PathPart: refund-erroneous-payment
     DependsOn: InvoicingApi
 
   RefundErroneousPaymentMethod:
@@ -621,3 +621,13 @@ Resources:
               - Effect: Allow
                 Action: s3:GetObject
                 Resource: arn:aws:s3::*:membership-dist/*
+
+  RefundErroneousPaymentLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !Sub invoicing-api-refund-erroneous-payment-${Stage}
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - RefundErroneousPaymentLambda
+      - RefundErroneousPaymentMethod
