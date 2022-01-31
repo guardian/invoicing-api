@@ -608,6 +608,7 @@ Resources:
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-pdf-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-nextinvoicedate-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-preview-${Stage}:log-stream:*
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-erroneous-payment-${Stage}:log-stream:*
 
         - PolicyName: ReadPrivateCredentials
           PolicyDocument:
