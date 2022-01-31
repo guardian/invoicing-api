@@ -1,12 +1,9 @@
 package com.gu.invoicing.refundErroneousPayment
 
-import Model._
-import Impl._
-import Program._
+import com.gu.invoicing.refundErroneousPayment.Model._
+import com.gu.invoicing.refundErroneousPayment.Program._
+
 import scala.util.chaining._
-import java.io.{InputStream, OutputStream}
-import java.nio.charset.Charset
-import java.util.logging.Logger
 
 /**
   * Run refund process as AWS lambda.
