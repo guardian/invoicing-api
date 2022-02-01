@@ -64,6 +64,6 @@ object Lambda {
       .pipe { refundOut =>
         ApiGatewayOutput(200, write(refundOut))
       }
-      .pipe(write)
+      .pipe(write(_))
   }
 }
