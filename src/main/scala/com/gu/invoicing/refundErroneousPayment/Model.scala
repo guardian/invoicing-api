@@ -4,8 +4,7 @@ import com.gu.invoicing.common.JsonSupport
 
 import java.time.LocalDate
 
-/**
-  * Data models and JSON codecs
+/** Data models and JSON codecs
   */
 object Model extends JsonSupport {
 
@@ -13,18 +12,24 @@ object Model extends JsonSupport {
 
   case class AccessToken(access_token: String)
 
-  case class Invoice(Id: String,
-                     InvoiceNumber: String,
-                     Amount: BigDecimal,
-                     Balance: BigDecimal,
-                     PaymentAmount: BigDecimal,
-                     TargetDate: LocalDate,
-                     InvoiceDate: LocalDate,
-                     Status: String)
+  case class Invoice(
+      Id: String,
+      InvoiceNumber: String,
+      Amount: BigDecimal,
+      Balance: BigDecimal,
+      PaymentAmount: BigDecimal,
+      TargetDate: LocalDate,
+      InvoiceDate: LocalDate,
+      Status: String
+  )
 
   case class InvoiceQueryResult(records: List[Invoice])
 
-  case class Metrics(balance: BigDecimal, totalInvoiceBalance: BigDecimal, creditBalance: BigDecimal)
+  case class Metrics(
+      balance: BigDecimal,
+      totalInvoiceBalance: BigDecimal,
+      creditBalance: BigDecimal
+  )
   case class Account(metrics: Metrics)
 
   case class RefundResult(Id: String)
@@ -68,7 +73,7 @@ object Model extends JsonSupport {
       invoiceAmount: BigDecimal,
       invoiceNumber: String,
       balancingInvoiceNumber: String,
-      message: String = "Successful refund",
+      message: String = "Successful refund"
   )
 
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
