@@ -244,6 +244,26 @@ Resources:
     DependsOn:
       - InvoicingLambdaRole
 
+  RefundErroneousPaymentLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Apply refund to Zuora invoice by shuffling credit balances.
+      FunctionName: !Sub invoicing-api-refund-erroneous-payment-${Stage}
+      Code:
+        S3Bucket: membership-dist
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+      Handler: com.gu.invoicing.refundErroneousPayment.Lambda::handleRequest
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+      Role: !GetAtt InvoicingLambdaRole.Arn
+      MemorySize: 3008
+      Runtime: provided
+      Timeout: 900
+    DependsOn:
+      - InvoicingLambdaRole
+
   # ****************************************************************************
   # API
   # ****************************************************************************
@@ -333,6 +353,34 @@ Resources:
       - InvoicingApi
       - RefundEndpoint
       - RefundLambda
+
+  # ****************************************************************************
+  # POST /refund-erroneous-payment
+  # ****************************************************************************
+  RefundErroneousPaymentEndpoint:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      ParentId: !GetAtt InvoicingApi.RootResourceId
+      PathPart: refund-erroneous-payment
+    DependsOn: InvoicingApi
+
+  RefundErroneousPaymentMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: true
+      AuthorizationType: NONE
+      RestApiId: !Ref InvoicingApi
+      ResourceId: !Ref RefundErroneousPaymentEndpoint
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST # this for the interaction between API Gateway and Lambda and MUST be POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RefundErroneousPaymentLambda.Arn}/invocations
+    DependsOn:
+      - InvoicingApi
+      - RefundErroneousPaymentEndpoint
+      - RefundErroneousPaymentLambda
 
   # ****************************************************************************
   # GET /invoices
@@ -560,6 +608,7 @@ Resources:
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-pdf-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-nextinvoicedate-${Stage}:log-stream:*
                 - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-preview-${Stage}:log-stream:*
+                - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-erroneous-payment-${Stage}:log-stream:*
 
         - PolicyName: ReadPrivateCredentials
           PolicyDocument:
@@ -573,3 +622,13 @@ Resources:
               - Effect: Allow
                 Action: s3:GetObject
                 Resource: arn:aws:s3::*:membership-dist/*
+
+  RefundErroneousPaymentLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !Sub invoicing-api-refund-erroneous-payment-${Stage}
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - RefundErroneousPaymentLambda
+      - RefundErroneousPaymentMethod

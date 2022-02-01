@@ -51,6 +51,7 @@ deployAwsLambda := {
     .#&&(updateLambda("invoicing-api-pdf"))
     .#&&(updateLambda("invoicing-api-nextinvoicedate"))
     .#&&(updateLambda("invoicing-api-preview"))
+    .#&&(updateLambda("invoicing-api-refund-erroneous-payment"))
     .!
 }
 

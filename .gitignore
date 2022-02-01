@@ -1,5 +1,6 @@
-.*
-!/.gitignore
+.idea
+.bloop
+.bsp
 dist/*
 target/
 lib_managed/

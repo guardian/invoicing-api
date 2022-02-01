@@ -42,6 +42,9 @@ object bootstrap {
       case "com.gu.invoicing.refund.Lambda::handleRequest" =>
         com.gu.invoicing.refund.Lambda.handleRequest(input)
 
+      case "com.gu.invoicing.refundErroneousPayment.Lambda::handleRequest" =>
+        com.gu.invoicing.refundErroneousPayment.Lambda.handleRequest(input)
+
       case unknownHandler =>
         throw new RuntimeException(s"Unknown function handler in custom runtime: $unknownHandler")
     }
