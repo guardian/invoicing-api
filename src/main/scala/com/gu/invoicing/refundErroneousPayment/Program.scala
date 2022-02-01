@@ -3,7 +3,7 @@ package com.gu.invoicing.refundErroneousPayment
 import com.gu.invoicing.refundErroneousPayment.Impl._
 import com.gu.invoicing.refundErroneousPayment.Model._
 
-object Program extends App {
+object Program {
 
   def program(input: RefundInput): RefundOutput = {
     val RefundInput(accountId, invoiceNumber, paymentId, invoiceAmount, comment, _) = input
