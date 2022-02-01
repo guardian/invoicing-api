@@ -1,8 +1,11 @@
 # Refund Erroneous Payment
 
-This is for refunding in cases where a payment was inadvertently taken for an invoice.
+This is for refunding in cases where a payment was inadvertently taken for an invoice
+where there is also a balancing negative invoice on the same account.
 This could be, for instance, when a cancelled sub has been left with an amount outstanding
 and then a retry attempt is made to collect the outstanding amount.
+The script will ensure that there is no change in the invoice items or adjustments, meaning
+that the finance revenue schedules will not be affected.
 
 ### Example request
 
