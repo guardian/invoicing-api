@@ -12,7 +12,7 @@ object Program {
     val payments = getPayments(accountId, paymentDate)
     assert(payments.nonEmpty, s"No payments were taken on $paymentDate")
     val invoices = getInvoices(accountId)
-    assert(invoices.nonEmpty, "No invoices")
+    assert(invoices.nonEmpty, "No invoices for this account")
     val balancingInvoice = invoices.maxBy(_.InvoiceDate)
     assert(balancingInvoice.InvoiceDate.isBefore(paymentDate), "Bad balancing invoice date")
     assert(
