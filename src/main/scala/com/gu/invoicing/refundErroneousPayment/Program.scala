@@ -11,7 +11,9 @@ object Program {
     assert(payments.nonEmpty, s"No payments were taken on $paymentDate")
     val invoices = getInvoices(accountId)
     assert(invoices.nonEmpty, "No invoices for this account")
-    val balancingInvoice = invoices.maxBy(_.InvoiceDate)
+    val dateOfLatestInvoice = invoices.map(_.InvoiceDate).max
+    val invoicesOnLatestDate = invoices.filter(_.InvoiceDate == dateOfLatestInvoice)
+    val balancingInvoice = invoicesOnLatestDate.minBy(_.Amount)
     assert(
       balancingInvoice.InvoiceDate.isBefore(paymentDate),
       "Balancing invoice should have been created before the erroneous payment was taken"
