@@ -14,7 +14,7 @@ object Program {
     val invoices = getInvoices(accountId)
     assert(invoices.nonEmpty, "No invoices for this account")
     val balancingInvoice = invoices.maxBy(_.InvoiceDate)
-    assert(balancingInvoice.InvoiceDate.isBefore(paymentDate), "Bad balancing invoice date")
+    assert(balancingInvoice.InvoiceDate.isBefore(paymentDate), "Balancing invoice should have been created before the erroneous payment was taken")
     assert(
       balancingInvoice.Amount == -payments.map(_.amount).sum,
       "Payments don't agree with balancing invoice"
