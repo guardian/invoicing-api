@@ -49,6 +49,24 @@ object Model extends JsonSupport {
       Id: String
   )
 
+  case class Payments(
+      payments: List[Payment],
+      success: Boolean
+  )
+
+  case class Payment(
+      id: String,
+      effectiveDate: LocalDate,
+      amount: BigDecimal,
+      paidInvoices: List[PaidInvoice],
+      status: String
+  )
+
+  case class PaidInvoice(
+      invoiceId: String,
+      invoiceNumber: String
+  )
+
   implicit val configRW: ReadWriter[Config] = macroRW
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
@@ -57,21 +75,26 @@ object Model extends JsonSupport {
   implicit val refundRW: ReadWriter[Refund] = macroRW
   implicit val metricsRW: ReadWriter[Metrics] = macroRW
   implicit val accountRW: ReadWriter[Account] = macroRW
+  implicit val paymentsRW: ReadWriter[Payments] = macroRW
+  implicit val paymentRW: ReadWriter[Payment] = macroRW
+  implicit val paidInvoiceRW: ReadWriter[PaidInvoice] = macroRW
 
   case class RefundInput(
       accountId: String,
-      invoiceNumber: String,
-      paymentId: String,
-      invoiceAmount: BigDecimal,
+      paymentDate: LocalDate,
       comment: String,
       message: String = "Start processing refund"
   )
 
+  case class RefundData(
+      invoiceNumber: String,
+      invoiceAmount: BigDecimal,
+      paymentId: String,
+      refundId: String
+  )
   case class RefundOutput(
       accountId: String,
-      paymentId: String,
-      invoiceAmount: BigDecimal,
-      invoiceNumber: String,
+      results: Seq[RefundData],
       balancingInvoiceNumber: String,
       message: String = "Successful refund"
   )
@@ -83,6 +106,7 @@ object Model extends JsonSupport {
   case class ApiGatewayOutput(statusCode: Int, body: String)
 
   implicit val refundInputRW: ReadWriter[RefundInput] = macroRW
+  implicit val refundDataRW: ReadWriter[RefundData] = macroRW
   implicit val refundOutputRW: ReadWriter[RefundOutput] = macroRW
   implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
   implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
