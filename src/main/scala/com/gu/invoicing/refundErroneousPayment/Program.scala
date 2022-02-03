@@ -3,8 +3,6 @@ package com.gu.invoicing.refundErroneousPayment
 import com.gu.invoicing.refundErroneousPayment.Impl._
 import com.gu.invoicing.refundErroneousPayment.Model._
 
-import java.time.LocalDate
-
 object Program {
 
   def program(input: RefundInput): RefundOutput = {
@@ -14,7 +12,10 @@ object Program {
     val invoices = getInvoices(accountId)
     assert(invoices.nonEmpty, "No invoices for this account")
     val balancingInvoice = invoices.maxBy(_.InvoiceDate)
-    assert(balancingInvoice.InvoiceDate.isBefore(paymentDate), "Balancing invoice should have been created before the erroneous payment was taken")
+    assert(
+      balancingInvoice.InvoiceDate.isBefore(paymentDate),
+      "Balancing invoice should have been created before the erroneous payment was taken"
+    )
     assert(
       balancingInvoice.Amount == -payments.map(_.amount).sum,
       "Payments don't agree with balancing invoice"
@@ -33,7 +34,7 @@ object Program {
         applyCreditBalance(paidInvoice.invoiceNumber, payment.amount, comment)
         RefundData(paidInvoice.invoiceNumber, payment.amount, payment.id, refundId)
       case _ =>
-        assert(false, "Payment is for multiple invoices")
+        throw new AssertionError("assertion failed: Payment is for multiple invoices")
     }
   }
 }
