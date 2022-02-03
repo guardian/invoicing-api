@@ -26,10 +26,14 @@ object Program {
   }
 
   def processRefund(comment: String)(payment: Payment): RefundData = {
-    assert(payment.paidInvoices.length == 1, "Payment is for multiple invoices")
-    val refundId = createRefundObject(payment.amount, payment.id, comment)
-    assert(getRefundStatus(refundId) == "Processed", "Refund hasn't been processed")
-    applyCreditBalance(payment.paidInvoices.head.invoiceNumber, payment.amount, comment)
-    RefundData(payment.paidInvoices.head.invoiceNumber, payment.amount, payment.id, refundId)
+    payment.paidInvoices match {
+      case paidInvoice :: Nil =>
+        val refundId = createRefundObject(payment.amount, payment.id, comment)
+        assert(getRefundStatus(refundId) == "Processed", "Refund hasn't been processed")
+        applyCreditBalance(paidInvoice.invoiceNumber, payment.amount, comment)
+        RefundData(paidInvoice.invoiceNumber, payment.amount, payment.id, refundId)
+      case _ =>
+        assert(false, "Payment is for multiple invoices")
+    }
   }
 }
