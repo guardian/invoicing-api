@@ -10,7 +10,7 @@ object Program {
   def program(input: RefundInput): RefundOutput = {
     val RefundInput(accountId, paymentDate, comment, _) = input
     val payments = getPayments(accountId, paymentDate)
-    assert(payments.nonEmpty, "No payments")
+    assert(payments.nonEmpty, s"No payments were taken on $paymentDate")
     val invoices = getInvoices(accountId)
     assert(invoices.nonEmpty, "No invoices")
     val balancingInvoice = invoices.maxBy(_.InvoiceDate)
