@@ -37,11 +37,10 @@ object Impl {
   }
 
   def collectRelevantInvoiceItems(
-    subscriptionName: String,
-    invoiceItems: List[InvoiceItem]
+      subscriptionName: String,
+      invoiceItems: List[InvoiceItem]
   ): List[InvoiceItem] = {
-    invoiceItems
-      .iterator
+    invoiceItems.iterator
       .filter(_.subscriptionName == subscriptionName)
       .filterNot(_.productName == "Discounts")
       .filterNot(_.chargeAmount < 0.0)
@@ -50,8 +49,8 @@ object Impl {
   }
 
   def findNextInvoiceDate(
-    items: List[InvoiceItem],
-    today: LocalDate = LocalDate.now()
+      items: List[InvoiceItem],
+      today: LocalDate = LocalDate.now()
   ): Option[LocalDate] =
     items
       .filter(_.serviceStartDate.isAfter(today))

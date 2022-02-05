@@ -6,44 +6,44 @@ import com.gu.spy._
 
 object Model extends JsonSupport {
   case class Invoices(
-    invoices: List[Invoice],
-    success: Boolean
+      invoices: List[Invoice],
+      success: Boolean
   )
   case class Invoice(
-    id: String,
-    invoiceNumber: String,
-    invoiceDate: LocalDate,
-    amount: BigDecimal,
-    status: String,
-    invoiceItems: List[InvoiceItem],
+      id: String,
+      invoiceNumber: String,
+      invoiceDate: LocalDate,
+      amount: BigDecimal,
+      status: String,
+      invoiceItems: List[InvoiceItem]
   )
   case class InvoiceItem(
-    subscriptionName: String,
+      subscriptionName: String
   )
   case class InvoiceWithPayment(
-    subscriptionName: String,
-    date: LocalDate,
-    paymentMethod: PaymentMethod,
-    price: Double,
-    pdfPath: String, /* invoices/{fileId} */
-    invoiceId: String
+      subscriptionName: String,
+      date: LocalDate,
+      paymentMethod: PaymentMethod,
+      price: Double,
+      pdfPath: String, /* invoices/{fileId} */
+      invoiceId: String
   )
 
-  /**
-   * Subscription name is not available from the top level Invoice object because Invoice can be associated with
-   * multiple subscriptions, however current MMA design wants to group invoices per subscription.
-   */
+  /** Subscription name is not available from the top level Invoice object because Invoice can be
+    * associated with multiple subscriptions, however current MMA design wants to group invoices per
+    * subscription.
+    */
   object InvoiceWithPayment {
     def apply(
-      invoice: Invoice,
-      paymentMethod: PaymentMethod,
+        invoice: Invoice,
+        paymentMethod: PaymentMethod
     ): InvoiceWithPayment = {
       // Currently we handle only invoices with single subscription, so any invoice item should do for getting the subscription name
       val subscriptionName =
-        invoice
-          .invoiceItems
-          .headOption
-          .getOrElse(throw new AssertionError(s"At least one invoice item should always exist: $invoice"))
+        invoice.invoiceItems.headOption
+          .getOrElse(
+            throw new AssertionError(s"At least one invoice item should always exist: $invoice")
+          )
           .subscriptionName
 
       new InvoiceWithPayment(
@@ -57,20 +57,19 @@ object Model extends JsonSupport {
     }
   }
 
-  /**
-   * This is the model expected by manage-frontend. I kept is as separate concept from InvoiceWithPayment
-   * as it is likely to keep changing in the initial stages.
-   */
+  /** This is the model expected by manage-frontend. I kept is as separate concept from
+    * InvoiceWithPayment as it is likely to keep changing in the initial stages.
+    */
   case class MmaInvoiceWithPayment(
-    invoiceId: String,
-    subscriptionName: String,
-    date: LocalDate,
-    pdfPath: String,
-    price: Double,
-    paymentMethod: String,
-    last4: Option[String] = None, // for card and direct debit
-    cardType: Option[String] = None, // Visa, MasterCard
-    hasMultipleSubs: Boolean // to handle edge case of multiple subscriptions within a single invoice
+      invoiceId: String,
+      subscriptionName: String,
+      date: LocalDate,
+      pdfPath: String,
+      price: Double,
+      paymentMethod: String,
+      last4: Option[String] = None, // for card and direct debit
+      cardType: Option[String] = None, // Visa, MasterCard
+      hasMultipleSubs: Boolean // to handle edge case of multiple subscriptions within a single invoice
   )
 
   object MmaInvoiceWithPayment {
@@ -87,7 +86,7 @@ object Model extends JsonSupport {
 
       val paymentMethod = invoiceWithPayment.paymentMethod
       import paymentMethod._
-      paymentMethod.Type match {// ACH, BankTransfer, Cash, Check, CreditCard, CreditCardReferenceTransaction, DebitCard, Other, PayPal, WireTransfer
+      paymentMethod.Type match { // ACH, BankTransfer, Cash, Check, CreditCard, CreditCardReferenceTransaction, DebitCard, Other, PayPal, WireTransfer
         case "CreditCard" | "CreditCardReferenceTransaction" | "DebitCard" =>
           mmaResponse.copy(
             last4 = CreditCardMaskNumber.map(dropMaskPrefix),
@@ -99,7 +98,7 @@ object Model extends JsonSupport {
             last4 = BankTransferAccountNumberMask.map(dropMaskPrefix),
             paymentMethod = paymentMethod.BankTransferType match {
               case Some("SEPA") => "Sepa"
-              case _ => "DirectDebit"
+              case _            => "DirectDebit"
             }
           )
 
@@ -118,47 +117,46 @@ object Model extends JsonSupport {
   }
 
   case class InvoicesOutput(
-    invoices: List[MmaInvoiceWithPayment]
+      invoices: List[MmaInvoiceWithPayment]
   )
   case class InvoicesInput(
-    identityId: String
+      identityId: String
   )
   case class Payment(
-    paymentMethodId: String,
-    paidInvoices: List[PaidInvoice],
+      paymentMethodId: String,
+      paidInvoices: List[PaidInvoice]
   )
   case class PaidInvoice(
-    invoiceId: String,
-    invoiceNumber: String,
+      invoiceId: String,
+      invoiceNumber: String
   )
 
   case class Payments(
-    payments: List[Payment],
-    success: Boolean
+      payments: List[Payment],
+      success: Boolean
   )
 
   case class PaymentMethod(
-    Id: String,
-    Type: String, // DebitCard, PayPal
-    BankTransferType: Option[String] = None,
-    BankTransferAccountNumberMask: Option[String] = None,
-    CreditCardMaskNumber: Option[String] = None,
-    CreditCardType: Option[String] = None, // Visa, MasterCard
+      Id: String,
+      Type: String, // DebitCard, PayPal
+      BankTransferType: Option[String] = None,
+      BankTransferAccountNumberMask: Option[String] = None,
+      CreditCardMaskNumber: Option[String] = None,
+      CreditCardType: Option[String] = None // Visa, MasterCard
   )
 
   case class PaymentMethods(
-    records: List[PaymentMethod],
-    done: Boolean,
-    size: Int
+      records: List[PaymentMethod],
+      done: Boolean,
+      size: Int
   )
 
   case class Account(Id: String)
   case class Accounts(
-    records: List[Account],
-    done: Boolean,
-    size: Int
+      records: List[Account],
+      done: Boolean,
+      size: Int
   )
-
 
   implicit val AccountRW: ReadWriter[Account] = macroRW
   implicit val AccountsRW: ReadWriter[Accounts] = macroRW

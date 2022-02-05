@@ -2,28 +2,28 @@ import com.gu.invoicing.common.Retry.retryUnsafe
 import scalaj.http.{BaseHttp, HttpOptions, HttpResponse}
 import scala.util.chaining._
 
-/**
- * Custom AWS Lambda runtime for faster Scala lambda cold start and smaller memory footprint
- * https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
- */
+/** Custom AWS Lambda runtime for faster Scala lambda cold start and smaller memory footprint
+  * https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
+  */
 object bootstrap {
   private val runtimeHostAndPort = sys.env("AWS_LAMBDA_RUNTIME_API")
-  private val lambda             = sys.env("_HANDLER") // corresponds to Handler property of AWS::Lambda::Function
-  private val customRuntimeUrl   = s"http://$runtimeHostAndPort/2018-06-01/runtime/invocation"
+  private val lambda =
+    sys.env("_HANDLER") // corresponds to Handler property of AWS::Lambda::Function
+  private val customRuntimeUrl = s"http://$runtimeHostAndPort/2018-06-01/runtime/invocation"
 
-  /**
-   * HTTP client with infinite timeout is required as per
-   * https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-next:
-   *
-   *   "Do not set a timeout on the GET call. Between when Lambda bootstraps the runtime and when the runtime
-   *    has an event to return, the runtime process may be frozen for several seconds."
-   */
-  private object Http extends BaseHttp(
-    options = Seq(
-      HttpOptions.connTimeout(0),
-      HttpOptions.readTimeout(0),
-    )
-  )
+  /** HTTP client with infinite timeout is required as per
+    * https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-next:
+    *
+    * "Do not set a timeout on the GET call. Between when Lambda bootstraps the runtime and when the
+    * runtime has an event to return, the runtime process may be frozen for several seconds."
+    */
+  private object Http
+      extends BaseHttp(
+        options = Seq(
+          HttpOptions.connTimeout(0),
+          HttpOptions.readTimeout(0)
+        )
+      )
 
   private def executeLambda(handler: String, input: String): String = {
     handler match {
@@ -52,8 +52,7 @@ object bootstrap {
 
   // https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-next
   private def getNextInvoicationEvent(): HttpResponse[String] = retryUnsafe {
-    Http(s"$customRuntimeUrl/next")
-      .asString
+    Http(s"$customRuntimeUrl/next").asString
       .tap { response => assert(response.header("lambda-runtime-aws-request-id").isDefined) }
   }
 
@@ -72,10 +71,10 @@ object bootstrap {
 
   def main(args: Array[String]): Unit = {
     while (true) {
-      val input     = getNextInvoicationEvent()
+      val input = getNextInvoicationEvent()
       val requestId = getRequestId(input)
-      val output    = executeLambda(lambda, input.body)
-      val _         = postInvocationResult(requestId, output)
+      val output = executeLambda(lambda, input.body)
+      val _ = postInvocationResult(requestId, output)
     }
   }
 }

@@ -13,7 +13,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-09-27"),
     LocalDate.parse("2020-10-26"),
     11.99,
-    "Guardian Weekly - Domestic",
+    "Guardian Weekly - Domestic"
   )
   val b = InvoiceItem(
     "12345qwerty",
@@ -21,7 +21,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-10-27"),
     LocalDate.parse("2020-11-26"),
     11.9,
-    "Guardian Weekly - Domestic",
+    "Guardian Weekly - Domestic"
   )
   val c = InvoiceItem(
     "12345qwerty",
@@ -29,7 +29,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-11-27"),
     LocalDate.parse("2020-12-26"),
     11.99,
-    "Guardian Weekly - Domestic",
+    "Guardian Weekly - Domestic"
   )
   val discount = InvoiceItem(
     "12345qwerty",
@@ -37,19 +37,23 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-10-27"),
     LocalDate.parse("2020-11-26"),
     -1.60,
-    "Discounts",
+    "Discounts"
   )
 
   test("Next invoice date should be first day after the current invoice service period") {
-    val actual = findNextInvoiceDate(List(a,b,c), LocalDate.parse("2020-10-16"))
+    val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-10-16"))
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
-  test("Next invoice date should be first day after the current invoice service period (today is left bound)") {
-    val actual = findNextInvoiceDate(List(a,b,c), LocalDate.parse("2020-09-27"))
+  test(
+    "Next invoice date should be first day after the current invoice service period (today is left bound)"
+  ) {
+    val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-09-27"))
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
-  test("Next invoice date should be first day after the current invoice service period (today is right bound)") {
-    val actual = findNextInvoiceDate(List(a,b,c), LocalDate.parse("2020-10-26"))
+  test(
+    "Next invoice date should be first day after the current invoice service period (today is right bound)"
+  ) {
+    val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-10-26"))
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
   test("Next invoice date should not be determined if there is no next service period") {
@@ -61,17 +65,21 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     assertEquals(actual, expected = None)
   }
   test("Next invoice date should be first day after the current invoice service period") {
-    val actual = findNextInvoiceDate(List(a,b,c), LocalDate.parse("2020-10-16"))
+    val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-10-16"))
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
   test("Next invoice date should not depend on discounts") {
     val expected = b.copy(serviceStartDate = discount.serviceStartDate.plusDays(1))
     val rawItems = List(a, discount, expected)
-    val actual = findNextInvoiceDate(collectRelevantInvoiceItems("A-S00000000", rawItems), LocalDate.parse("2020-10-16"))
+    val actual = findNextInvoiceDate(
+      collectRelevantInvoiceItems("A-S00000000", rawItems),
+      LocalDate.parse("2020-10-16")
+    )
     assertEquals(actual.get, expected.serviceStartDate)
   }
   test("Next invoice date should not depend on past or current invoiced periods") {
-    val raw = Source.fromResource("nextinvoicedate/billing-preview-response.json").getLines().mkString
+    val raw =
+      Source.fromResource("nextinvoicedate/billing-preview-response.json").getLines().mkString
     val items = read[BillingPreview](raw).invoiceItems
     val relevantItems = collectRelevantInvoiceItems("A-S00000000", items)
     val actual = findNextInvoiceDate(relevantItems, today = LocalDate.parse("2020-10-22"))
