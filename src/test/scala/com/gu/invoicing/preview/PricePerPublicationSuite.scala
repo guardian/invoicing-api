@@ -16,7 +16,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Guardian Weekly - Domestic",
       "GW Oct 18 - First 6 issues - Domestic",
       0.0,
-      "aChargeId",
+      "aChargeId"
     )
     assertEquals(pricePerPublication(item), expected = 1.0)
   }
@@ -30,7 +30,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Guardian Weekly - Domestic",
       "GW Oct 18 - Quarterly - Domestic",
       0.0,
-      "aChargeId",
+      "aChargeId"
     )
     assertEquals(pricePerPublication(item), expected = 2.89)
   }
@@ -44,13 +44,14 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Newspaper Delivery",
       "Friday",
       0.0,
-      "aChargeId",
+      "aChargeId"
     )
     assertEquals(pricePerPublication(item), expected = 2.04)
   }
 
   test("Publication price should take into account any percentage discounts") {
-    val raw = Source.fromResource("preview/apply-discount-to-publication-price.json").getLines().mkString
+    val raw =
+      Source.fromResource("preview/apply-discount-to-publication-price.json").getLines().mkString
     val publication = Publication(
       publicationDate = LocalDate.parse("2021-01-08"),
       LocalDate.parse("2021-01-08"),
@@ -67,7 +68,10 @@ class PricePerPublicationSuite extends munit.FunSuite {
   }
 
   test("Publication price should not change if there are no percentage discounts") {
-    val raw = Source.fromResource("preview/no-percentage-discount-should-not-change-price.json").getLines().mkString
+    val raw = Source
+      .fromResource("preview/no-percentage-discount-should-not-change-price.json")
+      .getLines()
+      .mkString
     val publication = Publication(
       publicationDate = LocalDate.parse("2021-01-08"),
       LocalDate.parse("2021-01-08"),

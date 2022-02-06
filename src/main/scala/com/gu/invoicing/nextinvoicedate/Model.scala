@@ -10,17 +10,17 @@ object Model extends JsonSupport {
   case class Subscription(accountId: String)
 
   case class InvoiceItem(
-    id: String,
-    subscriptionName: String,
-    serviceStartDate: LocalDate,
-    serviceEndDate: LocalDate,
-    chargeAmount: Double,
-    productName: String,
+      id: String,
+      subscriptionName: String,
+      serviceStartDate: LocalDate,
+      serviceEndDate: LocalDate,
+      chargeAmount: Double,
+      productName: String
   )
 
   case class BillingPreview(
-    accountId: String,
-    invoiceItems: List[InvoiceItem],
+      accountId: String,
+      invoiceItems: List[InvoiceItem]
   )
 
   implicit val subscription: ReadWriter[Subscription] = macroRW
@@ -29,7 +29,7 @@ object Model extends JsonSupport {
 
   case class SubscriptionName(subscriptionName: String)
   case class ApiGatewayInput(
-    pathParameters: SubscriptionName
+      pathParameters: SubscriptionName
   )
   case class NextInvoiceDateInput(subscriptionName: String)
   object NextInvoiceDateInput {
@@ -38,8 +38,8 @@ object Model extends JsonSupport {
   }
   case class NextInvoiceDateOutput(nextInvoiceDate: Option[LocalDate] = None)
   case class ApiGatewayOutput(
-    statusCode: Int,
-    body: String,
+      statusCode: Int,
+      body: String
   )
 
   implicit val subscriptionNumber: ReadWriter[SubscriptionName] = macroRW

@@ -7,8 +7,8 @@ object Model extends JsonSupport {
   case class AccessToken(access_token: String)
 
   case class Invoice(
-    AccountId: String,
-    Body: String /* Base64 encoded PDF */
+      AccountId: String,
+      Body: String /* Base64 encoded PDF */
   )
   case class BasicInfo(IdentityId__c: String)
   case class Account(basicInfo: BasicInfo)
@@ -26,38 +26,32 @@ object Model extends JsonSupport {
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
   case class InvoiceId(invoiceId: String)
   case class ApiGatewayInput(
-    pathParameters: InvoiceId,
-    headers: Map[String, String]
+      pathParameters: InvoiceId,
+      headers: Map[String, String]
   )
   case class PdfInput(invoiceId: String, identityId: String)
   object PdfInput {
     def apply(apiGatewayInput: ApiGatewayInput): PdfInput = {
       new PdfInput(
         apiGatewayInput.pathParameters.invoiceId,
-        apiGatewayInput.headers.getOrElse("x-identity-id", throw new Error("x-identity-id header should be provided")),
+        apiGatewayInput.headers
+          .getOrElse("x-identity-id", throw new Error("x-identity-id header should be provided"))
       )
     }
   }
 
-  /**
-   * https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html
-   * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
-   * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-binarymediatypes
-   *
-   * {
-   *   "status": 200,
-   *   "body": "base64EncodedByteArray",
-   *   "isBase64Encoded":true,
-   *   "headers": {
-   *     "Content-Type":"application/pdf;charset=UTF-8"
-   *   }
-   * }
-   */
+  /** https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html
+    * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
+    * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-binarymediatypes
+    *
+    * { "status": 200, "body": "base64EncodedByteArray", "isBase64Encoded":true, "headers": {
+    * "Content-Type":"application/pdf;charset=UTF-8" } }
+    */
   case class ApiGatewayOutput(
-    statusCode: Int,
-    body: String, // base64 encoded byte array representing PDF
-    isBase64Encoded: Boolean,
-    headers: Map[String, String]
+      statusCode: Int,
+      body: String, // base64 encoded byte array representing PDF
+      isBase64Encoded: Boolean,
+      headers: Map[String, String]
   )
 
   implicit val InvoiceIdRW: ReadWriter[InvoiceId] = macroRW

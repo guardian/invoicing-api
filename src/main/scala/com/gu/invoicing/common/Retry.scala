@@ -9,7 +9,7 @@ object Retry { // https://stackoverflow.com/a/7931459/5205022
   @tailrec private def retry[T](n: Int)(fn: => T): Try[T] = {
     Try { fn } match {
       case Failure(_) if n > 1 => retry(n - 1)(fn)
-      case fn => fn
+      case fn                  => fn
     }
   }
 
@@ -18,5 +18,5 @@ object Retry { // https://stackoverflow.com/a/7931459/5205022
 
   def retry[T](fn: => T): Try[T] = retry(NumOfRetries)(fn)
   def retryUnsafe[T](fn: => T): T = retry(fn).get
-  def retry[T](fn: => Future[T])(implicit ec: ExecutionContext): Future[T] = retry(fn,NumOfRetries)
+  def retry[T](fn: => Future[T])(implicit ec: ExecutionContext): Future[T] = retry(fn, NumOfRetries)
 }
