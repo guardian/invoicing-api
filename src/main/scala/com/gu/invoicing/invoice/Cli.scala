@@ -9,12 +9,10 @@ import Impl._
 import Program._
 import com.gu.spy._
 
-/**
- * Create environmental variables with Zuora OAuth credentials:
- *
- *   export STAGE = CODE
- *   export Config = { "clientId": "******", "clientSecret": "*****"}
- */
+/** Create environmental variables with Zuora OAuth credentials:
+  *
+  * export STAGE = CODE export Config = { "clientId": "******", "clientSecret": "*****"}
+  */
 object Cli {
   def main(args: Array[String]): Unit = {
     (1 to 4).foreach { _ =>

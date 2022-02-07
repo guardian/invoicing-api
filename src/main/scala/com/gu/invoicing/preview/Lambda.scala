@@ -7,26 +7,18 @@ import com.gu.invoicing.preview.Program._
 import scala.util.chaining._
 import com.gu.spy._
 
-/**
- * Example test event for running the lambda from AWS Console
- * {
- *   "pathParameters": {
- *     "subscriptionNumber": "A-S00000000"
- *   },
- *   "queryStringParameters": {
- *     "startDate": "2020-10-10",
- *     "endDate": "2020-10-20"
- *   }
- * }
- */
+/** Example test event for running the lambda from AWS Console { "pathParameters": {
+  * "subscriptionNumber": "A-S00000000" }, "queryStringParameters": { "startDate": "2020-10-10",
+  * "endDate": "2020-10-20" } }
+  */
 object Lambda {
   def handleRequest(input: String): String =
     input
       .pipe { read[ApiGatewayInput](_) }
       .pipe { PreviewInput.apply }
-      .tap  { info[PreviewInput] }
+      .tap { info[PreviewInput] }
       .pipe { program }
-      .tap  { info[PreviewOutput] }
+      .tap { info[PreviewOutput] }
       .pipe { invoiceDateOutput => ApiGatewayOutput(200, write(invoiceDateOutput)) }
       .pipe { write(_) }
 }
