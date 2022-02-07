@@ -17,11 +17,9 @@ Host: <API ID>.execute-api.eu-west-1.amazonaws.com
 Content-Type: application/json
 
 {
-    "accountId": "A-S12345678",
-    "invoiceNumber": "INV123456",
-    "paymentId": "p123",
-    "invoiceAmount": 0.69,
-    "comment": "???"
+    "accountId": "A123",
+    "paymentDate": "2022-01-01"
+    "comment": "Reason why this is necessary"
 }
 ```
 
@@ -30,10 +28,21 @@ Response
 ```
 {
     "accountId": "A123",
-    "paymentId": "P123",
-    "invoiceAmount": 0.69,
-    "invoiceNumber": "INV123456",
-    "balancingInvoiceNumber": "INV654321"
+    "refundData": [
+      {
+        "invoiceNumber": "INV123456",
+        "invoiceAmount": 0.69,
+        "paymentId": "P123",
+        "refundId": "R123",
+      },
+      {
+        "invoiceNumber": "INV654321",
+        "invoiceAmount": 1.32,
+        "paymentId": "P345",
+        "refundId": "R456",
+      }
+    ],
+    "balancingInvoiceNumber": "INV576849"
 }
 ```
 
