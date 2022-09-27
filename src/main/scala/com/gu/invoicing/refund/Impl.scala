@@ -1,21 +1,30 @@
 package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
+
 import java.time.LocalDate
 import com.gu.invoicing.common.Http
+
 import scala.annotation.tailrec
 import Model._
+
+import java.util.logging.Logger
 import scala.util.chaining._
 
 /** Zuora API client and implementation details
   */
 object Impl {
+  private val logger: Logger = java.util.logging.Logger.getGlobal
   def getSubscription(name: String): Subscription = {
     Http(s"$zuoraApiHost/v1/subscriptions/$name")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
-      .pipe(read[Subscription](_))
+      .pipe{
+        body =>
+          logger.info(body)
+        read[Subscription](body)
+      }
   }
 
   def getAccountBalance(accountId: String): BigDecimal = {
