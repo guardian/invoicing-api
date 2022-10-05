@@ -213,7 +213,9 @@ object Impl {
       invoices: List[Invoice],
       itemsByInvoiceId: Map[String, List[InvoiceItem]]
   ): List[(String, Invoice, List[InvoiceItem])] = {
-    invoices.map(invoice => (invoice.Id, invoice, itemsByInvoiceId(invoice.Id)))
+    invoices.map(invoice => (invoice.Id, invoice, itemsByInvoiceId.get(invoice.Id))) collect {
+      case (invoiceId, invoice, Some(invoiceItems)) => (invoiceId, invoice, invoiceItems)
+    }
   }
 
   /** Select correct invoice to apply refund to */
