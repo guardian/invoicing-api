@@ -2,26 +2,35 @@ package com.gu.invoicing.pdf
 
 import com.gu.invoicing.common.JsonSupport
 
+import java.util.Currency
+
 object Model extends JsonSupport {
   case class Config(clientId: String, clientSecret: String)
   case class AccessToken(access_token: String)
 
   case class Invoice(
+      Id: String,
       AccountId: String,
       Body: String /* Base64 encoded PDF */
   )
-  case class BasicInfo(IdentityId__c: String)
-  case class Account(basicInfo: BasicInfo)
+  case class BasicInfo(IdentityId__c: String, invoiceTemplateId: String)
+  case class BillingAndPayment(currency: String)
+  case class SoldToContact(country: String)
+  case class Account(basicInfo: BasicInfo, billingAndPayment: BillingAndPayment, soldToContact: SoldToContact)
   case class InvoiceFile(pdfFileUrl: String)
   case class InvoiceFiles(invoiceFiles: List[InvoiceFile])
+  case class PutResponse(Success: Boolean, Id: String)
 
   implicit val configRW: ReadWriter[Config] = macroRW
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val BasicInfoRW: ReadWriter[BasicInfo] = macroRW
+  implicit val BillingAndPaymentRW: ReadWriter[BillingAndPayment] = macroRW
+  implicit val SoldToContactRW: ReadWriter[SoldToContact] = macroRW
   implicit val AccountRW: ReadWriter[Account] = macroRW
   implicit val InvoiceFileRW: ReadWriter[InvoiceFile] = macroRW
   implicit val InvoiceFileIdsRW: ReadWriter[InvoiceFiles] = macroRW
+  implicit val PutResponseRW: ReadWriter[PutResponse] = macroRW
 
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
   case class InvoiceId(invoiceId: String)
