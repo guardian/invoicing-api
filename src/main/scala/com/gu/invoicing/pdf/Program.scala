@@ -4,17 +4,39 @@ import com.gu.invoicing.pdf.Model._
 import com.gu.invoicing.pdf.Impl._
 import com.gu.invoicing.common.Retry._
 
+import java.util.Currency
+
 object Program {
+
+  private val GNMAustralia_InvoiceTemplateID = "2c92a0fd5ecce80c015ee71028643020" // GNM Australia Pty Ltd
 
   /** Main business logic */
   def program(input: PdfInput): String = retryUnsafe {
     val PdfInput(invoiceId, identityId) = input
-    val Invoice(accountId, pdf) = getInvoice(invoiceId)
-    val actualIdentityId = getIdentityId(accountId)
+    val invoice = getInvoice(invoiceId)
     assert(
-      identityId == actualIdentityId,
-      s"Requested invoice should NOT belong to different identity $actualIdentityId"
+      invoiceId == invoice.Id,
+      s"Returned invoice id: ${invoice.Id} does not match requested invoice id: $invoiceId"
     )
-    pdf
+    val account = getAccount(invoice.AccountId)
+    assert(
+      identityId == account.IdentityId__c,
+      s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.IdentityId__c}"
+    )
+    if (repairRequired(account)) {
+      updateInvoiceTemplateId(invoice.AccountId, GNMAustralia_InvoiceTemplateID)
+      regenerateInvoice(invoice.Id)
+      getInvoice(invoice.Id).Body
+    } else {
+      invoice.Body
+    }
   }
+
+  // If the currency is AUD but the invoice template ID is not the correct one then repair things by:
+  // setting the correct invoice template ID, regenerating the PDF, and re-getting the PDF body.
+  private def repairRequired(account: Account): Boolean = {
+    account.Currency == Currency.getInstance("AUD") &&
+      account.InvoiceTemplateId != GNMAustralia_InvoiceTemplateID
+  }
+
 }

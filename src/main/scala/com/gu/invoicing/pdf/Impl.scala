@@ -8,21 +8,41 @@ import scala.util.chaining._
 object Impl {
   def getInvoice(invoiceId: String): Invoice =
     Http(s"$zuoraApiHost/v1/object/invoice/$invoiceId")
-      .header("Authorization", s"Bearer ${accessToken}")
+      .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
       .pipe(read[Invoice](_))
 
-  def getIdentityId(accountId: String): String =
-    Http(s"$zuoraApiHost/v1/accounts/$accountId")
-      .header("Authorization", s"Bearer ${accessToken}")
+  def regenerateInvoice(invoiceId: String): PutResponse =
+    Http(s"$zuoraApiHost/v1/object/invoice/$invoiceId")
+      .header("Authorization", s"Bearer $accessToken")
+      .method("put")
+      .postData(
+        """{"RegenerateInvoicePDF":true}"""
+      )
+      .asString
+      .body
+      .pipe(read[PutResponse](_))
+
+  def updateInvoiceTemplateId(accountId: String, invoiceTemplateId: String): PutResponse =
+    Http(s"$zuoraApiHost/v1/object/account/$accountId")
+      .header("Authorization", s"Bearer $accessToken")
+      .method("put")
+      .postData(
+        s"""{"InvoiceTemplateId":"$invoiceTemplateId"}"""
+      )
+      .asString
+      .body
+      .pipe(read[PutResponse](_))
+
+  def getAccount(accountId: String): Account =
+    Http(s"$zuoraApiHost/v1/object/account/$accountId")
+      .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
       .pipe(read[Account](_))
-      .basicInfo
-      .IdentityId__c
 
-  val noCache = Map( // https://stackoverflow.com/a/2068407/5205022
+  val noCache: Map[String, String] = Map( // https://stackoverflow.com/a/2068407/5205022
     "Cache-Control" -> "no-cache, no-store, must-revalidate",
     "Pragma" -> "no-cache",
     "Expires" -> "0"
