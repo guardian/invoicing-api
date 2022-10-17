@@ -33,7 +33,7 @@ object Impl {
       )
       .asString
       .body
-      .pipe(read[PutResponse](_))
+      .pipe(read[PutResponse](_, true))
 
   def getAccount(accountId: String): Account =
     Http(s"$zuoraApiHost/v1/accounts/$accountId")
