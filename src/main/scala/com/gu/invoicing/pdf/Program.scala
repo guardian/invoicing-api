@@ -3,12 +3,11 @@ package com.gu.invoicing.pdf
 import com.gu.invoicing.pdf.Model._
 import com.gu.invoicing.pdf.Impl._
 import com.gu.invoicing.common.Retry._
+import com.gu.invoicing.common.ZuoraAuth.{GNMAustralia_InvoiceTemplateID}
 
-import java.util.Currency
+import java.lang.System.getenv
 
 object Program {
-
-  private val GNMAustralia_InvoiceTemplateID = "2c92a0fd5ecce80c015ee71028643020" // GNM Australia Pty Ltd
 
   /** Main business logic */
   def program(input: PdfInput): String = retryUnsafe {
@@ -24,7 +23,7 @@ object Program {
       s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.basicInfo.IdentityId__c}"
     )
     if (repairRequired(account)) {
-      updateInvoiceTemplateId(invoice.AccountId, GNMAustralia_InvoiceTemplateID)
+      setGNMAustraliaInvoiceTemplateId(invoice.AccountId)
       regenerateInvoice(invoice.Id)
       getInvoice(invoice.Id).Body
     } else {

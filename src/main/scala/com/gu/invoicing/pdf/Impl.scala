@@ -1,6 +1,6 @@
 package com.gu.invoicing.pdf
 
-import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
+import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost, GNMAustralia_InvoiceTemplateID}
 import com.gu.invoicing.pdf.Model._
 import com.gu.invoicing.common.Http
 import scala.util.chaining._
@@ -24,12 +24,12 @@ object Impl {
       .body
       .pipe(read[PutResponse](_))
 
-  def updateInvoiceTemplateId(accountId: String, invoiceTemplateId: String): PutResponse =
+  def setGNMAustraliaInvoiceTemplateId(accountId: String): PutResponse =
     Http(s"$zuoraApiHost/v1/object/account/$accountId")
       .header("Authorization", s"Bearer $accessToken")
       .method("put")
       .postData(
-        s"""{"InvoiceTemplateId":"$invoiceTemplateId"}"""
+        s"""{"InvoiceTemplateId":"$GNMAustralia_InvoiceTemplateID"}"""
       )
       .asString
       .body

@@ -3,8 +3,10 @@ package com.gu.invoicing.common
 import java.lang.System.getenv
 import java.util.{Timer, TimerTask}
 import com.gu.invoicing.common.Retry._
+
 import scala.util.chaining._
 import scalaj.http.Http
+
 import scala.util.{Failure, Success}
 
 object ZuoraAuth extends JsonSupport {
@@ -21,6 +23,13 @@ object ZuoraAuth extends JsonSupport {
       case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com";
       case "PROD"         => "https://rest.zuora.com"
     }
+
+  lazy val GNMAustralia_InvoiceTemplateID: String =
+    stage match {
+      case "DEV" => "2c92c0f85ecc47e5015ee7360d602757"
+      case "CODE" => "2c92c0f95ecc52d7015ee7348b9d4f61" // UAT Zuora
+      case "PROD" => "2c92a0fd5ecce80c015ee71028643020"
+    } // GNM Australia Pty Ltd
 
   /** Because list invoices is hit frequently JVM is kept warm and val access token would seem to
     * persist across lambda executions which meant the token would expire after one hour and because
