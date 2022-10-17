@@ -13,10 +13,6 @@ object Program {
   def program(input: PdfInput): String = retryUnsafe {
     val PdfInput(invoiceId, identityId) = input
     val invoice = getInvoice(invoiceId)
-    assert(
-      invoiceId == invoice.Id,
-      s"Returned invoice id: ${invoice.Id} does not match requested invoice id: $invoiceId"
-    )
     val account = getAccount(invoice.AccountId)
     assert(
       identityId == account.basicInfo.IdentityId__c,
