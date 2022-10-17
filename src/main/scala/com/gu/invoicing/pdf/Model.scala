@@ -14,7 +14,7 @@ object Model extends JsonSupport {
       Body: String /* Base64 encoded PDF */
   )
   case class BasicInfo(IdentityId__c: String)
-  case class Account(IdentityId__c: String, InvoiceTemplateId: String, Currency: Currency)
+  case class Account(IdentityId__c: String, InvoiceTemplateId: String, Currency: String)
   case class InvoiceFile(pdfFileUrl: String)
   case class InvoiceFiles(invoiceFiles: List[InvoiceFile])
   case class PutResponse(Success: Boolean, Id: String)

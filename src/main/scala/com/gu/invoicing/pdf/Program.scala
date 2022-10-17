@@ -35,7 +35,7 @@ object Program {
   // If the currency is AUD but the invoice template ID is not the correct one then repair things by:
   // setting the correct invoice template ID, regenerating the PDF, and re-getting the PDF body.
   private def repairRequired(account: Account): Boolean = {
-    account.Currency == Currency.getInstance("AUD") &&
+    account.Currency == "AUD" &&
       account.InvoiceTemplateId != GNMAustralia_InvoiceTemplateID
   }
 
