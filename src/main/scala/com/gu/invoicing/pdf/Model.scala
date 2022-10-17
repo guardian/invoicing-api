@@ -13,8 +13,10 @@ object Model extends JsonSupport {
       AccountId: String,
       Body: String /* Base64 encoded PDF */
   )
-  case class BasicInfo(IdentityId__c: String)
-  case class Account(IdentityId__c: String, InvoiceTemplateId: String, Currency: String)
+  case class BasicInfo(IdentityId__c: String, invoiceTemplateId: String)
+  case class BillingAndPayment(currency: String)
+  case class SoldToContact(country: String)
+  case class Account(basicInfo: BasicInfo, billingAndPayment: BillingAndPayment, soldToContact: SoldToContact)
   case class InvoiceFile(pdfFileUrl: String)
   case class InvoiceFiles(invoiceFiles: List[InvoiceFile])
   case class PutResponse(Success: Boolean, Id: String)
@@ -23,6 +25,8 @@ object Model extends JsonSupport {
   implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val BasicInfoRW: ReadWriter[BasicInfo] = macroRW
+  implicit val BillingAndPaymentRW: ReadWriter[BillingAndPayment] = macroRW
+  implicit val SoldToContactRW: ReadWriter[SoldToContact] = macroRW
   implicit val AccountRW: ReadWriter[Account] = macroRW
   implicit val InvoiceFileRW: ReadWriter[InvoiceFile] = macroRW
   implicit val InvoiceFileIdsRW: ReadWriter[InvoiceFiles] = macroRW

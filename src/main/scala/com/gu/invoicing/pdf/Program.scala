@@ -20,8 +20,8 @@ object Program {
     )
     val account = getAccount(invoice.AccountId)
     assert(
-      identityId == account.IdentityId__c,
-      s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.IdentityId__c}"
+      identityId == account.basicInfo.IdentityId__c,
+      s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.basicInfo.IdentityId__c}"
     )
     if (repairRequired(account)) {
       updateInvoiceTemplateId(invoice.AccountId, GNMAustralia_InvoiceTemplateID)
@@ -32,11 +32,12 @@ object Program {
     }
   }
 
-  // If the currency is AUD but the invoice template ID is not the correct one then repair things by:
-  // setting the correct invoice template ID, regenerating the PDF, and re-getting the PDF body.
+  // If the sold to country is Australia, the currency is AUD but the invoice template ID is not the correct one,
+  // then repair things by setting the correct invoice template ID, regenerating the PDF, and re-getting the PDF body.
   private def repairRequired(account: Account): Boolean = {
-    account.Currency == "AUD" &&
-      account.InvoiceTemplateId != GNMAustralia_InvoiceTemplateID
+    account.soldToContact.country == "Australia" &&
+    account.billingAndPayment.currency == "AUD" &&
+      account.basicInfo.invoiceTemplateId != GNMAustralia_InvoiceTemplateID
   }
 
 }

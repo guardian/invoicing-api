@@ -36,7 +36,7 @@ object Impl {
       .pipe(read[PutResponse](_))
 
   def getAccount(accountId: String): Account =
-    Http(s"$zuoraApiHost/v1/object/account/$accountId")
+    Http(s"$zuoraApiHost/v1/accounts/$accountId")
       .header("Authorization", s"Bearer $accessToken")
       .asString
       .body
