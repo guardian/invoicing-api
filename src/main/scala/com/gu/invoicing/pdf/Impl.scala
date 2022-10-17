@@ -16,24 +16,23 @@ object Impl {
   def regenerateInvoice(invoiceId: String): PutResponse =
     Http(s"$zuoraApiHost/v1/object/invoice/$invoiceId")
       .header("Authorization", s"Bearer $accessToken")
-      .method("put")
-      .postData(
+      .put(
         """{"RegenerateInvoicePDF":true}"""
       )
       .asString
       .body
       .pipe(read[PutResponse](_))
 
-  def setGNMAustraliaInvoiceTemplateId(accountId: String): PutResponse =
+  def setGNMAustraliaInvoiceTemplateId(accountId: String): PutResponse = {
     Http(s"$zuoraApiHost/v1/object/account/$accountId")
       .header("Authorization", s"Bearer $accessToken")
-      .method("put")
-      .postData(
+      .put(
         s"""{"InvoiceTemplateId":"$GNMAustralia_InvoiceTemplateID"}"""
       )
       .asString
       .body
-      .pipe(read[PutResponse](_, true))
+      .pipe(read[PutResponse](_))
+  }
 
   def getAccount(accountId: String): Account =
     Http(s"$zuoraApiHost/v1/accounts/$accountId")

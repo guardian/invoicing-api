@@ -9,7 +9,7 @@ import com.gu.spy._
 
 /** Create environmental variables with Zuora OAuth credentials:
   *
-  * export STAGE = CODE export Config = { "clientId": "******", "clientSecret": "*****"}
+  * export Stage = CODE; export Config = { "clientId": "******", "clientSecret": "*****"}
   */
 object Cli {
   def main(args: Array[String]): Unit = {
