@@ -111,6 +111,7 @@ object Model extends JsonSupport {
   case class RefundInput(
       subscriptionName: String,
       refund: BigDecimal,
+      adjustInvoices: Boolean = true,
       guid: String = UUID.randomUUID().toString,
       message: String = "Start processing refund"
   )
