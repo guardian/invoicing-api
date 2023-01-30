@@ -139,11 +139,11 @@ object Impl {
     def availableAmount(invoiceItem: InvoiceItem): Option[BigDecimal] = {
       netAdjustmentsByInvoiceItemId(adjustments).get(invoiceItem.Id) match {
         case Some(netAdjustment) =>
-          val availableRefundableAmount = invoiceItem.ChargeAmount - netAdjustment
+          val availableRefundableAmount = invoiceItem.UnitPrice - netAdjustment
           if (availableRefundableAmount <= 0) None else Some(availableRefundableAmount)
 
         case None => // this items has not been adjusted therefore the original full item amount is available
-          Some(invoiceItem.ChargeAmount)
+          Some(invoiceItem.UnitPrice) // Use unit price rather than charge amount here because charge amount does not include tax
       }
     }
 

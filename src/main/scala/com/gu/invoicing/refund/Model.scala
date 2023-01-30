@@ -31,6 +31,7 @@ object Model extends JsonSupport {
       ServiceStartDate: LocalDate,
       ChargeDate: LocalDateTime,
       ChargeAmount: BigDecimal,
+      UnitPrice: BigDecimal,
       SubscriptionNumber: String
   )
   case class InvoiceItemQueryResult(records: List[InvoiceItem])
