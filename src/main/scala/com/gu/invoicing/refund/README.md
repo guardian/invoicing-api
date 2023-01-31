@@ -16,6 +16,22 @@ Content-Type: application/json
 }
 ```
 
+By default invoicing-api will adjust the invoices it applies refunds to. In some cases this might not be
+what you want in which case you can pass the `adjustInvoices=false` parameter to prevent this.
+[See this PR](https://github.com/guardian/invoicing-api/pull/146) for more details
+eg.
+```http
+POST /CODE/refund
+Host: <API ID>.execute-api.eu-west-1.amazonaws.com
+Content-Type: application/json
+
+{
+    "subscriptionName": "A-S00045160",
+    "refund": 0.69,
+    "adjustInvoices": false
+}
+```
+
 Response
 
 ```
@@ -38,6 +54,10 @@ Response
     "guid": "a5e7945d-98f3-4b44-9537-64a25ca91f4d"
 }
 ```
+By default invoicing-api will adjust the invoices it applies refunds to. In some cases this might not be 
+what you want in which case you can pass the `adjustInvoices=false` parameter to prevent this.
+[See this PR](https://github.com/guardian/invoicing-api/pull/146) for more details  
+
 ### How to manually apply refund
 
 1. Invoices can be accessed from the customer account associated with the subscription
