@@ -56,7 +56,7 @@ object Impl {
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(
-        s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin
+        s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber, UnitPrice FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin
       )
       .method("POST")
       .asString
