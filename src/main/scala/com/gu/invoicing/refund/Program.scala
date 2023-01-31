@@ -28,7 +28,7 @@ object Program {
     val itemsByInvoiceId = getItemsByInvoice(subscriptionName) tap { itemsByInvoiceId =>
       s"$subscriptionName should have at least one invoice item" assert itemsByInvoiceId.nonEmpty
     }
-
+    System.out.println("Successfully got InvoiceItems")
     val (invoiceId, _, items) = decideRelevantInvoice(invoices, itemsByInvoiceId) tap {
       case (_, invoice, _) =>
         s"$invoice should be at least posted and not negative" assert (invoice.Amount > 0.0 && invoice.Status == "Posted")
