@@ -61,7 +61,10 @@ object Impl {
       .method("POST")
       .asString
       .body
-      .pipe(read[InvoiceItemQueryResult](_))
+      .pipe{body =>
+        System.out.println(s"Response from getItemsByInvoice query was $body")
+        read[InvoiceItemQueryResult](body)
+      }
       .records
       .groupBy(_.InvoiceId)
   }
