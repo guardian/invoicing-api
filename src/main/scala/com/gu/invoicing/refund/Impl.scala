@@ -61,7 +61,7 @@ object Impl {
       .method("POST")
       .asString
       .body
-      .pipe{body =>
+      .pipe { body =>
         System.out.println(s"Response from getItemsByInvoice query was $body")
         read[InvoiceItemQueryResult](body)
       }
@@ -146,7 +146,9 @@ object Impl {
           if (availableRefundableAmount <= 0) None else Some(availableRefundableAmount)
 
         case None => // this items has not been adjusted therefore the original full item amount is available
-          Some(invoiceItem.UnitPrice) // Use unit price rather than charge amount here because charge amount does not include tax
+          Some(
+            invoiceItem.UnitPrice
+          ) // Use unit price rather than charge amount here because charge amount does not include tax
       }
     }
 
