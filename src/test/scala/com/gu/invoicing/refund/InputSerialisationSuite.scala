@@ -10,7 +10,8 @@ class InputSerialisationSuite extends munit.FunSuite {
   }
 
   test("Serialisation works when adjustInvoices parameter is present") {
-    val inputString = """{"subscriptionName": "A-S00045160","refund": 0.1, "adjustInvoices": false}"""
+    val inputString =
+      """{"subscriptionName": "A-S00045160","refund": 0.1, "adjustInvoices": false}"""
     assertEquals(read[RefundInput](inputString).adjustInvoices, false)
   }
 

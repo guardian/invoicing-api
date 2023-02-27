@@ -16,7 +16,11 @@ object Model extends JsonSupport {
   case class BasicInfo(IdentityId__c: String, invoiceTemplateId: String)
   case class BillingAndPayment(currency: String)
   case class SoldToContact(country: String)
-  case class Account(basicInfo: BasicInfo, billingAndPayment: BillingAndPayment, soldToContact: SoldToContact)
+  case class Account(
+      basicInfo: BasicInfo,
+      billingAndPayment: BillingAndPayment,
+      soldToContact: SoldToContact
+  )
   case class InvoiceFile(pdfFileUrl: String)
   case class InvoiceFiles(invoiceFiles: List[InvoiceFile])
   case class PutResponse(Success: Boolean, Id: String)

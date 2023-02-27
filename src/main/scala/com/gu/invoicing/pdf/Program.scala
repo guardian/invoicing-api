@@ -32,7 +32,7 @@ object Program {
   private def repairRequired(account: Account): Boolean = {
     account.soldToContact.country == "Australia" &&
     account.billingAndPayment.currency == "AUD" &&
-      account.basicInfo.invoiceTemplateId != GNMAustralia_InvoiceTemplateID
+    account.basicInfo.invoiceTemplateId != GNMAustralia_InvoiceTemplateID
   }
 
 }
