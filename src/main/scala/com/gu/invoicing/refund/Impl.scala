@@ -102,7 +102,10 @@ object Impl {
       .method("POST")
       .asString
       .body
-      .pipe(body => read[RefundResult](body))
+      .pipe{body =>
+        System.out.println(s"body of refund request is $body")
+        read[RefundResult](body)
+      }
       .Id
   }
 
