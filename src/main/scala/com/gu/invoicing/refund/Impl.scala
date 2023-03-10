@@ -13,10 +13,9 @@ import scala.util.chaining._
 /** Zuora API client and implementation details
   */
 object Impl {
-  def logAndRead[T: Reader](url: String, item: ujson.Readable): T = {
-    val result = read[T](item)
-    System.out.println(s"Received $result from $url")
-    result
+  def logAndRead[T: Reader](url: String, response: String): T = {
+    System.out.println(s"Received $response from $url")
+    read[T](response)
   }
 
   def get[T: Reader](url: String): T = {
