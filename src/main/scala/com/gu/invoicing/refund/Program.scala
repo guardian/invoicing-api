@@ -72,9 +72,11 @@ object Program {
     System.out.println(s"Refund processed successfully")
 
     if (adjustInvoices) {
+      System.out.println(s"Attempting to adjust invoices")
       applyRefundOverItemAdjustments(adjustmentsRounded) tap { adjustments =>
         s"All $adjustments should be successful" assert adjustments.forall(_.Success)
       }
+      System.out.println(s"Checking account balance has not changed")
       getAccountBalance(subscription.accountId) tap { balanceAfterRefund =>
         s"${subscription.accountId} balance should not change after refund" assert (balanceBeforeRefund == balanceAfterRefund)
       }
