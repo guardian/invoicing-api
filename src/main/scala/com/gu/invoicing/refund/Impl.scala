@@ -1,45 +1,15 @@
 package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
-
 import java.time.LocalDate
-import com.gu.invoicing.common.{Http, ZuoraAuth}
-
+import com.gu.invoicing.common.Http
 import scala.annotation.tailrec
 import Model._
-
 import scala.util.chaining._
 
 /** Zuora API client and implementation details
   */
 object Impl {
-  def logAndRead[T: Reader](url: String, response: String): T = {
-    System.out.println(s"Received $response from $url")
-    read[T](response)
-  }
-
-  def get[T: Reader](url: String): T = {
-    System.out.println(s"Calling GET $url")
-    Http(url)
-      .header("Authorization", s"Bearer $accessToken")
-      .asString
-      .body
-      .pipe(logAndRead[T](url, _))
-  }
-
-
-  def post[T: Reader](url: String, body: String): T = {
-    System.out.println(s"Calling POST $url with body $body")
-    Http(url)
-      .header("Authorization", s"Bearer $accessToken")
-      .header("Content-Type", "application/json")
-      .postData(body)
-      .method("POST")
-      .asString
-      .body
-      .pipe(logAndRead[T](url, _))
-  }
-
   def getSubscription(name: String): Subscription =
     get[Subscription](s"$zuoraApiHost/v1/subscriptions/$name")
 
@@ -97,8 +67,8 @@ object Impl {
       .Status
 
   def netAdjustmentsByInvoiceItemId(
-                                     adjustments: List[InvoiceItemAdjustment]
-                                   ): Map[String, BigDecimal] = {
+      adjustments: List[InvoiceItemAdjustment]
+  ): Map[String, BigDecimal] = {
     adjustments
       .groupBy(_.SourceId)
       .map { case (invoiceItemId, adjustments) =>
@@ -113,11 +83,11 @@ object Impl {
     * corresponding items.
     */
   def spreadRefundAcrossItems(
-                               invoiceItems: List[InvoiceItem],
-                               adjustments: List[InvoiceItemAdjustment],
-                               totalRefundAmount: BigDecimal,
-                               refundGuid: String
-                             ): List[InvoiceItemAdjustmentWrite] = {
+      invoiceItems: List[InvoiceItem],
+      adjustments: List[InvoiceItemAdjustment],
+      totalRefundAmount: BigDecimal,
+      refundGuid: String
+  ): List[InvoiceItemAdjustmentWrite] = {
 
     /* Collect all item adjustments of a particular invoice item and return remaining amount that can be adjusted/refunded */
     def availableAmount(invoiceItem: InvoiceItem): Option[BigDecimal] = {
@@ -134,10 +104,10 @@ object Impl {
     }
 
     @tailrec def loop(
-                       remainingAmounToRefund: BigDecimal,
-                       remainingItems: List[InvoiceItem],
-                       accumulatedAdjustments: List[InvoiceItemAdjustmentWrite]
-                     ): List[InvoiceItemAdjustmentWrite] = {
+        remainingAmounToRefund: BigDecimal,
+        remainingItems: List[InvoiceItem],
+        accumulatedAdjustments: List[InvoiceItemAdjustmentWrite]
+    ): List[InvoiceItemAdjustmentWrite] = {
       remainingItems match {
         case Nil =>
           accumulatedAdjustments
@@ -186,9 +156,9 @@ object Impl {
     )
 
   def joinInvoiceWithInvoiceItemsOnInvoiceIdKey(
-                                                 invoices: List[Invoice],
-                                                 itemsByInvoiceId: Map[String, List[InvoiceItem]]
-                                               ): List[(String, Invoice, List[InvoiceItem])] = {
+      invoices: List[Invoice],
+      itemsByInvoiceId: Map[String, List[InvoiceItem]]
+  ): List[(String, Invoice, List[InvoiceItem])] = {
     invoices.map(invoice => (invoice.Id, invoice, itemsByInvoiceId.get(invoice.Id))) collect {
       case (invoiceId, invoice, Some(invoiceItems)) => (invoiceId, invoice, invoiceItems)
     }
@@ -196,9 +166,9 @@ object Impl {
 
   /** Select correct invoice to apply refund to */
   def decideRelevantInvoice(
-                             invoices: List[Invoice],
-                             itemsByInvoiceId: Map[String, List[InvoiceItem]]
-                           ): (String, Invoice, List[InvoiceItem]) = {
+      invoices: List[Invoice],
+      itemsByInvoiceId: Map[String, List[InvoiceItem]]
+  ): (String, Invoice, List[InvoiceItem]) = {
     joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, itemsByInvoiceId).iterator
       .filter({ case (_, invoice, _) => invoice.Status == "Posted" })
       .filter({ case (_, invoice, _) => invoice.Amount > 0 })
@@ -219,11 +189,37 @@ object Impl {
 
   // https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/TB_Rounding_and_Precision
   def roundAdjustments(
-                        adjustments: List[InvoiceItemAdjustmentWrite]
-                      ): List[InvoiceItemAdjustmentWrite] = {
+      adjustments: List[InvoiceItemAdjustmentWrite]
+  ): List[InvoiceItemAdjustmentWrite] = {
     adjustments
       .filter(a => roundHalfUp(a.Amount) != 0)
       .map(a => a.copy(Amount = roundHalfUp(a.Amount)))
+  }
+
+  def logAndRead[T: Reader](url: String, response: String): T = {
+    System.out.println(s"Received $response from $url")
+    read[T](response)
+  }
+
+  def get[T: Reader](url: String): T = {
+    System.out.println(s"Calling GET $url")
+    Http(url)
+      .header("Authorization", s"Bearer $accessToken")
+      .asString
+      .body
+      .pipe(logAndRead[T](url, _))
+  }
+
+  def post[T: Reader](url: String, body: String): T = {
+    System.out.println(s"Calling POST $url with body $body")
+    Http(url)
+      .header("Authorization", s"Bearer $accessToken")
+      .header("Content-Type", "application/json")
+      .postData(body)
+      .method("POST")
+      .asString
+      .body
+      .pipe(logAndRead[T](url, _))
   }
 
 }
