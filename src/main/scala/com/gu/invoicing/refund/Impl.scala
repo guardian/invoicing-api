@@ -221,7 +221,7 @@ object Impl {
       .asString
       .body
       .pipe{ responseBody =>
-        log(s"Response was $responseBody")
+        System.out.println(s"Response was $responseBody")
         read[List[AdjustmentResult]](responseBody)
       }
   }
