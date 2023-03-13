@@ -159,7 +159,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -179,7 +179,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -199,7 +199,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -219,7 +219,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -239,7 +239,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
@@ -259,7 +259,7 @@ Resources:
           Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
-      Runtime: provided
+      Runtime: java11
       Timeout: 900
     DependsOn:
       - InvoicingLambdaRole
