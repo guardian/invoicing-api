@@ -151,7 +151,7 @@ Resources:
       FunctionName: !Sub invoicing-api-refund-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.refund.Lambda::handleRequest
       Environment:
         Variables:
@@ -171,7 +171,7 @@ Resources:
       FunctionName: !Sub invoicing-api-invoices-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.invoice.Lambda::handleRequest
       Environment:
         Variables:
@@ -191,7 +191,7 @@ Resources:
       FunctionName: !Sub invoicing-api-pdf-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.pdf.Lambda::handleRequest
       Environment:
         Variables:
@@ -211,7 +211,7 @@ Resources:
       FunctionName: !Sub invoicing-api-nextinvoicedate-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.nextinvoicedate.Lambda::handleRequest
       Environment:
         Variables:
@@ -231,7 +231,7 @@ Resources:
       FunctionName: !Sub invoicing-api-preview-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.preview.Lambda::handleRequest
       Environment:
         Variables:
@@ -251,7 +251,7 @@ Resources:
       FunctionName: !Sub invoicing-api-refund-erroneous-payment-${Stage}
       Code:
         S3Bucket: membership-dist
-        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.zip
+        S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
       Handler: com.gu.invoicing.refundErroneousPayment.Lambda::handleRequest
       Environment:
         Variables:

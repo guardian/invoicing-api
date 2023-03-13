@@ -48,7 +48,10 @@ import java.util.logging.Logger
 object Lambda {
   def handleRequest(input: String): String = {
     input
-      .pipe { read[ApiGatewayInput](_) }
+      .pipe { inputBody =>
+        System.out.println(s"Input body is $inputBody")
+        read[ApiGatewayInput](inputBody)
+      }
       .body
       .pipe { read[RefundInput](_) }
       .tap { info[RefundInput] }

@@ -47,8 +47,9 @@ deployTo := {
     "invoicing-api-nextinvoicedate",
     "invoicing-api-preview",
     "invoicing-api-refund-erroneous-payment",
-  ).foreach(functionName =>
+  ).foreach { functionName =>
+    System.out.println(s"Updating lambda $functionName")
     s"aws lambda update-function-code --function-name $functionName-$stage --s3-bucket $s3Bucket --s3-key $s3Path --profile membership --region eu-west-1".!!
-  )
+  }
 }
 
