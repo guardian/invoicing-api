@@ -1,10 +1,14 @@
 package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
+
 import java.time.LocalDate
 import com.gu.invoicing.common.Http
+
 import scala.annotation.tailrec
 import Model._
+import pprint.log
+
 import scala.util.chaining._
 
 /** Zuora API client and implementation details
@@ -197,21 +201,29 @@ object Impl {
   def applyRefundOverItemAdjustments(
       invoiceItems: List[InvoiceItemAdjustmentWrite]
   ): List[AdjustmentResult] = {
-    Http(s"$zuoraApiHost/v1/action/create")
+    val url = s"$zuoraApiHost/v1/action/create"
+    val body = write(
+      InvoiceItemAdjustmentsWriteRequest(
+        objects = invoiceItems,
+        `type` = "InvoiceItemAdjustment"
+      )
+    )
+
+    log(s"Calling $url with body $body")
+
+    Http(url)
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(
-        write(
-          InvoiceItemAdjustmentsWriteRequest(
-            objects = invoiceItems,
-            `type` = "InvoiceItemAdjustment"
-          )
-        )
+        body
       )
       .method("POST")
       .asString
       .body
-      .pipe(read[List[AdjustmentResult]](_))
+      .pipe{ responseBody =>
+        log(s"Response was $responseBody")
+        read[List[AdjustmentResult]](responseBody)
+      }
   }
 
   def joinInvoiceWithInvoiceItemsOnInvoiceIdKey(
