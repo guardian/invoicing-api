@@ -47,9 +47,9 @@ import java.util.logging.Logger
   */
 object Lambda {
   def handleRequest(input: String): String = {
+    System.out.println(s"Input body is $input")
     input
       .pipe { inputBody =>
-        System.out.println(s"Input body is $inputBody")
         read[ApiGatewayInput](inputBody)
       }
       .body
