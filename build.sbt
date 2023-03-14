@@ -13,7 +13,9 @@ lazy val root = (project in file("."))
       "com.lihaoyi" %% "upickle" % "3.0.0",
       "com.gu" %% "spy" % "0.1.1",
       "org.scala-lang.modules" %% "scala-async" % "1.0.1",
-      "com.lihaoyi" %% "pprint" % "0.8.1"
+      "com.lihaoyi" %% "pprint" % "0.8.1",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.2",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := s"${name.value}.jar",

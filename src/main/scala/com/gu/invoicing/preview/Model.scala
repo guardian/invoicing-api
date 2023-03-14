@@ -1,5 +1,8 @@
 package com.gu.invoicing.preview
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
+import com.gu.invoicing.common.HttpHelper.pathParameterOrThrow
+
 import java.time.{DayOfWeek, LocalDate}
 import com.gu.invoicing.common.JsonSupport
 
@@ -13,11 +16,11 @@ object Model extends JsonSupport {
       endDate: LocalDate
   )
   object PreviewInput {
-    def apply(apiGatewayInput: ApiGatewayInput): PreviewInput =
+    def apply(input: APIGatewayProxyRequestEvent): PreviewInput =
       PreviewInput(
-        apiGatewayInput.pathParameters.subscriptionName,
-        LocalDate.parse(apiGatewayInput.queryStringParameters.startDate),
-        LocalDate.parse(apiGatewayInput.queryStringParameters.endDate)
+        pathParameterOrThrow(input, "subscriptionName"),
+        LocalDate.parse(pathParameterOrThrow(input, "startDate")),
+        LocalDate.parse(pathParameterOrThrow(input, "endDate")),
       )
   }
   case class PreviewOutput(
