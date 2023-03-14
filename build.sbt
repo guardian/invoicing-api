@@ -17,7 +17,7 @@ lazy val root = (project in file("."))
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := s"${name.value}.jar",
-    riffRaffPackageType := crossTarget.value / s"${name.value}.jar",
+    riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := "support:invoicing-api",
