@@ -175,14 +175,6 @@ object Model extends JsonSupport {
   implicit val invoiceWithPaymentRW: ReadWriter[InvoiceWithPayment] = macroRW
   implicit val mmaInvoiceWithPaymentRW: ReadWriter[MmaInvoiceWithPayment] = macroRW
 
-  // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-  case class ApiGatewayInput(headers: Map[String, String])
-
-  // https://aws.amazon.com/premiumsupport/knowledge-center/malformed-502-api-gateway/
-  case class ApiGatewayOutput(statusCode: Int, body: String)
-
-  implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
-  implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
   implicit val invoicesInputRW: ReadWriter[InvoicesInput] = macroRW
   implicit val invoicesOutputRW: ReadWriter[InvoicesOutput] = macroRW
 }

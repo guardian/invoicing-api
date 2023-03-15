@@ -39,12 +39,6 @@ object Model extends JsonSupport {
   implicit val InvoiceFileIdsRW: ReadWriter[InvoiceFiles] = macroRW
   implicit val PutResponseRW: ReadWriter[PutResponse] = macroRW
 
-  // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-  case class InvoiceId(invoiceId: String)
-  case class ApiGatewayInput(
-      pathParameters: InvoiceId,
-      headers: Map[String, String],
-  )
   case class PdfInput(invoiceId: String, identityId: String)
   object PdfInput {
     def apply(apiGatewayInput: APIGatewayProxyRequestEvent): PdfInput = {
@@ -55,22 +49,5 @@ object Model extends JsonSupport {
     }
   }
 
-  /** https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html
-    * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
-    * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-binarymediatypes
-    *
-    * { "status": 200, "body": "base64EncodedByteArray", "isBase64Encoded":true, "headers": {
-    * "Content-Type":"application/pdf;charset=UTF-8" } }
-    */
-  case class ApiGatewayOutput(
-      statusCode: Int,
-      body: String, // base64 encoded byte array representing PDF
-      isBase64Encoded: Boolean,
-      headers: Map[String, String],
-  )
-
-  implicit val InvoiceIdRW: ReadWriter[InvoiceId] = macroRW
-  implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
-  implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
   implicit val PdfInputRW: ReadWriter[PdfInput] = macroRW
 }

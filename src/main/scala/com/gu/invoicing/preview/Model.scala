@@ -108,15 +108,6 @@ object Model extends JsonSupport {
       startDate: String,
       endDate: String
   )
-  case class ApiGatewayInput(
-      pathParameters: SubscriptionName,
-      queryStringParameters: Range,
-      headers: Map[String, String]
-  )
-  case class ApiGatewayOutput(
-      statusCode: Int,
-      body: String
-  )
 
   // ************************************************************************
   // Codecs
@@ -130,8 +121,6 @@ object Model extends JsonSupport {
   implicit val invoices: ReadWriter[Invoices] = macroRW
   implicit val subscriptionNumber: ReadWriter[SubscriptionName] = macroRW
   implicit val rangeRW: ReadWriter[Range] = macroRW
-  implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
-  implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
   implicit val nextInvoiceDateInput: ReadWriter[PreviewInput] = macroRW
   implicit val publicationRW: ReadWriter[Publication] = macroRW
   implicit val nextInvoiceDateOutput: ReadWriter[PreviewOutput] = macroRW

@@ -7,9 +7,6 @@ import java.time.LocalDate
 import com.gu.invoicing.common.JsonSupport
 
 object Model extends JsonSupport {
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
-
   case class Subscription(accountId: String)
 
   case class InvoiceItem(
