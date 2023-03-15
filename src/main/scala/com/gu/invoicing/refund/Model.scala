@@ -7,8 +7,6 @@ import com.gu.invoicing.common.JsonSupport
 /** Data models and JSON codecs
   */
 object Model extends JsonSupport {
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
   case class Subscription(accountId: String, accountNumber: String, subscriptionNumber: String)
   case class Invoice(
       Id: String,
@@ -87,8 +85,6 @@ object Model extends JsonSupport {
   )
   case class Account(metrics: Metrics)
 
-  implicit val configRW: ReadWriter[Config] = macroRW
-  implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val invoiceQueryResultRW: ReadWriter[InvoiceQueryResult] = macroRW
@@ -126,14 +122,7 @@ object Model extends JsonSupport {
       message: String = "Successful refund"
   )
 
-  // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-  case class ApiGatewayInput(body: String)
-
-  // https://aws.amazon.com/premiumsupport/knowledge-center/malformed-502-api-gateway/
-  case class ApiGatewayOutput(statusCode: Int, body: String)
 
   implicit val refundInputRW: ReadWriter[RefundInput] = macroRW
   implicit val refundOutputRW: ReadWriter[RefundOutput] = macroRW
-  implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
-  implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
 }

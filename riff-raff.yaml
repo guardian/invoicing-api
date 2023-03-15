@@ -2,6 +2,10 @@ stacks:
   - support
 regions:
   - eu-west-1
+allowedStages:
+  - DEV
+  - CODE
+  - PROD
 deployments:
   cfn:
     type: cloud-formation
@@ -12,7 +16,7 @@ deployments:
     type: aws-lambda
     parameters:
       bucket: membership-dist
-      fileName: invoicing-api.zip
+      fileName: invoicing-api.jar
       prefixStack: false
       functionNames:
         - invoicing-api-refund-

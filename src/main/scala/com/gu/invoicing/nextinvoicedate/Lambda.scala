@@ -1,23 +1,22 @@
 package com.gu.invoicing.nextinvoicedate
 
-import java.io.{InputStream, OutputStream}
+import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.gu.invoicing.common.HttpHelper.okResponse
 import com.gu.invoicing.nextinvoicedate.Model._
-import com.gu.invoicing.nextinvoicedate.Impl._
 import com.gu.invoicing.nextinvoicedate.Program._
-import scala.util.chaining._
-import com.gu.spy._
 
-/** Example test event for running the lambda from AWS Console { "pathParameters": {
-  * "subscriptionNumber": "A-S00000000" } }
+import scala.util.chaining._
+
+/** Example test event for running the lambda from AWS Console { "pathParameters": { "subscriptionNumber": "A-S00000000"
+  * } }
   */
-object Lambda {
-  def handleRequest(input: String): String =
-    input
-      .pipe { read[ApiGatewayInput](_) }
-      .pipe { NextInvoiceDateInput.apply }
+object Lambda extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+  def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+    NextInvoiceDateInput(input)
       .tap { info[NextInvoiceDateInput] }
       .pipe { program }
       .tap { info[NextInvoiceDateOutput] }
-      .pipe { invoiceDateOutput => ApiGatewayOutput(200, write(invoiceDateOutput)) }
-      .pipe { write(_) }
+      .pipe { output => okResponse(write(output)) }
+  }
 }

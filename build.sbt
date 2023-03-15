@@ -1,5 +1,5 @@
 lazy val root = (project in file("."))
-  .enablePlugins(RiffRaffArtifact, NativeImagePlugin)
+  .enablePlugins(RiffRaffArtifact)
   .settings(
     name := "invoicing-api",
     description := "Zuora Invoice management for supporters (refund, etc.)",
@@ -13,49 +13,45 @@ lazy val root = (project in file("."))
       "com.lihaoyi" %% "upickle" % "3.0.0",
       "com.gu" %% "spy" % "0.1.1",
       "org.scala-lang.modules" %% "scala-async" % "1.0.1",
-      "com.lihaoyi" %% "pprint" % "0.8.1"
+      "com.lihaoyi" %% "pprint" % "0.8.1",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.2",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := s"${name.value}.jar",
-    riffRaffPackageType := crossTarget.value / s"${name.value}.zip",
+    riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := "support:invoicing-api",
     riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml"),
-    scalacOptions ++= Seq(
+    scalacOptions ++= Seq( // Needed to support Scala async/await https://www.baeldung.com/scala/scala-async
       "-Xasync"
     ),
-    Compile / mainClass := Some("bootstrap"), // AWS custom runtime entry point
-    nativeImageOptions ++= Seq(
-      "--enable-http",
-      "--enable-https",
-      "--no-fallback"
-    )
   )
 
-/** This uses Docker to enable building a linux image from any platform */
-lazy val deployAwsLambda = inputKey[Unit](
-  "Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop"
-)
-deployAwsLambda := {
-  import complete.DefaultParsers._
-  val stage = (Space ~> StringBasic).examples("<DEV | CODE | PROD>").parsed
-  val lambdaNativeZip =
-    s"""${crossTarget.value}/${name.value}.zip""" /* target/scala-2.13/invoicing-api.zip */
-  import scala.sys.process._
-  def updateLambda(functionName: String) =
-    s"aws lambda update-function-code --function-name $functionName-$stage --zip-file fileb://$lambdaNativeZip --profile membership --region eu-west-1"
+lazy val deployTo =
+  inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
 
-  """docker build -t invoicing-api ."""
-    .#&&(s"""docker run -v ${baseDirectory.value}:/invoicing-api invoicing-api""")
-    .#&&(s"""zip -r -j $lambdaNativeZip ${crossTarget.value}/bootstrap""")
-    .#&&(updateLambda("invoicing-api-refund"))
-    .#&&(updateLambda("invoicing-api-invoices"))
-    .#&&(updateLambda("invoicing-api-pdf"))
-    .#&&(updateLambda("invoicing-api-nextinvoicedate"))
-    .#&&(updateLambda("invoicing-api-preview"))
-    .#&&(updateLambda("invoicing-api-refund-erroneous-payment"))
-    .!
+deployTo := {
+  import scala.sys.process._
+  import complete.DefaultParsers._
+  val jarFile = assembly.value
+
+  val Seq(stage) = spaceDelimited("<arg>").parsed
+  val s3Bucket = "membership-dist"
+  val s3Path = s"support/$stage/invoicing-api/invoicing-api.jar"
+
+  s"aws s3 cp $jarFile s3://$s3Bucket/$s3Path --profile membership --region eu-west-1".!!
+  List(
+    "invoicing-api-refund",
+    "invoicing-api-invoices",
+    "invoicing-api-pdf",
+    "invoicing-api-nextinvoicedate",
+    "invoicing-api-preview",
+    "invoicing-api-refund-erroneous-payment",
+  ).foreach { functionName =>
+    System.out.println(s"Updating lambda $functionName")
+    s"aws lambda update-function-code --function-name $functionName-$stage --s3-bucket $s3Bucket --s3-key $s3Path --profile membership --region eu-west-1".!!
+  }
 }
 
-addCommandAlias("packageNativeAwsImage", "nativeImageCopy target/scala-2.13/bootstrap")

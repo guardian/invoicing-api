@@ -1,12 +1,12 @@
 package com.gu.invoicing.nextinvoicedate
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
+import com.gu.invoicing.common.HttpHelper.pathParameterOrThrow
+
 import java.time.LocalDate
 import com.gu.invoicing.common.JsonSupport
 
 object Model extends JsonSupport {
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
-
   case class Subscription(accountId: String)
 
   case class InvoiceItem(
@@ -27,24 +27,13 @@ object Model extends JsonSupport {
   implicit val invoiceItem: ReadWriter[InvoiceItem] = macroRW
   implicit val billingPreview: ReadWriter[BillingPreview] = macroRW
 
-  case class SubscriptionName(subscriptionName: String)
-  case class ApiGatewayInput(
-      pathParameters: SubscriptionName
-  )
   case class NextInvoiceDateInput(subscriptionName: String)
   object NextInvoiceDateInput {
-    def apply(apiGatewayInput: ApiGatewayInput): NextInvoiceDateInput =
-      NextInvoiceDateInput(apiGatewayInput.pathParameters.subscriptionName)
+    def apply(apiGatewayInput: APIGatewayProxyRequestEvent): NextInvoiceDateInput =
+      NextInvoiceDateInput(pathParameterOrThrow(apiGatewayInput, "subscriptionName"))
   }
   case class NextInvoiceDateOutput(nextInvoiceDate: Option[LocalDate] = None)
-  case class ApiGatewayOutput(
-      statusCode: Int,
-      body: String
-  )
 
-  implicit val subscriptionNumber: ReadWriter[SubscriptionName] = macroRW
-  implicit val awsBodyRW: ReadWriter[ApiGatewayInput] = macroRW
-  implicit val apiGatewayOutputRW: ReadWriter[ApiGatewayOutput] = macroRW
   implicit val nextInvoiceDateInput: ReadWriter[NextInvoiceDateInput] = macroRW
   implicit val nextInvoiceDateOutput: ReadWriter[NextInvoiceDateOutput] = macroRW
 }

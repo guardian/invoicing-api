@@ -14,6 +14,7 @@ import scala.util.chaining._
   */
 object Program {
   def program(input: RefundInput): RefundOutput = {
+    System.out.println("Testing deploy")
     val RefundInput(subscriptionName, refund, adjustInvoices, guid, _) = input
 
     val subscription = getSubscription(subscriptionName) tap { subscription =>

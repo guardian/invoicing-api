@@ -1,5 +1,7 @@
 package com.gu.invoicing.refundErroneousPayment
 
+import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.gu.invoicing.refundErroneousPayment.Model._
 import com.gu.invoicing.refundErroneousPayment.Program._
 
@@ -43,18 +45,19 @@ import scala.util.chaining._
   * "{\"accountId\":\"A123\",\"invoiceNumber\":\"INV123\",\"paymentId\":\"P123\",\"invoiceAmount\":0.1,\"comment\":"this
   * is comment"}" }
   */
-object Lambda {
-  def handleRequest(input: String): String = {
-    input
-      .pipe { read[ApiGatewayInput](_) }
-      .body
+  object Lambda extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent]{
+  def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = { {
+    input.getBody
       .pipe { read[RefundInput](_) }
       .tap { info[RefundInput] }
       .pipe { program }
       .tap { info[RefundOutput] }
       .pipe { refundOut =>
-        ApiGatewayOutput(200, write(refundOut))
+        val response = new APIGatewayProxyResponseEvent
+        response.setStatusCode(200)
+        response.setBody(write(refundOut))
+        response
       }
-      .pipe(write(_))
+  }
   }
 }
