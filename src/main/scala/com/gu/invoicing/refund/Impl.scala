@@ -197,7 +197,7 @@ object Impl {
   }
 
   def logAndRead[T: Reader](url: String, response: String): T = {
-    System.out.println(s"Received $response from $url")
+    System.out.println(s"Received ${stripNewlines(response)} from $url")
     read[T](response)
   }
 
@@ -211,7 +211,7 @@ object Impl {
   }
 
   def post[T: Reader](url: String, body: String): T = {
-    System.out.println(s"Calling POST $url with body $body")
+    System.out.println(s"Calling POST $url with body ${stripNewlines(body)}")
     Http(url)
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
@@ -221,5 +221,8 @@ object Impl {
       .body
       .pipe(logAndRead[T](url, _))
   }
+
+  private def stripNewlines(body: String) =
+    body.replace("\n", "")
 
 }
