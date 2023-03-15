@@ -13,8 +13,7 @@ import scala.util.chaining._
   */
 object Lambda extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
   def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    input.getBody
-      .pipe { NextInvoiceDateInput.apply }
+    NextInvoiceDateInput(input)
       .tap { info[NextInvoiceDateInput] }
       .pipe { program }
       .tap { info[NextInvoiceDateOutput] }
