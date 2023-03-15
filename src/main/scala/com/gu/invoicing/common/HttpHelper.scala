@@ -12,6 +12,13 @@ object HttpHelper {
     )
   }
 
+  def queryStringParameterOrThrow(request: APIGatewayProxyRequestEvent, parameterName: String): String = {
+    request.getQueryStringParameters.asScala.getOrElse(
+      parameterName,
+      throw new RuntimeException(s"Query string Parameter $parameterName was missing from the url"),
+    )
+  }
+
   def headerOrThrow(request: APIGatewayProxyRequestEvent, headerName: String): String = {
     request.getHeaders.asScala.getOrElse(
       headerName,
