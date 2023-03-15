@@ -34,13 +34,6 @@ object Model extends JsonSupport {
   // ************************************************************************
   // Implementation detail models
   // ************************************************************************
-  case class Config(
-      clientId: String,
-      clientSecret: String,
-  )
-  case class AccessToken(
-      access_token: String,
-  )
   case class RatePlanCharge(
       originalChargeId: String,
       price: Double /* Includes tax */,

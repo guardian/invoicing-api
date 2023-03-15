@@ -7,8 +7,6 @@ import com.gu.invoicing.common.JsonSupport
 /** Data models and JSON codecs
   */
 object Model extends JsonSupport {
-  case class Config(clientId: String, clientSecret: String)
-  case class AccessToken(access_token: String)
   case class Subscription(accountId: String, accountNumber: String, subscriptionNumber: String)
   case class Invoice(
       Id: String,
@@ -87,8 +85,6 @@ object Model extends JsonSupport {
   )
   case class Account(metrics: Metrics)
 
-  implicit val configRW: ReadWriter[Config] = macroRW
-  implicit val accessTokenRW: ReadWriter[AccessToken] = macroRW
   implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val invoiceQueryResultRW: ReadWriter[InvoiceQueryResult] = macroRW
