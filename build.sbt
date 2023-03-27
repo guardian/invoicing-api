@@ -15,7 +15,7 @@ lazy val root = (project in file("."))
       "org.scala-lang.modules" %% "scala-async" % "1.0.1",
       "com.lihaoyi" %% "pprint" % "0.8.1",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.2",
-      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := s"${name.value}.jar",
@@ -25,7 +25,7 @@ lazy val root = (project in file("."))
     riffRaffManifestProjectName := "support:invoicing-api",
     riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml"),
     scalacOptions ++= Seq( // Needed to support Scala async/await https://www.baeldung.com/scala/scala-async
-      "-Xasync"
+      "-Xasync",
     ),
   )
 
@@ -54,4 +54,3 @@ deployTo := {
     s"aws lambda update-function-code --function-name $functionName-$stage --s3-bucket $s3Bucket --s3-key $s3Path --profile membership --region eu-west-1".!!
   }
 }
-
