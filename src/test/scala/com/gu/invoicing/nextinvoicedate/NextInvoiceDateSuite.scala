@@ -13,7 +13,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-09-27"),
     LocalDate.parse("2020-10-26"),
     11.99,
-    "Guardian Weekly - Domestic"
+    "Guardian Weekly - Domestic",
   )
   val b = InvoiceItem(
     "12345qwerty",
@@ -21,7 +21,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-10-27"),
     LocalDate.parse("2020-11-26"),
     11.9,
-    "Guardian Weekly - Domestic"
+    "Guardian Weekly - Domestic",
   )
   val c = InvoiceItem(
     "12345qwerty",
@@ -29,7 +29,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-11-27"),
     LocalDate.parse("2020-12-26"),
     11.99,
-    "Guardian Weekly - Domestic"
+    "Guardian Weekly - Domestic",
   )
   val discount = InvoiceItem(
     "12345qwerty",
@@ -37,7 +37,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     LocalDate.parse("2020-10-27"),
     LocalDate.parse("2020-11-26"),
     -1.60,
-    "Discounts"
+    "Discounts",
   )
 
   test("Next invoice date should be first day after the current invoice service period") {
@@ -45,13 +45,13 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
   test(
-    "Next invoice date should be first day after the current invoice service period (today is left bound)"
+    "Next invoice date should be first day after the current invoice service period (today is left bound)",
   ) {
     val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-09-27"))
     assertEquals(actual.get, expected = b.serviceStartDate)
   }
   test(
-    "Next invoice date should be first day after the current invoice service period (today is right bound)"
+    "Next invoice date should be first day after the current invoice service period (today is right bound)",
   ) {
     val actual = findNextInvoiceDate(List(a, b, c), LocalDate.parse("2020-10-26"))
     assertEquals(actual.get, expected = b.serviceStartDate)
@@ -73,7 +73,7 @@ class NextInvoiceDateSuite extends munit.FunSuite {
     val rawItems = List(a, discount, expected)
     val actual = findNextInvoiceDate(
       collectRelevantInvoiceItems("A-S00000000", rawItems),
-      LocalDate.parse("2020-10-16")
+      LocalDate.parse("2020-10-16"),
     )
     assertEquals(actual.get, expected.serviceStartDate)
   }

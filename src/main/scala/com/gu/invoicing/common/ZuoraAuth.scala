@@ -21,20 +21,19 @@ object ZuoraAuth extends JsonSupport {
   lazy val zuoraApiHost: String =
     stage match {
       case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com";
-      case "PROD"         => "https://rest.zuora.com"
+      case "PROD" => "https://rest.zuora.com"
     }
 
   lazy val GNMAustralia_InvoiceTemplateID: String =
     stage match {
-      case "DEV"  => "2c92c0f85ecc47e5015ee7360d602757"
+      case "DEV" => "2c92c0f85ecc47e5015ee7360d602757"
       case "CODE" => "2c92c0f95ecc52d7015ee7348b9d4f61" // UAT Zuora
       case "PROD" => "2c92a0fd5ecce80c015ee71028643020"
     } // GNM Australia Pty Ltd
 
-  /** Because list invoices is hit frequently JVM is kept warm and val access token would seem to
-    * persist across lambda executions which meant the token would expire after one hour and because
-    * it was val it would not be requested again. Hence now we periodically refreshes the token
-    * (making it def would have performance penalty)
+  /** Because list invoices is hit frequently JVM is kept warm and val access token would seem to persist across lambda
+    * executions which meant the token would expire after one hour and because it was val it would not be requested
+    * again. Hence now we periodically refreshes the token (making it def would have performance penalty)
     */
   var accessToken: String = _
   private def getAccessToken(): String = {
@@ -43,8 +42,8 @@ object ZuoraAuth extends JsonSupport {
         Seq(
           "client_id" -> config.clientId,
           "client_secret" -> config.clientSecret,
-          "grant_type" -> "client_credentials"
-        )
+          "grant_type" -> "client_credentials",
+        ),
       )
       .asString
       .body
@@ -57,7 +56,7 @@ object ZuoraAuth extends JsonSupport {
       |Failed to authenticate with Zuora after multiple retries.
       |Possible zuora outage. Investigate ASAP! https://trust.zuora.com
       |""".stripMargin,
-    cause
+    cause,
   )
   timer.schedule(
     new TimerTask {
@@ -67,10 +66,10 @@ object ZuoraAuth extends JsonSupport {
       }
     },
     0,
-    5 * 60 * 1000 // refresh token every 5 min
+    5 * 60 * 1000, // refresh token every 5 min
   )
   retry(getAccessToken()) match { // set token on initialization
     case Success(token) => accessToken = token
-    case Failure(e)     => throw ZuoraOutageWarning(e)
+    case Failure(e) => throw ZuoraOutageWarning(e)
   }
 }

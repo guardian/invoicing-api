@@ -16,7 +16,7 @@ object Program {
     val account = getAccount(invoice.AccountId)
     assert(
       identityId == account.basicInfo.IdentityId__c,
-      s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.basicInfo.IdentityId__c}"
+      s"Requested invoice id: $invoiceId appears to belong to different identity: ${account.basicInfo.IdentityId__c}",
     )
     if (repairRequired(account)) {
       setGNMAustraliaInvoiceTemplateId(invoice.AccountId)

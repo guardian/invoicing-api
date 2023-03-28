@@ -17,7 +17,7 @@ object Impl {
     Http(s"$zuoraApiHost/v1/object/invoice/$invoiceId")
       .header("Authorization", s"Bearer $accessToken")
       .put(
-        """{"RegenerateInvoicePDF":true}"""
+        """{"RegenerateInvoicePDF":true}""",
       )
       .asString
       .body
@@ -27,7 +27,7 @@ object Impl {
     Http(s"$zuoraApiHost/v1/object/account/$accountId")
       .header("Authorization", s"Bearer $accessToken")
       .put(
-        s"""{"InvoiceTemplateId":"$GNMAustralia_InvoiceTemplateID"}"""
+        s"""{"InvoiceTemplateId":"$GNMAustralia_InvoiceTemplateID"}""",
       )
       .asString
       .body
@@ -44,6 +44,6 @@ object Impl {
   val noCache: Map[String, String] = Map( // https://stackoverflow.com/a/2068407/5205022
     "Cache-Control" -> "no-cache, no-store, must-revalidate",
     "Pragma" -> "no-cache",
-    "Expires" -> "0"
+    "Expires" -> "0",
   )
 }

@@ -7,10 +7,9 @@ import scala.util.chaining._
 
 /** Main business logic. Can be executed as CLI application or AWS Lambda
   *
-  * Zuora cannot apply refund in one go. It is applied by first creating a refund object, and then
-  * spreading the total refund amount over possibly multiple invoice items by applying invoice item
-  * adjustment to corresponding items. Previous charge/credit adjustments have to be accounted for
-  * to calculate available adjustment amount remaining.
+  * Zuora cannot apply refund in one go. It is applied by first creating a refund object, and then spreading the total
+  * refund amount over possibly multiple invoice items by applying invoice item adjustment to corresponding items.
+  * Previous charge/credit adjustments have to be accounted for to calculate available adjustment amount remaining.
   */
 object Program {
   def program(input: RefundInput): RefundOutput = {
@@ -33,9 +32,8 @@ object Program {
       s"$subscriptionName should have at least one invoice item" assert itemsByInvoiceId.nonEmpty
     }
     System.out.println("Successfully got InvoiceItems")
-    val (invoiceId, invoice, items) = decideRelevantInvoice(invoices, itemsByInvoiceId) tap {
-      case (_, invoice, _) =>
-        s"$invoice should be at least posted and not negative" assert (invoice.Amount > 0.0 && invoice.Status == "Posted")
+    val (invoiceId, invoice, items) = decideRelevantInvoice(invoices, itemsByInvoiceId) tap { case (_, invoice, _) =>
+      s"$invoice should be at least posted and not negative" assert (invoice.Amount > 0.0 && invoice.Status == "Posted")
     }
     System.out.println(s"Invoice $invoice is posted and not negative")
 

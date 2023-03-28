@@ -19,7 +19,7 @@ object Cli {
     input match {
       case s"$sub?startDate=$startDate&endDate=$endDate" =>
         program(PreviewInput(sub, LocalDate.parse(startDate), LocalDate.parse(endDate))) tap (log(
-          _
+          _,
         ))
     }
   }

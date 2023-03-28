@@ -9,7 +9,7 @@ class JsonSupport extends upickle.AttributeTagged {
   /* Option - http://www.lihaoyi.com/upickle/#CustomConfiguration */
   implicit def optionWriter[T: Writer]: Writer[Option[T]] =
     implicitly[Writer[T]].comap[Option[T]] {
-      case None    => null.asInstanceOf[T]
+      case None => null.asInstanceOf[T]
       case Some(x) => x
     }
   implicit def optionReader[T: Reader]: Reader[Option[T]] = {
@@ -25,7 +25,7 @@ class JsonSupport extends upickle.AttributeTagged {
     readwriter[String].bimap[LocalDate](_.toString, LocalDate.parse(_, ofPattern("yyyy-MM-dd")))
   implicit val localDateTimeRW: ReadWriter[LocalDateTime] = readwriter[String].bimap[LocalDateTime](
     _.toString,
-    LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    LocalDateTime.parse(_, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
   ) // ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 
   /* Java Time DayOfWeek */

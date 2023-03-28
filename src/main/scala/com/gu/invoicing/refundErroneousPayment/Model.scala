@@ -16,7 +16,7 @@ object Model extends JsonSupport {
       PaymentAmount: BigDecimal,
       TargetDate: LocalDate,
       InvoiceDate: LocalDate,
-      Status: String
+      Status: String,
   )
 
   case class InvoiceQueryResult(records: List[Invoice])
@@ -24,7 +24,7 @@ object Model extends JsonSupport {
   case class Metrics(
       balance: BigDecimal,
       totalInvoiceBalance: BigDecimal,
-      creditBalance: BigDecimal
+      creditBalance: BigDecimal,
   )
   case class Account(metrics: Metrics)
 
@@ -42,12 +42,12 @@ object Model extends JsonSupport {
       Gateway: String,
       MethodType: String,
       GatewayResponseCode: String,
-      Id: String
+      Id: String,
   )
 
   case class Payments(
       payments: List[Payment],
-      success: Boolean
+      success: Boolean,
   )
 
   case class Payment(
@@ -55,12 +55,12 @@ object Model extends JsonSupport {
       effectiveDate: LocalDate,
       amount: BigDecimal,
       paidInvoices: List[PaidInvoice],
-      status: String
+      status: String,
   )
 
   case class PaidInvoice(
       invoiceId: String,
-      invoiceNumber: String
+      invoiceNumber: String,
   )
 
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
@@ -77,20 +77,20 @@ object Model extends JsonSupport {
       accountId: String,
       paymentDate: LocalDate,
       comment: String,
-      message: String = "Start processing refund"
+      message: String = "Start processing refund",
   )
 
   case class RefundData(
       invoiceNumber: String,
       invoiceAmount: BigDecimal,
       paymentId: String,
-      refundId: String
+      refundId: String,
   )
   case class RefundOutput(
       accountId: String,
       results: Seq[RefundData],
       balancingInvoiceNumber: String,
-      message: String = "Successful refund"
+      message: String = "Successful refund",
   )
 
   implicit val refundInputRW: ReadWriter[RefundInput] = macroRW
