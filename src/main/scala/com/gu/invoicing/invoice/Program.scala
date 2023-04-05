@@ -12,9 +12,9 @@ import com.gu.invoicing.common.Retry._
 object Program {
 
   /** Main business logic */
-  /** Single identity can have multiple subscriptions where each subscription belongs to a different
-    * account, hence we first retrieve all accountIds belonging to identityId, and then all invoices
-    * belonging to each accountId. This represents Guardian model on top of Zuora model.
+  /** Single identity can have multiple subscriptions where each subscription belongs to a different account, hence we
+    * first retrieve all accountIds belonging to identityId, and then all invoices belonging to each accountId. This
+    * represents Guardian model on top of Zuora model.
     */
   def program(input: InvoicesInput): Future[InvoicesOutput] = retry {
     Future

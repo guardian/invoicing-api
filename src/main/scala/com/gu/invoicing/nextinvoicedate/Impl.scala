@@ -27,7 +27,7 @@ object Impl {
           |    "targetDate": "${LocalDate.now.plusMonths(13)}",
           |    "assumeRenewal": "Autorenew"
           |}
-          |""".stripMargin
+          |""".stripMargin,
       )
       .method("POST")
       .asString
@@ -38,7 +38,7 @@ object Impl {
 
   def collectRelevantInvoiceItems(
       subscriptionName: String,
-      invoiceItems: List[InvoiceItem]
+      invoiceItems: List[InvoiceItem],
   ): List[InvoiceItem] = {
     invoiceItems.iterator
       .filter(_.subscriptionName == subscriptionName)
@@ -50,7 +50,7 @@ object Impl {
 
   def findNextInvoiceDate(
       items: List[InvoiceItem],
-      today: LocalDate = LocalDate.now()
+      today: LocalDate = LocalDate.now(),
   ): Option[LocalDate] =
     items
       .filter(_.serviceStartDate.isAfter(today))

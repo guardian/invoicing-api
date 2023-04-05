@@ -16,7 +16,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Guardian Weekly - Domestic",
       "GW Oct 18 - First 6 issues - Domestic",
       0.0,
-      "aChargeId"
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 1.0)
   }
@@ -30,7 +30,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Guardian Weekly - Domestic",
       "GW Oct 18 - Quarterly - Domestic",
       0.0,
-      "aChargeId"
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 2.89)
   }
@@ -44,7 +44,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "Newspaper Delivery",
       "Friday",
       0.0,
-      "aChargeId"
+      "aChargeId",
     )
     assertEquals(pricePerPublication(item), expected = 2.04)
   }
@@ -60,7 +60,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "GW Oct 18 - Annual - Domestic",
       DayOfWeek.FRIDAY,
       price = 5.77,
-      ""
+      "",
     )
     val allRatePlanCharges = read[Subscription](raw).ratePlans.flatMap(_.ratePlanCharges)
     val actualDiscountedPrice = applyAnyDiscounts(allRatePlanCharges, publication).price
@@ -80,7 +80,7 @@ class PricePerPublicationSuite extends munit.FunSuite {
       "GW Oct 18 - Annual - Domestic",
       DayOfWeek.FRIDAY,
       price = 5.77,
-      ""
+      "",
     )
     val allRatePlanCharges = read[Subscription](raw).ratePlans.flatMap(_.ratePlanCharges)
     val actualDiscountedPrice = applyAnyDiscounts(allRatePlanCharges, publication).price

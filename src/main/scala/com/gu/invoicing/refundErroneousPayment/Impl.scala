@@ -57,7 +57,7 @@ object Impl {
       .header("Authorization", s"Bearer $accessToken")
       .header("Content-Type", "application/json")
       .postData(
-        s"""{"queryString": "select Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status from Invoice where AccountId = '$accountId' and Status = 'Posted'"}"""
+        s"""{"queryString": "select Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status from Invoice where AccountId = '$accountId' and Status = 'Posted'"}""",
       )
       .method("POST")
       .asString
@@ -77,7 +77,7 @@ object Impl {
   def transferToCreditBalance(
       invoiceNumber: String,
       amount: BigDecimal,
-      comment: String
+      comment: String,
   ): Unit =
     Http(s"$zuoraApiHost/v1/object/credit-balance-adjustment")
       .header("Authorization", s"Bearer $accessToken")

@@ -16,7 +16,7 @@ object Model extends JsonSupport {
       PaymentAmount: BigDecimal,
       TargetDate: LocalDate,
       InvoiceDate: LocalDate,
-      Status: String
+      Status: String,
   )
   case class InvoiceQueryResult(records: List[Invoice])
   case class InvoiceItem(
@@ -30,7 +30,7 @@ object Model extends JsonSupport {
       ChargeDate: LocalDateTime,
       ChargeAmount: BigDecimal,
       UnitPrice: BigDecimal,
-      SubscriptionNumber: String
+      SubscriptionNumber: String,
   )
   case class InvoiceItemQueryResult(records: List[InvoiceItem])
   case class InvoiceItems(invoiceItems: List[InvoiceItem])
@@ -49,7 +49,7 @@ object Model extends JsonSupport {
       Gateway: String,
       MethodType: String,
       GatewayResponseCode: String,
-      Id: String
+      Id: String,
   )
   case class InvoiceItemAdjustmentWrite(
       AdjustmentDate: LocalDate,
@@ -58,11 +58,11 @@ object Model extends JsonSupport {
       InvoiceId: String,
       Type: String,
       SourceType: String,
-      SourceId: String
+      SourceId: String,
   )
   case class InvoiceItemAdjustmentsWriteRequest(
       objects: List[InvoiceItemAdjustmentWrite],
-      `type`: String
+      `type`: String,
   )
   // [{"Success":true,"Id":"2c92c0f87177a5ad01717e861b4d7ecf"}]
   case class AdjustmentResult(Success: Boolean, Id: String)
@@ -75,13 +75,13 @@ object Model extends JsonSupport {
       SourceType: String,
       Status: String,
       Type: String,
-      Amount: BigDecimal
+      Amount: BigDecimal,
   )
   case class InvoiceItemAdjustmentsQueryResult(records: List[InvoiceItemAdjustment])
   case class Metrics(
       balance: BigDecimal,
       totalInvoiceBalance: BigDecimal,
-      creditBalance: BigDecimal
+      creditBalance: BigDecimal,
   )
   case class Account(metrics: Metrics)
 
@@ -110,7 +110,7 @@ object Model extends JsonSupport {
       refund: BigDecimal,
       adjustInvoices: Boolean = true,
       guid: String = UUID.randomUUID().toString,
-      message: String = "Start processing refund"
+      message: String = "Start processing refund",
   )
   case class RefundOutput(
       subscriptionName: String,
@@ -119,9 +119,8 @@ object Model extends JsonSupport {
       paymentId: String,
       adjustments: List[InvoiceItemAdjustmentWrite],
       guid: String, // written to Refund.Comment field and InvoiceItemAdjustment.Comment to tie them together
-      message: String = "Successful refund"
+      message: String = "Successful refund",
   )
-
 
   implicit val refundInputRW: ReadWriter[RefundInput] = macroRW
   implicit val refundOutputRW: ReadWriter[RefundOutput] = macroRW

@@ -14,44 +14,38 @@ object Impl {
     get[Subscription](s"$zuoraApiHost/v1/subscriptions/$name")
 
   def getAccountBalance(accountId: String): BigDecimal = {
-    get[Account](s"$zuoraApiHost/v1/accounts/$accountId")
-      .metrics
-      .balance
+    get[Account](s"$zuoraApiHost/v1/accounts/$accountId").metrics.balance
   }
 
   def getInvoices(accountId: String): List[Invoice] =
     post[InvoiceQueryResult](
       s"$zuoraApiHost/v1/action/query",
-      s"""{"queryString": "select Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status from Invoice where AccountId = '$accountId'"}"""
-    )
-      .records
+      s"""{"queryString": "select Id, Amount, Balance, InvoiceDate, InvoiceNumber, PaymentAmount, TargetDate, Status from Invoice where AccountId = '$accountId'"}""",
+    ).records
 
   def getInvoiceItems(invoiceId: String): List[InvoiceItem] =
-    get[InvoiceItems](s"$zuoraApiHost/v1/invoices/$invoiceId/items")
-      .invoiceItems
+    get[InvoiceItems](s"$zuoraApiHost/v1/invoices/$invoiceId/items").invoiceItems
 
   def getItemsByInvoice(subscriptionName: String): Map[String, List[InvoiceItem]] =
     post[InvoiceItemQueryResult](
       s"$zuoraApiHost/v1/action/query",
-      s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber, UnitPrice FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin
-    )
-      .records
+      s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber, UnitPrice FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin,
+    ).records
       .groupBy(_.InvoiceId)
-
 
   def getInvoicePaymentId(invoiceId: String): Option[String] =
     post[InvoicePaymentQueryResult](
       s"$zuoraApiHost/v1/action/query",
-      s"""{"queryString": "select Id, invoiceId, paymentId, CreatedDate from InvoicePayment where invoiceId = '$invoiceId'"}"""
-    )
-      .records
+      s"""{"queryString": "select Id, invoiceId, paymentId, CreatedDate from InvoicePayment where invoiceId = '$invoiceId'"}""",
+    ).records
       .sortBy(_.CreatedDate)
       .reverse
       .headOption
       .map(_.PaymentId)
 
   def createRefundObject(amount: BigDecimal, paymentId: String, comment: String): String =
-    post[RefundResult](s"$zuoraApiHost/v1/object/refund",
+    post[RefundResult](
+      s"$zuoraApiHost/v1/object/refund",
       s"""
          |{
          |  "Amount": $amount,
@@ -59,15 +53,14 @@ object Impl {
          |  "PaymentId": "$paymentId",
          |  "Type": "Electronic"
          |}
-         |""".stripMargin)
-      .Id
+         |""".stripMargin,
+    ).Id
 
   def getRefundStatus(refundId: String): String =
-    get[Refund](s"$zuoraApiHost/v1/object/refund/$refundId")
-      .Status
+    get[Refund](s"$zuoraApiHost/v1/object/refund/$refundId").Status
 
   def netAdjustmentsByInvoiceItemId(
-      adjustments: List[InvoiceItemAdjustment]
+      adjustments: List[InvoiceItemAdjustment],
   ): Map[String, BigDecimal] = {
     adjustments
       .groupBy(_.SourceId)
@@ -78,15 +71,14 @@ object Impl {
       }
   }
 
-  /** This is likely the most complicated part of the program. It decides which invoice items to
-    * adjust and by how much by taking into account any previous adjustments already made to
-    * corresponding items.
+  /** This is likely the most complicated part of the program. It decides which invoice items to adjust and by how much
+    * by taking into account any previous adjustments already made to corresponding items.
     */
   def spreadRefundAcrossItems(
       invoiceItems: List[InvoiceItem],
       adjustments: List[InvoiceItemAdjustment],
       totalRefundAmount: BigDecimal,
-      refundGuid: String
+      refundGuid: String,
   ): List[InvoiceItemAdjustmentWrite] = {
 
     /* Collect all item adjustments of a particular invoice item and return remaining amount that can be adjusted/refunded */
@@ -98,7 +90,7 @@ object Impl {
 
         case None => // this items has not been adjusted therefore the original full item amount is available
           Some(
-            invoiceItem.UnitPrice
+            invoiceItem.UnitPrice,
           ) // Use unit price rather than charge amount here because charge amount does not include tax
       }
     }
@@ -106,7 +98,7 @@ object Impl {
     @tailrec def loop(
         remainingAmounToRefund: BigDecimal,
         remainingItems: List[InvoiceItem],
-        accumulatedAdjustments: List[InvoiceItemAdjustmentWrite]
+        accumulatedAdjustments: List[InvoiceItemAdjustmentWrite],
     ): List[InvoiceItemAdjustmentWrite] = {
       remainingItems match {
         case Nil =>
@@ -121,7 +113,7 @@ object Impl {
               nextItem.InvoiceId,
               "Credit",
               "InvoiceDetail",
-              nextItem.Id
+              nextItem.Id,
             )
 
           availableAmount(nextItem) match {
@@ -132,7 +124,7 @@ object Impl {
                 loop(
                   remainingAmounToRefund - availableRefundableAmount,
                   tail,
-                  adjustItemBy(availableRefundableAmount) :: accumulatedAdjustments
+                  adjustItemBy(availableRefundableAmount) :: accumulatedAdjustments,
                 )
 
             case None =>
@@ -146,18 +138,19 @@ object Impl {
   }
 
   def applyRefundOverItemAdjustments(invoiceItems: List[InvoiceItemAdjustmentWrite]): List[AdjustmentResult] =
-    post[List[AdjustmentResult]](s"$zuoraApiHost/v1/action/create",
+    post[List[AdjustmentResult]](
+      s"$zuoraApiHost/v1/action/create",
       write(
         InvoiceItemAdjustmentsWriteRequest(
           objects = invoiceItems,
-          `type` = "InvoiceItemAdjustment"
-        )
-      )
+          `type` = "InvoiceItemAdjustment",
+        ),
+      ),
     )
 
   def joinInvoiceWithInvoiceItemsOnInvoiceIdKey(
       invoices: List[Invoice],
-      itemsByInvoiceId: Map[String, List[InvoiceItem]]
+      itemsByInvoiceId: Map[String, List[InvoiceItem]],
   ): List[(String, Invoice, List[InvoiceItem])] = {
     invoices.map(invoice => (invoice.Id, invoice, itemsByInvoiceId.get(invoice.Id))) collect {
       case (invoiceId, invoice, Some(invoiceItems)) => (invoiceId, invoice, invoiceItems)
@@ -167,7 +160,7 @@ object Impl {
   /** Select correct invoice to apply refund to */
   def decideRelevantInvoice(
       invoices: List[Invoice],
-      itemsByInvoiceId: Map[String, List[InvoiceItem]]
+      itemsByInvoiceId: Map[String, List[InvoiceItem]],
   ): (String, Invoice, List[InvoiceItem]) = {
     joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, itemsByInvoiceId).iterator
       .filter({ case (_, invoice, _) => invoice.Status == "Posted" })
@@ -178,18 +171,17 @@ object Impl {
   def getInvoiceItemAdjustments(invoiceId: String): List[InvoiceItemAdjustment] =
     post[InvoiceItemAdjustmentsQueryResult](
       s"$zuoraApiHost/v1/action/query",
-      s"""{"queryString": "select Id, InvoiceId, InvoiceItemName, SourceId, SourceType, Status, Type, Amount FROM InvoiceItemAdjustment where InvoiceId = '$invoiceId'"}"""
-    )
-      .records
+      s"""{"queryString": "select Id, InvoiceId, InvoiceItemName, SourceId, SourceType, Status, Type, Amount FROM InvoiceItemAdjustment where InvoiceId = '$invoiceId'"}""",
+    ).records
 
-  /** Zuora uses Half Up rounding to two decimal places with rounding increment of 0.1 Corresponds
-    * to rounding rules specified under Zuora | Billing Settings | Customize Currencies
+  /** Zuora uses Half Up rounding to two decimal places with rounding increment of 0.1 Corresponds to rounding rules
+    * specified under Zuora | Billing Settings | Customize Currencies
     */
   def roundHalfUp(x: BigDecimal): BigDecimal = x.setScale(2, BigDecimal.RoundingMode.HALF_UP)
 
   // https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/TB_Rounding_and_Precision
   def roundAdjustments(
-      adjustments: List[InvoiceItemAdjustmentWrite]
+      adjustments: List[InvoiceItemAdjustmentWrite],
   ): List[InvoiceItemAdjustmentWrite] = {
     adjustments
       .filter(a => roundHalfUp(a.Amount) != 0)

@@ -16,11 +16,11 @@ object Program {
     val balancingInvoice = invoicesOnLatestDate.minBy(_.Amount)
     assert(
       balancingInvoice.InvoiceDate.isBefore(paymentDate),
-      "Balancing invoice should have been created before the erroneous payment was taken"
+      "Balancing invoice should have been created before the erroneous payment was taken",
     )
     assert(
       balancingInvoice.Amount == -payments.map(_.amount).sum,
-      "Payments don't agree with balancing invoice"
+      "Payments don't agree with balancing invoice",
     )
     transferToCreditBalance(balancingInvoice.InvoiceNumber, -balancingInvoice.Amount, comment)
     val results = payments.map(processRefund(comment))

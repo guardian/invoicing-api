@@ -7,7 +7,7 @@ import com.gu.spy._
 object Model extends JsonSupport {
   case class Invoices(
       invoices: List[Invoice],
-      success: Boolean
+      success: Boolean,
   )
   case class Invoice(
       id: String,
@@ -15,10 +15,10 @@ object Model extends JsonSupport {
       invoiceDate: LocalDate,
       amount: BigDecimal,
       status: String,
-      invoiceItems: List[InvoiceItem]
+      invoiceItems: List[InvoiceItem],
   )
   case class InvoiceItem(
-      subscriptionName: String
+      subscriptionName: String,
   )
   case class InvoiceWithPayment(
       subscriptionName: String,
@@ -26,23 +26,22 @@ object Model extends JsonSupport {
       paymentMethod: PaymentMethod,
       price: Double,
       pdfPath: String, /* invoices/{fileId} */
-      invoiceId: String
+      invoiceId: String,
   )
 
-  /** Subscription name is not available from the top level Invoice object because Invoice can be
-    * associated with multiple subscriptions, however current MMA design wants to group invoices per
-    * subscription.
+  /** Subscription name is not available from the top level Invoice object because Invoice can be associated with
+    * multiple subscriptions, however current MMA design wants to group invoices per subscription.
     */
   object InvoiceWithPayment {
     def apply(
         invoice: Invoice,
-        paymentMethod: PaymentMethod
+        paymentMethod: PaymentMethod,
     ): InvoiceWithPayment = {
       // Currently we handle only invoices with single subscription, so any invoice item should do for getting the subscription name
       val subscriptionName =
         invoice.invoiceItems.headOption
           .getOrElse(
-            throw new AssertionError(s"At least one invoice item should always exist: $invoice")
+            throw new AssertionError(s"At least one invoice item should always exist: $invoice"),
           )
           .subscriptionName
 
@@ -52,13 +51,13 @@ object Model extends JsonSupport {
         paymentMethod = paymentMethod,
         price = invoice.amount.toDouble,
         pdfPath = s"invoices/${invoice.id}",
-        invoiceId = invoice.id
+        invoiceId = invoice.id,
       )
     }
   }
 
-  /** This is the model expected by manage-frontend. I kept is as separate concept from
-    * InvoiceWithPayment as it is likely to keep changing in the initial stages.
+  /** This is the model expected by manage-frontend. I kept is as separate concept from InvoiceWithPayment as it is
+    * likely to keep changing in the initial stages.
     */
   case class MmaInvoiceWithPayment(
       invoiceId: String,
@@ -69,7 +68,7 @@ object Model extends JsonSupport {
       paymentMethod: String,
       last4: Option[String] = None, // for card and direct debit
       cardType: Option[String] = None, // Visa, MasterCard
-      hasMultipleSubs: Boolean // to handle edge case of multiple subscriptions within a single invoice
+      hasMultipleSubs: Boolean, // to handle edge case of multiple subscriptions within a single invoice
   )
 
   object MmaInvoiceWithPayment {
@@ -81,7 +80,7 @@ object Model extends JsonSupport {
         pdfPath = invoiceWithPayment.pdfPath,
         price = invoiceWithPayment.price,
         paymentMethod = invoiceWithPayment.paymentMethod.Type,
-        hasMultipleSubs = false
+        hasMultipleSubs = false,
       )
 
       val paymentMethod = invoiceWithPayment.paymentMethod
@@ -91,21 +90,21 @@ object Model extends JsonSupport {
           mmaResponse.copy(
             last4 = CreditCardMaskNumber.map(dropMaskPrefix),
             cardType = CreditCardType,
-            paymentMethod = "Card"
+            paymentMethod = "Card",
           )
         case "BankTransfer" =>
           mmaResponse.copy(
             last4 = BankTransferAccountNumberMask.map(dropMaskPrefix),
             paymentMethod = paymentMethod.BankTransferType match {
               case Some("SEPA") => "Sepa"
-              case _            => "DirectDebit"
-            }
+              case _ => "DirectDebit"
+            },
           )
 
         case "PayPal" =>
           mmaResponse.copy(
             last4 = None,
-            paymentMethod = "PayPal"
+            paymentMethod = "PayPal",
           )
 
         case _ =>
@@ -117,23 +116,23 @@ object Model extends JsonSupport {
   }
 
   case class InvoicesOutput(
-      invoices: List[MmaInvoiceWithPayment]
+      invoices: List[MmaInvoiceWithPayment],
   )
   case class InvoicesInput(
-      identityId: String
+      identityId: String,
   )
   case class Payment(
       paymentMethodId: String,
-      paidInvoices: List[PaidInvoice]
+      paidInvoices: List[PaidInvoice],
   )
   case class PaidInvoice(
       invoiceId: String,
-      invoiceNumber: String
+      invoiceNumber: String,
   )
 
   case class Payments(
       payments: List[Payment],
-      success: Boolean
+      success: Boolean,
   )
 
   case class PaymentMethod(
@@ -142,20 +141,20 @@ object Model extends JsonSupport {
       BankTransferType: Option[String] = None,
       BankTransferAccountNumberMask: Option[String] = None,
       CreditCardMaskNumber: Option[String] = None,
-      CreditCardType: Option[String] = None // Visa, MasterCard
+      CreditCardType: Option[String] = None, // Visa, MasterCard
   )
 
   case class PaymentMethods(
       records: List[PaymentMethod],
       done: Boolean,
-      size: Int
+      size: Int,
   )
 
   case class Account(Id: String)
   case class Accounts(
       records: List[Account],
       done: Boolean,
-      size: Int
+      size: Int,
   )
 
   implicit val AccountRW: ReadWriter[Account] = macroRW

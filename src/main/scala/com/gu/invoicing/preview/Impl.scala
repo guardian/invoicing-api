@@ -32,12 +32,11 @@ object Impl {
       .ratePlans
       .flatMap(_.ratePlanCharges)
 
-  /** Calculate publication price by taking into account potential discounts, otherwise return
-    * original price
+  /** Calculate publication price by taking into account potential discounts, otherwise return original price
     */
   def applyAnyDiscounts(
       ratePlanCharges: List[RatePlanCharge],
-      publication: Publication
+      publication: Publication,
   ): Publication = {
     import scala.math._
 
@@ -45,13 +44,13 @@ object Impl {
 
     def isActiveDiscount(start: LocalDate, end: LocalDate): Boolean =
       (start.isEqual(publication.publicationDate) || start.isBefore(
-        publication.publicationDate
+        publication.publicationDate,
       )) && end.isAfter(publication.publicationDate)
 
     val discounts: List[Double] =
       ratePlanCharges
         .filter(
-          _.model.contains("DiscountPercentage")
+          _.model.contains("DiscountPercentage"),
         ) // this excludes holiday/delivery FlatFee credits
         .map(rpc => (rpc.discountPercentage, rpc.effectiveStartDate, rpc.effectiveEndDate))
         .collect {
@@ -65,22 +64,22 @@ object Impl {
         .tap(v =>
           assert(
             abs(v) <= abs(publication.price),
-            "Discounted publication price should not be more than un-discounted"
-          )
+            "Discounted publication price should not be more than un-discounted",
+          ),
         )
         .tap(v =>
           assert(
             v.toString.dropWhile(_ != '.').tail.length <= 2,
-            "Publication price should have up to two decimal places"
-          )
+            "Publication price should have up to two decimal places",
+          ),
         )
         .tap(v => assert(abs(v) < 10.0, "Publication price should not go beyond maximum bound"))
         .tap(v =>
           if (discounts.isEmpty)
             assert(
               v == publication.price,
-              "Publication price should not be affected if there are no discounts"
-            )
+              "Publication price should not be affected if there are no discounts",
+            ),
         )
     }
 
@@ -94,7 +93,7 @@ object Impl {
   def getFutureInvoiceItems(
       invoiceOwnerAccountId: String,
       subscriptionName: String,
-      targetDate: LocalDate
+      targetDate: LocalDate,
   ): List[InvoiceItem] = {
     Http(s"$zuoraApiHost/v1/operations/billing-preview")
       .header("Authorization", s"Bearer $accessToken")
@@ -106,7 +105,7 @@ object Impl {
            |    "targetDate": "${targetDate.plusDays(1)}",
            |    "assumeRenewal": "Autorenew"
            |}
-           |""".stripMargin
+           |""".stripMargin,
       )
       .method("POST")
       .asString
@@ -121,7 +120,7 @@ object Impl {
       invoiceOwnerAccountId: String,
       subscriptionName: String,
       startDate: LocalDate,
-      endDate: LocalDate
+      endDate: LocalDate,
   ): List[InvoiceItem] = {
     def fetchNextPage(nextPageUrl: String) = {
       Http(s"$zuoraApiHost/$nextPageUrl")
@@ -135,7 +134,7 @@ object Impl {
       val response = fetchNextPage(nextPage)
       response.nextPage match {
         case Some(nextPageUrl) => go(nextPageUrl, acc ++ response.invoices)
-        case None              => acc ++ response.invoices
+        case None => acc ++ response.invoices
       }
     }
 
@@ -150,7 +149,7 @@ object Impl {
 
   def collectRelevantInvoiceItems(
       subscriptionName: String,
-      invoiceItems: List[InvoiceItem]
+      invoiceItems: List[InvoiceItem],
   ): List[InvoiceItem] =
     invoiceItems.iterator
       .filter(_.subscriptionName == subscriptionName)
@@ -161,26 +160,25 @@ object Impl {
       .toList
       .sortBy(_.serviceStartDate)
 
-  /** Some products are outright digital (Contribution) and some have a digital component (paper +
-    * digital)
+  /** Some products are outright digital (Contribution) and some have a digital component (paper + digital)
     */
   def isDigitalProduct(item: InvoiceItem): Boolean = {
     List(
       "digi",
       "contrib",
-      "support"
+      "support",
     ).exists(item.chargeName.toLowerCase.contains)
   }
 
   def findNextInvoiceDate(
       items: List[InvoiceItem],
-      today: LocalDate = LocalDate.now()
+      today: LocalDate = LocalDate.now(),
   ): Option[LocalDate] = {
     def verifyNextInvoiceDate(nextInvoiceDate: LocalDate): Unit =
       assert(
         nextInvoiceDate >= today,
         s"nextInvoiceDate $nextInvoiceDate should not be before today $today for ${items.headOption
-            .map(_.subscriptionName)}"
+            .map(_.subscriptionName)}",
       )
 
     val sortedItems = items.sortBy(_.serviceStartDate)
@@ -188,7 +186,7 @@ object Impl {
       .find(item => today.inClosedInterval(item.serviceStartDate, item.serviceEndDate))
       .map(_.serviceEndDate.plusDays(1))
       .orElse(
-        sortedItems.headOption.map(_.serviceStartDate)
+        sortedItems.headOption.map(_.serviceStartDate),
       ) // first invoice item might be in the future
       .tap(_.map(verifyNextInvoiceDate))
   }
@@ -196,7 +194,7 @@ object Impl {
   def findAffectedPublicationsWithRange(
       publications: List[Publication],
       start: LocalDate,
-      end: LocalDate
+      end: LocalDate,
   ): List[Publication] = {
     publications
       .filter(_.publicationDate.inClosedInterval(start, end))
@@ -208,32 +206,31 @@ object Impl {
     item.chargeName match {
       case _ if isDigitalProduct(item) =>
         throw new RuntimeException(s"Non physical paper products should not be handled: $item")
-      case "Monday"    => DayOfWeek.MONDAY
-      case "Tuesday"   => DayOfWeek.TUESDAY
+      case "Monday" => DayOfWeek.MONDAY
+      case "Tuesday" => DayOfWeek.TUESDAY
       case "Wednesday" => DayOfWeek.WEDNESDAY
-      case "Thursday"  => DayOfWeek.THURSDAY
-      case "Friday"    => DayOfWeek.FRIDAY
-      case "Saturday"  => DayOfWeek.SATURDAY
-      case "Sunday"    => DayOfWeek.SUNDAY
-      case _           => DayOfWeek.FRIDAY // Guardian Weekly
+      case "Thursday" => DayOfWeek.THURSDAY
+      case "Friday" => DayOfWeek.FRIDAY
+      case "Saturday" => DayOfWeek.SATURDAY
+      case "Sunday" => DayOfWeek.SUNDAY
+      case _ => DayOfWeek.FRIDAY // Guardian Weekly
     }
   }
 
-  /** Publication is of higher granularity than InvoiceItem. The InvoiceItem is a Zuora model
-    * representing a charge that spans a service period, that is, a billing period, whilst
-    * Publication is a Guardian model representing a single publication on a particular day in a
-    * week. For example, a single InvoiceItem of a Sunday Home Delivery with service period spanning
-    * one month actually represents four separate Sunday publications.
+  /** Publication is of higher granularity than InvoiceItem. The InvoiceItem is a Zuora model representing a charge that
+    * spans a service period, that is, a billing period, whilst Publication is a Guardian model representing a single
+    * publication on a particular day in a week. For example, a single InvoiceItem of a Sunday Home Delivery with
+    * service period spanning one month actually represents four separate Sunday publications.
     */
   def splitInvoiceItemIntoPublications(
-      invoiceItem: InvoiceItem
+      invoiceItem: InvoiceItem,
   ): List[Publication] = {
 
     @tailrec def loop(
         currentStart: LocalDate,
         endDateInclusive: LocalDate,
         day: DayOfWeek,
-        publications: List[Publication]
+        publications: List[Publication],
     ): List[Publication] = {
       if (currentStart.isAfter(endDateInclusive)) {
         publications
@@ -250,8 +247,8 @@ object Impl {
             invoiceItem.chargeName,
             chargeNameToDay(invoiceItem),
             pricePerPublication(invoiceItem),
-            invoiceItem.id
-          ) :: publications
+            invoiceItem.id,
+          ) :: publications,
         )
       }
     }
@@ -268,12 +265,12 @@ object Impl {
       firstPublicationDateInPeriod,
       invoiceItem.serviceEndDate,
       publicationDayOfWeek,
-      Nil
+      Nil,
     )
   }
 
-  /** Predict approximate price per publication by determining number of weeks in a service period
-    * and then dividing by invoice item charge amount.
+  /** Predict approximate price per publication by determining number of weeks in a service period and then dividing by
+    * invoice item charge amount.
     */
   def pricePerPublication(invoiceItem: InvoiceItem): Double = {
     def round2Places(d: Double): Double = BigDecimal(d).setScale(2, RoundingMode.UP).toDouble
@@ -281,8 +278,8 @@ object Impl {
       case 12 | 13 => 13 // Quarter
       case 51 | 52 => 52 // Annual
       case 25 | 26 => 26 // Semi_annual
-      case 3 | 4   => 4 // Month
-      case 5 | 6   => 6 // 6 for 6
+      case 3 | 4 => 4 // Month
+      case 5 | 6 => 6 // 6 for 6
       case 7 =>
         6 // 6 for 6 (7 weeks billing period might happen during Christmas time when have to extend to account for missing issue)
       case v =>
@@ -292,36 +289,35 @@ object Impl {
     val approxBillingPeriodInWeeks = roundedWeeks(
       WEEKS.between( // plus one because between is exclusive on right bound but serviceEndDate is inclusive
         invoiceItem.serviceStartDate,
-        invoiceItem.serviceEndDate.plusDays(1)
-      )
+        invoiceItem.serviceEndDate.plusDays(1),
+      ),
     )
     round2Places(invoiceItem.chargeAmount / approxBillingPeriodInWeeks)
   }
 
-  /** Unfortunately billing-preview does not include tax so as a workaround we obtain the charge
-    * amount from RatePlanCharge which does includes tax.
+  /** Unfortunately billing-preview does not include tax so as a workaround we obtain the charge amount from
+    * RatePlanCharge which does includes tax.
     */
   def addTaxToFutureInvoiceItems(
       invoiceItem: InvoiceItem,
-      ratePlanCharges: List[RatePlanCharge]
+      ratePlanCharges: List[RatePlanCharge],
   ): InvoiceItem =
     ratePlanCharges
       .find(_.originalChargeId == invoiceItem.chargeId)
       .map(_.price)
       .getOrElse(
         throw new RuntimeException(
-          s"Failed to determine price including tax for $invoiceItem from $ratePlanCharges"
-        )
+          s"Failed to determine price including tax for $invoiceItem from $ratePlanCharges",
+        ),
       )
       .pipe(priceWithTax =>
         invoiceItem
-          .copy(chargeAmount = priceWithTax, taxAmount = priceWithTax - invoiceItem.taxAmount)
+          .copy(chargeAmount = priceWithTax, taxAmount = priceWithTax - invoiceItem.taxAmount),
       )
 
-  /** Past InvoiceItems come from past invoices for which Zuora does provide taxAmount (unlike for
-    * InvoiceItems from billing-preview). We have to do this because originalChargeId might mutate
-    * in the future so some elements of List[RatePlanCharge] might not be mappable to old
-    * InvoiceItems.
+  /** Past InvoiceItems come from past invoices for which Zuora does provide taxAmount (unlike for InvoiceItems from
+    * billing-preview). We have to do this because originalChargeId might mutate in the future so some elements of
+    * List[RatePlanCharge] might not be mappable to old InvoiceItems.
     */
   def addTaxToPastInvoiceItems(invoiceItem: InvoiceItem): InvoiceItem =
     invoiceItem.copy(chargeAmount = invoiceItem.chargeAmount + invoiceItem.taxAmount)

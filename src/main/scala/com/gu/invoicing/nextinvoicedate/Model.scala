@@ -15,12 +15,12 @@ object Model extends JsonSupport {
       serviceStartDate: LocalDate,
       serviceEndDate: LocalDate,
       chargeAmount: Double,
-      productName: String
+      productName: String,
   )
 
   case class BillingPreview(
       accountId: String,
-      invoiceItems: List[InvoiceItem]
+      invoiceItems: List[InvoiceItem],
   )
 
   implicit val subscription: ReadWriter[Subscription] = macroRW
