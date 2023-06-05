@@ -7,7 +7,6 @@ Parameters:
     Description: Stage name
     Type: String
     AllowedValues:
-      - DEV
       - CODE
       - PROD
     Default: CODE
