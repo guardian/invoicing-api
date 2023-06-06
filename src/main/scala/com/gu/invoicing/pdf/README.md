@@ -29,7 +29,7 @@ Content-Type: application/pdf;charset=UTF-8
 
 #### With CLI 
 
-1. Get invoicing-api+uat@guardian.co.uk Zuora OAuth client credentials
+1. Get invoicing-api+dev@guardian.co.uk Zuora OAuth client credentials
 1. Follow docs in `Cli.scala` and create `Stage` and `Config` environmental variables
 1. Simply run something like
     ```

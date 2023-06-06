@@ -30,7 +30,7 @@ lazy val root = (project in file("."))
   )
 
 lazy val deployTo =
-  inputKey[Unit]("Directly update AWS lambda code from DEV instead of via RiffRaff for faster feedback loop")
+  inputKey[Unit]("Directly update AWS lambda code from your local machine instead of via RiffRaff for faster feedback loop")
 
 deployTo := {
   import scala.sys.process._

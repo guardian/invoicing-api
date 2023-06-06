@@ -20,14 +20,13 @@ object ZuoraAuth extends JsonSupport {
 
   lazy val zuoraApiHost: String =
     stage match {
-      case "DEV" | "CODE" => "https://rest.apisandbox.zuora.com";
+      case "CODE" => "https://rest.apisandbox.zuora.com";
       case "PROD" => "https://rest.zuora.com"
     }
 
   lazy val GNMAustralia_InvoiceTemplateID: String =
     stage match {
-      case "DEV" => "2c92c0f85ecc47e5015ee7360d602757"
-      case "CODE" => "2c92c0f95ecc52d7015ee7348b9d4f61" // UAT Zuora
+      case "CODE" => "2c92c0f85ecc47e5015ee7360d602757"
       case "PROD" => "2c92a0fd5ecce80c015ee71028643020"
     } // GNM Australia Pty Ltd
 

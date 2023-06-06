@@ -6,7 +6,7 @@ Invoice management for supporters
 
 * Riff-Raff project: `support:invoicing-api`
 * Artifact bucket: `membership-dist/support/PROD/invoicing-api/invoicing-api.jar`
-* Zuora API User: `invoicing-api+uat@guardian.co.uk`
+* Zuora API User: `invoicing-api+dev@guardian.co.uk`
 * Parameter store: `/invoicing-api/${Stage}/config`
 
 ## Structure
