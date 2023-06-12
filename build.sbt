@@ -6,7 +6,7 @@ lazy val root = (project in file("."))
     version := "0.1.0",
     organization := "com.gu",
     organizationName := "The Guardian",
-    scalaVersion := "2.13.10",
+    scalaVersion := "2.13.11",
     libraryDependencies ++= List(
       "org.scalameta" %% "munit" % "0.7.29" % Test,
       "org.scalaj" %% "scalaj-http" % "2.4.2",
@@ -30,7 +30,9 @@ lazy val root = (project in file("."))
   )
 
 lazy val deployTo =
-  inputKey[Unit]("Directly update AWS lambda code from your local machine instead of via RiffRaff for faster feedback loop")
+  inputKey[Unit](
+    "Directly update AWS lambda code from your local machine instead of via RiffRaff for faster feedback loop",
+  )
 
 deployTo := {
   import scala.sys.process._
