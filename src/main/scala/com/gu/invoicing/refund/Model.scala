@@ -29,11 +29,14 @@ object Model extends JsonSupport {
       ServiceStartDate: LocalDate,
       ChargeDate: LocalDateTime,
       ChargeAmount: BigDecimal,
+      TaxAmount: BigDecimal,
       UnitPrice: BigDecimal,
       SubscriptionNumber: String,
   )
   case class InvoiceItemQueryResult(records: List[InvoiceItem])
   case class InvoiceItems(invoiceItems: List[InvoiceItem])
+  case class TaxationItem(Id: String, InvoiceId: String, InvoiceItemId: String)
+  case class TaxationItemQueryResult(records: List[TaxationItem])
   case class InvoicePayment(PaymentId: String, InvoiceId: String, CreatedDate: LocalDateTime)
   case class InvoicePaymentQueryResult(records: List[InvoicePayment])
   case class RefundResult(Id: String)
@@ -91,6 +94,8 @@ object Model extends JsonSupport {
   implicit val invoiceItemRW: ReadWriter[InvoiceItem] = macroRW
   implicit val invoiceItemsRW: ReadWriter[InvoiceItems] = macroRW
   implicit val invoiceItemQueryResultRW: ReadWriter[InvoiceItemQueryResult] = macroRW
+  implicit val taxationItemRW: ReadWriter[TaxationItem] = macroRW
+  implicit val taxationItemQueryResultRW: ReadWriter[TaxationItemQueryResult] = macroRW
   implicit val invoicePaymentRW: ReadWriter[InvoicePayment] = macroRW
   implicit val invoicePaymentQueryResultRW: ReadWriter[InvoicePaymentQueryResult] = macroRW
   implicit val refundResultRW: ReadWriter[RefundResult] = macroRW

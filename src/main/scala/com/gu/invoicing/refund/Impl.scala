@@ -1,10 +1,14 @@
 package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
+
 import java.time.LocalDate
 import com.gu.invoicing.common.Http
+
 import scala.annotation.tailrec
 import Model._
+import com.gu.invoicing.common.Assert.StringAssert
+
 import scala.util.chaining._
 
 /** Zuora API client and implementation details
@@ -29,9 +33,15 @@ object Impl {
   def getItemsByInvoice(subscriptionName: String): Map[String, List[InvoiceItem]] =
     post[InvoiceItemQueryResult](
       s"$zuoraApiHost/v1/action/query",
-      s"""{"queryString": "select Id, ChargeAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber, UnitPrice FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin,
+      s"""{"queryString": "select Id, ChargeAmount, TaxAmount, ChargeDate, ChargeName, ChargeNumber, InvoiceId, ProductName, ServiceEndDate, ServiceStartDate, SubscriptionNumber, UnitPrice FROM InvoiceItem where SubscriptionNumber = '$subscriptionName'"}""".stripMargin,
     ).records
       .groupBy(_.InvoiceId)
+
+  def getTaxationItemsForInvoice(invoiceId: String): List[TaxationItem] =
+    post[TaxationItemQueryResult](
+      s"$zuoraApiHost/v1/action/query",
+      s"""{"queryString": "select Id, InvoiceId, InvoiceItemId FROM TaxationItem where InvoiceId = '$invoiceId'"}""".stripMargin,
+    ).records
 
   def getInvoicePaymentId(invoiceId: String): Option[String] =
     post[InvoicePaymentQueryResult](
@@ -71,11 +81,16 @@ object Impl {
       }
   }
 
+  def invoiceHasTaxationItems(invoiceItems: List[InvoiceItem]) = {
+    invoiceItems.exists(_.TaxAmount > 0)
+  }
+
   /** This is likely the most complicated part of the program. It decides which invoice items to adjust and by how much
     * by taking into account any previous adjustments already made to corresponding items.
     */
   def spreadRefundAcrossItems(
       invoiceItems: List[InvoiceItem],
+      taxationItems: List[TaxationItem],
       adjustments: List[InvoiceItemAdjustment],
       totalRefundAmount: BigDecimal,
       refundGuid: String,
@@ -95,42 +110,79 @@ object Impl {
       }
     }
 
+    def buildInvoiceItemAdjustments(
+        invoiceItem: InvoiceItem,
+        amountToRefund: BigDecimal,
+    ): List[InvoiceItemAdjustmentWrite] = {
+
+      val chargeAmountToRefund = invoiceItem.ChargeAmount.min(amountToRefund)
+      val chargeAdjustment = List(
+        InvoiceItemAdjustmentWrite(
+          LocalDate.now(),
+          chargeAmountToRefund,
+          refundGuid,
+          invoiceItem.InvoiceId,
+          "Credit",
+          "InvoiceDetail",
+          invoiceItem.Id,
+        ),
+      )
+
+      val taxAmountToRefund = amountToRefund - chargeAmountToRefund
+      if (taxAmountToRefund > invoiceItem.TaxAmount) {
+        println(
+          s"Unexpected state when trying to create InvoiceItem adjustment for $invoiceItem. " +
+            s"Amount to refund was $amountToRefund, chargeAmountToRefund was $chargeAmountToRefund " +
+            s"so taxAmountToRefund was $taxAmountToRefund but the tax on the invoice item was only ${invoiceItem.TaxAmount}",
+        )
+        throw new RuntimeException(s"Unexpected state when trying to create InvoiceItem adjustment for $invoiceItem")
+      }
+
+      val taxAdjustment =
+        if (taxAmountToRefund > 0) {
+          val Some(taxationItemId) = taxationItems.find(_.InvoiceItemId == invoiceItem.Id).map(_.Id) tap { item =>
+            s"Missing taxation id for invoiceItem $invoiceItem" assert item.isDefined
+          }
+
+          List(
+            InvoiceItemAdjustmentWrite(
+              LocalDate.now(),
+              taxAmountToRefund,
+              refundGuid,
+              invoiceItem.InvoiceId,
+              "Credit",
+              "Tax",
+              taxationItemId,
+            ),
+          )
+        } else Nil
+
+      chargeAdjustment ++ taxAdjustment
+    }
+
     @tailrec def loop(
-        remainingAmounToRefund: BigDecimal,
+        remainingAmountToRefund: BigDecimal,
         remainingItems: List[InvoiceItem],
         accumulatedAdjustments: List[InvoiceItemAdjustmentWrite],
     ): List[InvoiceItemAdjustmentWrite] = {
       remainingItems match {
         case Nil =>
           accumulatedAdjustments
-
         case nextItem :: tail =>
-          val adjustItemBy: BigDecimal => InvoiceItemAdjustmentWrite =
-            InvoiceItemAdjustmentWrite(
-              LocalDate.now(),
-              _,
-              refundGuid,
-              nextItem.InvoiceId,
-              "Credit",
-              "InvoiceDetail",
-              nextItem.Id,
-            )
-
           availableAmount(nextItem) match {
             case Some(availableRefundableAmount) =>
-              if ((remainingAmounToRefund - availableRefundableAmount) <= 0)
-                adjustItemBy(remainingAmounToRefund) :: accumulatedAdjustments
-              else
+              if (availableRefundableAmount >= remainingAmountToRefund)
+                buildInvoiceItemAdjustments(nextItem, remainingAmountToRefund) ++ accumulatedAdjustments
+              else {
                 loop(
-                  remainingAmounToRefund - availableRefundableAmount,
+                  remainingAmountToRefund - availableRefundableAmount,
                   tail,
-                  adjustItemBy(availableRefundableAmount) :: accumulatedAdjustments,
+                  buildInvoiceItemAdjustments(nextItem, availableRefundableAmount) ++ accumulatedAdjustments,
                 )
-
+              }
             case None =>
-              loop(remainingAmounToRefund, tail, accumulatedAdjustments)
+              loop(remainingAmountToRefund, tail, accumulatedAdjustments)
           }
-
       }
     }
 
