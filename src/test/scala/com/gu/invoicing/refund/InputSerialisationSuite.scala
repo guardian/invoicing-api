@@ -30,6 +30,7 @@ class InputSerialisationSuite extends munit.FunSuite {
                         |            "Id": "8ad081c686023f540186030654b778b7",
                         |            "InvoiceId": "8ad081c686023f540186030654ac78b6",
                         |            "ChargeAmount": 10.91,
+                        |            "TaxAmount": 1.09,
                         |            "ChargeNumber": "C-00806529"
                         |        }
                         |    ],
