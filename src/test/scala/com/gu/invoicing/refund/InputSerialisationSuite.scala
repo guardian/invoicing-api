@@ -21,7 +21,6 @@ class InputSerialisationSuite extends munit.FunSuite {
                         |    "records": [
                         |        {
                         |            "ChargeDate": "2023-01-30T14:13:11.000+00:00",
-                        |            "UnitPrice": 12,
                         |            "SubscriptionNumber": "A-S00484373",
                         |            "ProductName": "Supporter Plus",
                         |            "ServiceEndDate": "2023-02-24",
@@ -36,6 +35,6 @@ class InputSerialisationSuite extends munit.FunSuite {
                         |    ],
                         |    "done": true
                         |}""".stripMargin
-    assertEquals(read[InvoiceItemQueryResult](inputString).records.head.UnitPrice, BigDecimal(12))
+    assertEquals(read[InvoiceItemQueryResult](inputString).records.head.amountWithTax, BigDecimal(12))
   }
 }
