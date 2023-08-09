@@ -81,8 +81,20 @@ object Impl {
       }
   }
 
-  def invoiceHasTaxationItems(invoiceItems: List[InvoiceItem]) = {
+  def invoiceHasTaxationItems(invoiceItems: List[InvoiceItem]): Boolean = {
     invoiceItems.exists(_.TaxAmount > 0)
+  }
+
+  /* Collect all item adjustments of a particular invoice item and return remaining amount that can be adjusted/refunded */
+  def availableAmount(invoiceItem: InvoiceItem, adjustments: List[InvoiceItemAdjustment]): Option[BigDecimal] = {
+    netAdjustmentsByInvoiceItemId(adjustments).get(invoiceItem.Id) match {
+      case Some(netAdjustment) =>
+        val availableRefundableAmount = invoiceItem.amountWithTax - netAdjustment
+        if (availableRefundableAmount <= 0) None else Some(availableRefundableAmount)
+
+      case None => // this items has not been adjusted therefore the original full item amount is available
+        if (invoiceItem.amountWithTax <= 0) None else Some(invoiceItem.amountWithTax)
+    }
   }
 
   /** This is likely the most complicated part of the program. It decides which invoice items to adjust and by how much
@@ -95,20 +107,6 @@ object Impl {
       totalRefundAmount: BigDecimal,
       refundGuid: String,
   ): List[InvoiceItemAdjustmentWrite] = {
-
-    /* Collect all item adjustments of a particular invoice item and return remaining amount that can be adjusted/refunded */
-    def availableAmount(invoiceItem: InvoiceItem): Option[BigDecimal] = {
-      netAdjustmentsByInvoiceItemId(adjustments).get(invoiceItem.Id) match {
-        case Some(netAdjustment) =>
-          val availableRefundableAmount = invoiceItem.amountWithTax - netAdjustment
-          if (availableRefundableAmount <= 0) None else Some(availableRefundableAmount)
-
-        case None => // this items has not been adjusted therefore the original full item amount is available
-          Some(
-            invoiceItem.amountWithTax,
-          ) // Use unit price rather than charge amount here because charge amount does not include tax
-      }
-    }
 
     def buildInvoiceItemAdjustments(
         invoiceItem: InvoiceItem,
@@ -169,7 +167,7 @@ object Impl {
         case Nil =>
           accumulatedAdjustments
         case nextItem :: tail =>
-          availableAmount(nextItem) match {
+          availableAmount(nextItem, adjustments) match {
             case Some(availableRefundableAmount) =>
               if (availableRefundableAmount >= remainingAmountToRefund)
                 buildInvoiceItemAdjustments(nextItem, remainingAmountToRefund) ++ accumulatedAdjustments
