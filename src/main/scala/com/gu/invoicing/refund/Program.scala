@@ -50,10 +50,10 @@ object Program {
 
     val taxationItems =
       if (invoiceHasTaxationItems(items)) {
-        System.out.println(s"Invoice has taxable items, fetching taxation item ids")
+        System.out.println(s"Invoice has items which contain tax, fetching taxation item ids")
         getTaxationItemsForInvoice(invoiceId)
       } else {
-        System.out.println(s"No taxable invoice items")
+        System.out.println(s"No invoice items contain a tax amount")
         Nil
       }
 

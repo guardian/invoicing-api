@@ -112,6 +112,10 @@ object Impl {
         invoiceItem: InvoiceItem,
         amountToRefund: BigDecimal,
     ): List[InvoiceItemAdjustmentWrite] = {
+      // If the invoice item being adjusted has tax paid on it, it will need to be adjusted in two separate adjustments:
+      // - one for the charge amount where the SourceType is "InvoiceDetail" and SourceId is the invoice item id
+      // - one for the tax amount where the SourceType is "Tax" and SourceId is the taxation item id
+      // https://www.zuora.com/developer/api-references/older-api/operation/Object_POSTInvoiceItemAdjustment/#!path=SourceType&t=request
 
       val chargeAmountToRefund = invoiceItem.ChargeAmount.min(amountToRefund)
       val chargeAdjustment = List(
