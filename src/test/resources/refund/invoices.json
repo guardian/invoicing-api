@@ -1,0 +1,96 @@
+{
+  "size": 9,
+  "records": [
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-02-11",
+      "Amount": 9,
+      "Id": "8ad08529863bb74601863f10e0b36aa6",
+      "InvoiceDate": "2023-02-11",
+      "InvoiceNumber": "INV00383604",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-03-11",
+      "Amount": 9,
+      "Id": "8ad0852986cb11350186cf434e074699",
+      "InvoiceDate": "2023-03-11",
+      "InvoiceNumber": "INV00458532",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-05-11",
+      "Amount": 9,
+      "Id": "8ad088058805a3d601880932373a4782",
+      "InvoiceDate": "2023-05-11",
+      "InvoiceNumber": "INV00659082",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-07-11",
+      "Amount": 9,
+      "Id": "8ad08805893e3b9a0189435c440230df",
+      "InvoiceDate": "2023-07-11",
+      "InvoiceNumber": "INV00998250",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-08-09",
+      "Amount": 14.42,
+      "Id": "8ad08d2989d472170189da366b940c8b",
+      "InvoiceDate": "2023-08-09",
+      "InvoiceNumber": "INV01159059",
+      "PaymentAmount": 14.42,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-08-09",
+      "Amount": -15,
+      "Id": "8ad08d2989d472170189da3739f9162b",
+      "InvoiceDate": "2023-08-09",
+      "InvoiceNumber": "INV01159060",
+      "PaymentAmount": 0,
+      "Balance": -15
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-04-11",
+      "Amount": 9,
+      "Id": "8ad09c64876b66f701876eb3e64a129f",
+      "InvoiceDate": "2023-04-11",
+      "InvoiceNumber": "INV00545652",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-06-11",
+      "Amount": 9,
+      "Id": "8ad09c64889f79f20188a8d9d4087134",
+      "InvoiceDate": "2023-06-11",
+      "InvoiceNumber": "INV00790966",
+      "PaymentAmount": 9,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-01-11",
+      "Amount": 9,
+      "Id": "8ad09ea0858682bb0185a1d7ed61660c",
+      "InvoiceDate": "2023-01-11",
+      "InvoiceNumber": "INV00290731",
+      "PaymentAmount": 9,
+      "Balance": 0
+    }
+  ],
+  "done": true
+}

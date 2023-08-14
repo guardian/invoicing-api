@@ -7,7 +7,8 @@ Invoice management for supporters
 * Riff-Raff project: `support:invoicing-api`
 * Artifact bucket: `membership-dist/support/PROD/invoicing-api/invoicing-api.jar`
 * Zuora API User: `invoicing-api+dev@guardian.co.uk`
-* Parameter store: `/invoicing-api/${Stage}/config`
+* Parameter store: `/invoicing-api/${Stage}/config` - After making any changes to the config, you will need to deploy 
+through RiffRaff to update the lambda's environment variables function with the new config.
 
 ## Structure
 

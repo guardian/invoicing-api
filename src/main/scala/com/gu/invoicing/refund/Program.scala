@@ -32,6 +32,7 @@ object Program {
       s"$subscriptionName should have at least one invoice item" assert itemsByInvoiceId.nonEmpty
     }
     System.out.println("Successfully got InvoiceItems")
+
     val (invoiceId, invoice, items) = decideRelevantInvoice(invoices, itemsByInvoiceId) tap { case (_, invoice, _) =>
       s"$invoice should be at least posted and not negative" assert (invoice.Amount > 0.0 && invoice.Status == "Posted")
     }
@@ -47,7 +48,16 @@ object Program {
     }
     System.out.println(s"Invoice with id $invoiceId has a payment")
 
-    val adjustmentsUnrounded = spreadRefundAcrossItems(items, itemAdjustments, refund, guid) tap {
+    val taxationItems =
+      if (invoiceHasTaxationItems(items)) {
+        System.out.println(s"Invoice has items which contain tax, fetching taxation item ids")
+        getTaxationItemsForInvoice(invoiceId)
+      } else {
+        System.out.println(s"No invoice items contain a tax amount")
+        Nil
+      }
+
+    val adjustmentsUnrounded = spreadRefundAcrossItems(items, taxationItems, itemAdjustments, refund, guid) tap {
       adjustmentsUnrounded =>
         s"$adjustmentsUnrounded (un-rounded) should equal total $refund" assert (adjustmentsUnrounded
           .map(_.Amount)
