@@ -120,7 +120,7 @@ object Impl {
       val chargeAmountToRefund = invoiceItem.ChargeAmount.min(amountToRefund)
       val chargeAdjustment = List(
         InvoiceItemAdjustmentWrite(
-          LocalDate.now(),
+          invoiceItem.ChargeDate.toLocalDate,
           chargeAmountToRefund,
           refundGuid,
           invoiceItem.InvoiceId,

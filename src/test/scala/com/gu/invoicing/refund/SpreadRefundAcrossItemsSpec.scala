@@ -2,6 +2,8 @@ package com.gu.invoicing.refund
 
 import com.gu.invoicing.refund.Model._
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import scala.io.Source
 
 class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
@@ -28,6 +30,30 @@ class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
     assertEquals(invoiceId, "8ad08d2989d472170189da366b940c8b")
     assertEquals(adjustments.length, 2)
     assertEquals(adjustments.map(_.Amount).sum, BigDecimal(14.42))
+  }
+  test("spreadRefundAcrossItems function should use the correct adjustment date") {
+    val invoices = read[InvoiceQueryResult](
+      Source.fromResource("refund/invoices.json").getLines().mkString,
+    ).records
+
+    val invoiceItems = read[InvoiceItemQueryResult](
+      Source.fromResource("refund/invoice-items.json").getLines().mkString,
+    ).records
+
+    val (invoiceId, _, relevantInvoiceItems) =
+      Impl.decideRelevantInvoice(invoices, invoiceItems.groupBy(_.InvoiceId))
+
+    val adjustments = Impl.spreadRefundAcrossItems(
+      relevantInvoiceItems,
+      Nil,
+      Nil,
+      14.42,
+      "xxxxxxx",
+    )
+    val expectedAdjustmentDate = LocalDateTime
+      .parse("2023-08-09T13:12:26.000+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      .toLocalDate
+    assertEquals(adjustments.head.AdjustmentDate, expectedAdjustmentDate)
   }
   test("availableAmount function works correctly for invoice items with negative charge") {
     val negativeInvoiceItem = read[InvoiceItem](
