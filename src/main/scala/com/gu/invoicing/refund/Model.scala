@@ -31,7 +31,7 @@ object Model extends JsonSupport {
       ChargeAmount: BigDecimal,
       TaxAmount: BigDecimal,
       SubscriptionNumber: String,
-  ){
+  ) {
     def amountWithTax = ChargeAmount + TaxAmount
   }
   case class InvoiceItemQueryResult(records: List[InvoiceItem])
