@@ -35,10 +35,10 @@ object ZuoraAuth extends JsonSupport {
     * again. Hence now we periodically refreshes the token (making it def would have performance penalty)
     */
   var accessToken: String = _
-  private def getAccessToken(): String = {
+  private def getAccessToken: String = {
     val logger = java.util.logging.Logger.getGlobal
     val authUrl = s"$zuoraApiHost/oauth/token"
-    logger.info(s"Authenticating with Zuora on $authUrl with client ID: ${config.clientId}")
+    logger.info(s"Authenticating with Zuora on $authUrl with client ID ending in: ...${config.clientId.takeRight(4)}")
     Http(authUrl)
       .postForm(
         Seq(
@@ -49,11 +49,15 @@ object ZuoraAuth extends JsonSupport {
       )
       .asString
       .body
-      .tap(logger.info)
+      .tap { body =>
+        // although cloudwatch is pretty secure, it's a nice thing to redact if possible
+        val redactedBody = body.replaceAll(""""access_token":"[^"]*"""", """"access_token":"***REDACTED***"""")
+        logger.info(redactedBody)
+      }
       .pipe(read[AccessToken](_))
       .access_token
   }
-  private val timer = new Timer()
+  private val timer = new Timer(true)
   private def ZuoraOutageWarning(cause: Throwable) = new RuntimeException(
     """
       |Failed to authenticate with Zuora after multiple retries.
@@ -61,17 +65,20 @@ object ZuoraAuth extends JsonSupport {
       |""".stripMargin,
     cause,
   )
+
+  private val five_minutes: Int = 5 * 60 * 1000
+
   timer.schedule(
     new TimerTask {
       def run(): Unit = {
-        retry(getAccessToken()) // do not update cache on failure
+        retry(getAccessToken) // do not update cache on failure
           .foreach(token => accessToken = token)
       }
     },
-    0,
-    5 * 60 * 1000, // refresh token every 5 min
+    five_minutes, // wait 5 mins for first refresh
+    five_minutes, // refresh token every 5 min
   )
-  retry(getAccessToken()) match { // set token on initialization
+  retry(getAccessToken) match { // set token on initialization
     case Success(token) => accessToken = token
     case Failure(e) => throw ZuoraOutageWarning(e)
   }
