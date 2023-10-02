@@ -36,7 +36,10 @@ object ZuoraAuth extends JsonSupport {
     */
   var accessToken: String = _
   private def getAccessToken(): String = {
-    Http(s"$zuoraApiHost/oauth/token")
+    val logger = java.util.logging.Logger.getGlobal
+    val authUrl = s"$zuoraApiHost/oauth/token"
+    logger.info(s"Authenticating with Zuora on $authUrl with client ID: ${config.clientId}")
+    Http(authUrl)
       .postForm(
         Seq(
           "client_id" -> config.clientId,
@@ -46,6 +49,7 @@ object ZuoraAuth extends JsonSupport {
       )
       .asString
       .body
+      .tap(logger.info)
       .pipe(read[AccessToken](_))
       .access_token
   }
