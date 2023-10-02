@@ -11,6 +11,13 @@ Parameters:
       - PROD
     Default: CODE
 
+Mappings:
+  StageMap:
+    PROD:
+      ConfigVersion: 1
+    CODE:
+      ConfigVersion: 2
+
 Conditions:
   IsProd: !Equals [!Ref "Stage", "PROD"]
 
@@ -155,7 +162,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
@@ -175,7 +185,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
@@ -195,7 +208,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
@@ -215,7 +231,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
@@ -235,7 +254,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
@@ -255,7 +277,10 @@ Resources:
       Environment:
         Variables:
           Stage: !Ref Stage
-          Config: !Sub '{{resolve:ssm:/invoicing-api/${Stage}/config:1}}'
+          Config:
+            !Sub
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
       Runtime: java11
