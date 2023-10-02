@@ -164,7 +164,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
@@ -187,7 +187,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
@@ -210,7 +210,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
@@ -233,7 +233,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
@@ -256,7 +256,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
@@ -279,7 +279,7 @@ Resources:
           Stage: !Ref Stage
           Config:
             !Sub
-            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}'
+            - '{{resolve:ssm:/invoicing-api/${Stage}/config:${Version}}}'
             - Version: !FindInMap [StageMap, !Ref Stage, ConfigVersion]
       Role: !GetAtt InvoicingLambdaRole.Arn
       MemorySize: 3008
