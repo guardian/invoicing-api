@@ -1,0 +1,36 @@
+{
+  "size": 3,
+  "records": [
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-11-13",
+      "Amount": -120,
+      "Id": "8ad087d28bc80bf2018bc97d99e36e95",
+      "InvoiceDate": "2023-11-13",
+      "InvoiceNumber": "INV01279583",
+      "PaymentAmount": 0,
+      "Balance": -120
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-11-13",
+      "Amount": 50,
+      "Id": "8ad08ae28bc80bfe018bc94464403132",
+      "InvoiceDate": "2023-11-13",
+      "InvoiceNumber": "INV01279549",
+      "PaymentAmount": 50,
+      "Balance": 0
+    },
+    {
+      "Status": "Posted",
+      "TargetDate": "2023-11-13",
+      "Amount": 70,
+      "Id": "8ad093788bc82157018bc97ce7457024",
+      "InvoiceDate": "2023-11-13",
+      "InvoiceNumber": "INV01279582",
+      "PaymentAmount": 70,
+      "Balance": 0
+    }
+  ],
+  "done": true
+}

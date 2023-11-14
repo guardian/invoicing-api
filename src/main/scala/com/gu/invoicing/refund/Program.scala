@@ -33,10 +33,13 @@ object Program {
     }
     System.out.println("Successfully got InvoiceItems")
 
-    val (invoiceId, invoice, items) = decideRelevantInvoice(invoices, itemsByInvoiceId) tap { case (_, invoice, _) =>
-      s"$invoice should be at least posted and not negative" assert (invoice.Amount > 0.0 && invoice.Status == "Posted")
+    val (invoiceId, invoice, items) = decideRelevantInvoice(refund, invoices, itemsByInvoiceId) tap {
+      case (_, invoice, _) =>
+        s"$invoice should be posted and have an amount >= the refund value" assert (
+          invoice.Amount >= refund && invoice.Status == "Posted"
+        )
     }
-    System.out.println(s"Invoice $invoice is posted and not negative")
+    System.out.println(s"Invoice $invoice is posted and has an amount >= the refund value")
 
     val itemAdjustments = getInvoiceItemAdjustments(invoiceId) tap { _ =>
       s"Invoice items of $invoiceId should be retrieved" assert true
