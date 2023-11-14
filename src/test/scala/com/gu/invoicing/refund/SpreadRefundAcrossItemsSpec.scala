@@ -17,7 +17,7 @@ class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
     ).records
 
     val (invoiceId, _, relevantInvoiceItems) =
-      Impl.decideRelevantInvoice(invoices, invoiceItems.groupBy(_.InvoiceId))
+      Impl.decideRelevantInvoice(14.42, invoices, invoiceItems.groupBy(_.InvoiceId))
 
     val adjustments = Impl.spreadRefundAcrossItems(
       relevantInvoiceItems,
@@ -41,7 +41,7 @@ class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
     ).records
 
     val (invoiceId, _, relevantInvoiceItems) =
-      Impl.decideRelevantInvoice(invoices, invoiceItems.groupBy(_.InvoiceId))
+      Impl.decideRelevantInvoice(14.42, invoices, invoiceItems.groupBy(_.InvoiceId))
 
     val adjustments = Impl.spreadRefundAcrossItems(
       relevantInvoiceItems,
@@ -54,6 +54,29 @@ class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
       .parse("2023-08-09T13:12:26.000+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       .toLocalDate
     assertEquals(adjustments.head.AdjustmentDate, expectedAdjustmentDate)
+  }
+  test("spreadRefundAcrossItems function should work when there is more than one invoice on the same day") {
+    val refundAmount = BigDecimal(70)
+    val invoices = read[InvoiceQueryResult](
+      Source.fromResource("refund/invoices-2.json").getLines().mkString,
+    ).records
+
+    val invoiceItems = read[InvoiceItemQueryResult](
+      Source.fromResource("refund/invoice-items-2.json").getLines().mkString,
+    ).records
+
+    val (invoiceId, _, relevantInvoiceItems) =
+      Impl.decideRelevantInvoice(refundAmount, invoices, invoiceItems.groupBy(_.InvoiceId))
+
+    val adjustments = Impl.spreadRefundAcrossItems(
+      relevantInvoiceItems,
+      Nil,
+      Nil,
+      refundAmount,
+      "xxxxxxx",
+    )
+
+    assertEquals(adjustments.head.Amount, refundAmount)
   }
   test("availableAmount function works correctly for invoice items with negative charge") {
     val negativeInvoiceItem = read[InvoiceItem](

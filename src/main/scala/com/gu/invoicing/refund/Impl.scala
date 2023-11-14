@@ -213,12 +213,13 @@ object Impl {
 
   /** Select correct invoice to apply refund to */
   def decideRelevantInvoice(
+      refund: BigDecimal,
       invoices: List[Invoice],
       itemsByInvoiceId: Map[String, List[InvoiceItem]],
   ): (String, Invoice, List[InvoiceItem]) = {
     joinInvoiceWithInvoiceItemsOnInvoiceIdKey(invoices, itemsByInvoiceId).iterator
       .filter({ case (_, invoice, _) => invoice.Status == "Posted" })
-      .filter({ case (_, invoice, _) => invoice.Amount > 0 })
+      .filter({ case (_, invoice, _) => invoice.Amount >= refund })
       .maxBy({ case (_, invoice, _) => invoice.TargetDate })
   }
 
