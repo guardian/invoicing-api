@@ -683,7 +683,7 @@ Resources:
   InvoicingApiDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneName: membership.guardianapis.com.
+      HostedZoneName: support.guardianapis.com.
       Name: !FindInMap [ StageMap, !Ref Stage, DomainName ]
       Type: CNAME
       TTL: '120'
