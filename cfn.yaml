@@ -15,7 +15,7 @@ Mappings:
   StageMap:
     PROD:
       ConfigVersion: 1
-      DomainName: invoicing-api-prod.support.guardianapis.com
+      DomainName: invoicing-api.support.guardianapis.com
     CODE:
       ConfigVersion: 2
       DomainName: invoicing-api-code.support.guardianapis.com
