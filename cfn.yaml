@@ -15,8 +15,10 @@ Mappings:
   StageMap:
     PROD:
       ConfigVersion: 1
+      DomainName: invoicing-api.support.guardianapis.com
     CODE:
       ConfigVersion: 2
+      DomainName: invoicing-api-code.support.guardianapis.com
 
 Conditions:
   IsProd: !Equals [!Ref "Stage", "PROD"]
@@ -656,3 +658,34 @@ Resources:
     DependsOn:
       - RefundErroneousPaymentLambda
       - RefundErroneousPaymentMethod
+
+  InvoicingApiDomainName:
+    Type: "AWS::ApiGateway::DomainName"
+    Properties:
+      RegionalCertificateArn: # only for *.support.guardianapis.com
+        !Sub arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/b384a6a0-2f54-4874-b99b-96eeff96c009
+      DomainName: !FindInMap [ StageMap, !Ref Stage, DomainName ]
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  InvoicingApiBasePathMapping:
+    Type: "AWS::ApiGateway::BasePathMapping"
+    Properties:
+      RestApiId: !Ref InvoicingApi
+      DomainName: !Ref InvoicingApiDomainName
+      Stage: !Sub ${Stage}
+    DependsOn:
+    - InvoicingApi
+    - InvoicingApiDomainName
+    - InvoicingApiStage
+
+  InvoicingApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: support.guardianapis.com.
+      Name: !FindInMap [ StageMap, !Ref Stage, DomainName ]
+      Type: CNAME
+      TTL: '120'
+      ResourceRecords:
+      - !GetAtt InvoicingApiDomainName.RegionalDomainName
