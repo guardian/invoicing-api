@@ -6,11 +6,11 @@ lazy val root = (project in file("."))
     version := "0.1.0",
     organization := "com.gu",
     organizationName := "The Guardian",
-    scalaVersion := "2.13.12",
+    scalaVersion := "2.13.13",
     libraryDependencies ++= List(
       "org.scalameta" %% "munit" % "0.7.29" % Test,
       "org.scalaj" %% "scalaj-http" % "2.4.2",
-      "com.lihaoyi" %% "upickle" % "3.1.5",
+      "com.lihaoyi" %% "upickle" % "3.2.0",
       "com.gu" %% "spy" % "0.1.1",
       "org.scala-lang.modules" %% "scala-async" % "1.0.1",
       "com.lihaoyi" %% "pprint" % "0.8.1",
