@@ -150,6 +150,35 @@ Resources:
       - InvoicingLambdaRole
 
   # ****************************************************************************
+  # Refund SQS
+  # ****************************************************************************
+
+  RefundLambdaQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: refund-lambda-queue-${Stage}
+      DelaySeconds: 0
+      VisibilityTimeout: 1800
+      Tags:
+        - Key: App
+          Value: !Ref App
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: Stage
+          Value: !Ref Stage
+  # ****************************************************************************
+  # Lambda Event Source Mapping
+  # ****************************************************************************
+
+  LambdaFunctionEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt RefundLambdaQueue.Arn
+      FunctionName: !GetAtt RefundLambda.Arn
+
+  # ****************************************************************************
   # Lambdas
   # ****************************************************************************
   RefundLambda:
@@ -570,6 +599,38 @@ Resources:
       - RefundLambda
       - RefundMethod
 
+  RefundLambdaRole:
+    Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: LambdaPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                    - lambda:InvokeFunction
+                  Resource:  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
+          - PolicyName: AllowRefundSqsPolicy
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - sqs:ReceiveMessage
+                    - sqs:DeleteMessage
+                    - sqs:GetQueueAttributes
+                    - sqs:ChangeMessageVisibility
+                  Resource: !GetAtt RefundLambdaQueue.Arn
   InvoicesLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
