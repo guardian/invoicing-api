@@ -156,14 +156,22 @@ Resources:
   RefundLambdaQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: refund-lambda-queue-${Stage}
+      QueueName:
+        Fn::Sub: "invoicing-api-refund-lambda-queue-${Stage}"
       DelaySeconds: 0
-      VisibilityTimeout: 1800
+      VisibilityTimeout: 3000
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RefundLambdaDeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
-        - Key: App
-          Value: !Ref App
-        - Key: Stack
-          Value: !Ref Stack
+        - Key: Stage
+          Value: !Ref Stage
+  RefundLambdaDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Sub: "invoicing-api-refund-lambda-dlq-${Stage}"
+      Tags:
         - Key: Stage
           Value: !Ref Stage
   # ****************************************************************************
@@ -173,11 +181,13 @@ Resources:
   LambdaFunctionEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
-      BatchSize: 10
+      BatchSize: 1
       Enabled: true
       EventSourceArn: !GetAtt RefundLambdaQueue.Arn
       FunctionName: !GetAtt RefundLambda.Arn
-
+    DependsOn:
+      - RefundLambdaQueue
+      - RefundLambda
   # ****************************************************************************
   # Lambdas
   # ****************************************************************************
@@ -189,7 +199,7 @@ Resources:
       Code:
         S3Bucket: membership-dist
         S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
-      Handler: com.gu.invoicing.refund.Lambda::handleRequest
+      Handler: com.gu.invoicing.refund.RefundHandler::handleRequest
       Environment:
         Variables:
           Stage: !Ref Stage
@@ -599,38 +609,6 @@ Resources:
       - RefundLambda
       - RefundMethod
 
-  RefundLambdaRole:
-    Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
-              Action:
-                - sts:AssumeRole
-        Policies:
-          - PolicyName: LambdaPolicy
-            PolicyDocument:
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - logs:CreateLogGroup
-                    - logs:CreateLogStream
-                    - logs:PutLogEvents
-                    - lambda:InvokeFunction
-                  Resource:  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/invoicing-api-refund-${Stage}:log-stream:*
-          - PolicyName: AllowRefundSqsPolicy
-            PolicyDocument:
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - sqs:ReceiveMessage
-                    - sqs:DeleteMessage
-                    - sqs:GetQueueAttributes
-                    - sqs:ChangeMessageVisibility
-                  Resource: !GetAtt RefundLambdaQueue.Arn
   InvoicesLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -709,7 +687,18 @@ Resources:
               - Effect: Allow
                 Action: s3:GetObject
                 Resource: arn:aws:s3::*:membership-dist/*
-
+        - PolicyName: SQSReceiveAndDelete
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:GetQueueUrl
+                  - sqs:GetQueueAttributes
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:ChangeMessageVisibility
+                Resource: !GetAtt [ RefundLambdaQueue, Arn ]
   RefundErroneousPaymentLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
