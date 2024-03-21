@@ -16,6 +16,10 @@ lazy val root = (project in file("."))
       "com.lihaoyi" %% "pprint" % "0.8.1",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.3",
       "com.amazonaws" % "aws-lambda-java-events" % "3.11.4",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     assemblyJarName := s"${name.value}.jar",
@@ -33,6 +37,7 @@ lazy val deployTo =
   inputKey[Unit](
     "Directly update AWS lambda code from your local machine instead of via RiffRaff for faster feedback loop",
   )
+val circeVersion = "0.14.6"
 
 deployTo := {
   import scala.sys.process._

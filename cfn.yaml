@@ -150,6 +150,45 @@ Resources:
       - InvoicingLambdaRole
 
   # ****************************************************************************
+  # Refund SQS
+  # ****************************************************************************
+
+  RefundLambdaQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Sub: "invoicing-api-refund-lambda-queue-${Stage}"
+      DelaySeconds: 0
+      VisibilityTimeout: 3000
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RefundLambdaDeadLetterQueue.Arn
+        maxReceiveCount: 5
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+  RefundLambdaDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName:
+        Fn::Sub: "invoicing-api-refund-lambda-dlq-${Stage}"
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+  # ****************************************************************************
+  # Lambda Event Source Mapping
+  # ****************************************************************************
+
+  LambdaFunctionEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt RefundLambdaQueue.Arn
+      FunctionName: !GetAtt RefundLambda.Arn
+    DependsOn:
+      - RefundLambdaQueue
+      - RefundLambda
+  # ****************************************************************************
   # Lambdas
   # ****************************************************************************
   RefundLambda:
@@ -160,7 +199,7 @@ Resources:
       Code:
         S3Bucket: membership-dist
         S3Key: !Sub support/${Stage}/invoicing-api/invoicing-api.jar
-      Handler: com.gu.invoicing.refund.Lambda::handleRequest
+      Handler: com.gu.invoicing.refund.RefundHandler::handleRequest
       Environment:
         Variables:
           Stage: !Ref Stage
@@ -648,7 +687,18 @@ Resources:
               - Effect: Allow
                 Action: s3:GetObject
                 Resource: arn:aws:s3::*:membership-dist/*
-
+        - PolicyName: SQSReceiveAndDelete
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:GetQueueUrl
+                  - sqs:GetQueueAttributes
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:ChangeMessageVisibility
+                Resource: !GetAtt [ RefundLambdaQueue, Arn ]
   RefundErroneousPaymentLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
