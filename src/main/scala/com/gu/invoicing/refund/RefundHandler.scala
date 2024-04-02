@@ -1,10 +1,16 @@
 package com.gu.invoicing.refund
 
-import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, SQSEvent}
+import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent, SQSEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import scala.jdk.CollectionConverters._
 import io.circe.parser.{decode => circeDecode}
+import com.gu.invoicing.common.HttpHelper.okResponse
+import com.gu.invoicing.refund.Model._
+import com.gu.invoicing.refund.Program._
+
+import scala.util.chaining._
+
 
 class RefundHandler  extends RequestHandler[SQSEvent, Unit] {
 
@@ -18,13 +24,30 @@ class RefundHandler  extends RequestHandler[SQSEvent, Unit] {
       val rawBody = message.getBody
       System.out.println(s"Processing event: $rawBody")
       val maybeRefundInput = circeDecode[APIGatewayProxyRequestEvent](rawBody)
-
+      System.out.println(s"maybeRefundInput - ${maybeRefundInput}")
       maybeRefundInput match {
-        case Right(refundInput) => Lambda.handleRequest(refundInput, context)
+        case Right(refundInput) => processRequest(refundInput, context)
         case Left(ex) =>
           context.getLogger.log(s"Error '$ex' when decoding JSON to RefundInput with body: ${rawBody}")
       }
     }
+  }
+
+  def processRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+    input.getBody
+      .pipe {
+        read[RefundInput](_)
+      }
+      .tap {
+        info[RefundInput]
+      }
+      .pipe {
+        program
+      }
+      .tap {
+        info[RefundOutput]
+      }
+      .pipe { output => okResponse(write(output)) }
   }
 
 }
