@@ -2,7 +2,7 @@ package com.gu.invoicing.refund
 
 import com.gu.invoicing.refund.Model._
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 import scala.io.Source
 
@@ -50,9 +50,7 @@ class SpreadRefundAcrossItemsSpec extends munit.FunSuite {
       14.42,
       "xxxxxxx",
     )
-    val expectedAdjustmentDate = LocalDateTime
-      .parse("2023-08-09T13:12:26.000+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-      .toLocalDate
+    val expectedAdjustmentDate = LocalDate.now()
     assertEquals(adjustments.head.AdjustmentDate, expectedAdjustmentDate)
   }
   test("spreadRefundAcrossItems function should work when there is more than one invoice on the same day") {
