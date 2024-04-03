@@ -2,7 +2,7 @@ package com.gu.invoicing.refund
 
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
 
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneId}
 import com.gu.invoicing.common.Http
 
 import scala.annotation.tailrec
@@ -120,7 +120,7 @@ object Impl {
       val chargeAmountToRefund = invoiceItem.ChargeAmount.min(amountToRefund)
       val chargeAdjustment = List(
         InvoiceItemAdjustmentWrite(
-          LocalDate.now(),
+          LocalDate.now(ZoneId.of("Europe/London")),
           chargeAmountToRefund,
           refundGuid,
           invoiceItem.InvoiceId,
@@ -148,7 +148,7 @@ object Impl {
 
           List(
             InvoiceItemAdjustmentWrite(
-              LocalDate.now(),
+              LocalDate.now(ZoneId.of("Europe/London")),
               taxAmountToRefund,
               refundGuid,
               invoiceItem.InvoiceId,
