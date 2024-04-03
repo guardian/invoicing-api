@@ -10,8 +10,6 @@ import com.gu.invoicing.refund.Model._
 import com.gu.invoicing.refund.Program._
 
 import scala.util.chaining._
-case class APIGatewayEvent (body : String)
-
 class RefundHandler  extends RequestHandler[SQSEvent, Unit] {
 
   override def handleRequest(input: SQSEvent, context: Context): Unit = {
@@ -23,7 +21,7 @@ class RefundHandler  extends RequestHandler[SQSEvent, Unit] {
     messages.foreach { message =>
       val rawBody = message.getBody
       System.out.println(s"Processing event: $rawBody")
-      val maybeRefundInput = circeDecode[APIGatewayEvent](rawBody)
+      val maybeRefundInput = circeDecode[RefundInput](rawBody)
       System.out.println(s"maybeRefundInput - ${maybeRefundInput}")
       maybeRefundInput match {
         case Right(refundInput) => processRequest(refundInput, context)
@@ -33,11 +31,8 @@ class RefundHandler  extends RequestHandler[SQSEvent, Unit] {
     }
   }
 
-  def processRequest(input: APIGatewayEvent, context: Context): APIGatewayProxyResponseEvent = {
-    input.body
-      .pipe {
-        read[RefundInput](_)
-      }
+  def processRequest(input: RefundInput, context: Context): APIGatewayProxyResponseEvent = {
+    input
       .tap {
         info[RefundInput]
       }
