@@ -97,6 +97,6 @@ object Program {
       System.out.println(s"adjustInvoices was false")
     }
 
-    RefundOutput(subscriptionName, refund, invoiceId, paymentId, adjustmentsRounded, guid)
+    RefundOutput(subscriptionName, refund, invoiceId, paymentId, adjustmentsRounded, guid,getAccountingCode(refundId),getGatewayResponse(refundId))
   }
 }

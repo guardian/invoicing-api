@@ -69,6 +69,12 @@ object Impl {
   def getRefundStatus(refundId: String): String =
     get[Refund](s"$zuoraApiHost/v1/object/refund/$refundId").Status
 
+  def getAccountingCode(refundId: String): String =
+    get[Refund](s"$zuoraApiHost/v1/object/refund/$refundId").AccountingCode
+
+  def getGatewayResponse(refundId: String): String =
+    get[Refund](s"$zuoraApiHost/v1/object/refund/$refundId").GatewayResponse
+
   def netAdjustmentsByInvoiceItemId(
       adjustments: List[InvoiceItemAdjustment],
   ): Map[String, BigDecimal] = {

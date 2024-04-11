@@ -53,6 +53,7 @@ object Model extends JsonSupport {
       Gateway: String,
       MethodType: String,
       GatewayResponseCode: String,
+      AccountingCode: String,
       Id: String,
   )
   case class InvoiceItemAdjustmentWrite(
@@ -125,6 +126,8 @@ object Model extends JsonSupport {
       paymentId: String,
       adjustments: List[InvoiceItemAdjustmentWrite],
       guid: String, // written to Refund.Comment field and InvoiceItemAdjustment.Comment to tie them together
+      AccountingCode: String,
+      GatewayResponse: String,
       message: String = "Successful refund",
   )
 
