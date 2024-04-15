@@ -13,7 +13,7 @@ lazy val root = (project in file("."))
       "com.lihaoyi" %% "upickle" % "3.2.0",
       "com.gu" %% "spy" % "0.1.1",
       "org.scala-lang.modules" %% "scala-async" % "1.0.1",
-      "com.lihaoyi" %% "pprint" % "0.8.1",
+      "com.lihaoyi" %% "pprint" % "0.9.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.3",
       "com.amazonaws" % "aws-lambda-java-events" % "3.11.5",
     ),
