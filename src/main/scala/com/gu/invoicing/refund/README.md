@@ -1,6 +1,10 @@
 
 ## Refund
 
+The refund endpoint is used only by the product-move-api refund lambda.
+
+If the lambda fails, a 5XX is returned and the calling lambda will leave the event on the refund queue.
+
 ### Example request
 
 Request

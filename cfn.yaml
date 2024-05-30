@@ -27,27 +27,6 @@ Resources:
   # ****************************************************************************
   # Alarms
   # ****************************************************************************
-  FailedRefundAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: IsProd
-    Properties:
-      AlarmName: "URGENT 9-5 - PROD: Failed to apply refund to Zuora invoice"
-      AlarmDescription: Urgently perform manual cleanup as documented at https://github.com/guardian/invoicing-api
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref RefundLambda
-      EvaluationPeriods: 1
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 300
-      Statistic: Sum
-      Threshold: 1
-      TreatMissingData: notBreaching
-    DependsOn:
-      - InvoicingLambdaRole
 
   FailedInvoicesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -59,7 +38,7 @@ Resources:
         - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/invoice/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-invoices-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:alarms-handler-topic-PROD
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
@@ -84,7 +63,7 @@ Resources:
         - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/pdf/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-pdf-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:alarms-handler-topic-PROD
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
@@ -109,7 +88,7 @@ Resources:
         - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/nextinvoicedate/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-nextinvoicedate-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:alarms-handler-topic-PROD
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
@@ -134,7 +113,7 @@ Resources:
         - https://github.com/guardian/invoicing-api/blob/main/src/main/scala/com/gu/invoicing/preview/README.md
         - export AWS_DEFAULT_REGION=eu-west-1 && awslogs get --profile membership /aws/lambda/invoicing-api-preview-PROD --start='DD/mm/yyyy HH:MM' --end='DD/mm/yyyy HH:MM'
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:MarioTest
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:alarms-handler-topic-PROD
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
