@@ -50,6 +50,9 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
+      Tags:
+        - Key: App
+          Value: invoicing-api
     DependsOn:
       - InvoicingLambdaRole
 
@@ -75,6 +78,9 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
+      Tags:
+        - Key: App
+          Value: invoicing-api
     DependsOn:
       - InvoicingLambdaRole
 
@@ -100,6 +106,9 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
+      Tags:
+        - Key: App
+          Value: invoicing-api
     DependsOn:
       - InvoicingLambdaRole
 
@@ -125,6 +134,9 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
+      Tags:
+        - Key: App
+          Value: invoicing-api
     DependsOn:
       - InvoicingLambdaRole
 
