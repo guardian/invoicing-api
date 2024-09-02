@@ -46,9 +46,9 @@ Resources:
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
-      Period: 300
+      Period: 900
       Statistic: Sum
-      Threshold: 1
+      Threshold: 5
       TreatMissingData: notBreaching
       Tags:
         - Key: App
@@ -74,9 +74,9 @@ Resources:
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
-      Period: 300
+      Period: 900
       Statistic: Sum
-      Threshold: 1
+      Threshold: 5
       TreatMissingData: notBreaching
       Tags:
         - Key: App
