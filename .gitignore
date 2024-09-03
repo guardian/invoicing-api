@@ -9,3 +9,4 @@ project/boot/
 project/plugins/project/
 metals.sbt
 .sc
+.metals
