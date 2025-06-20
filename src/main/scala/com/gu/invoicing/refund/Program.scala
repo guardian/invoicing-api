@@ -1,8 +1,9 @@
 package com.gu.invoicing.refund
 
-import Model._
-import Impl._
 import com.gu.invoicing.common.Assert._
+import com.gu.invoicing.refund.Impl._
+import com.gu.invoicing.refund.Model._
+
 import scala.util.chaining._
 
 /** Main business logic. Can be executed as CLI application or AWS Lambda
@@ -73,24 +74,40 @@ object Program {
     }
     System.out.println(s"Adjustment totals are correct")
 
-    val refundId = createRefundObject(refund, paymentId, guid) tap { _ =>
-      s"Refund object for $paymentId should be created" assert true
+    val createRefund = getPayment(paymentId) match {
+      case PaymentStatus.Processed =>
+        println(s"refunding payment $paymentId")
+        true
+      case PaymentStatus.Error =>
+        println("don't refund as they are in payment fail")
+        false
+      case other => throw new RuntimeException(s"It's not clear how to deal with a payment in status: $other. Expected Processed or Error (payment failure)")
     }
-    System.out.println(s"Refund with id $refundId created successfully")
 
-    getRefundStatus(refundId) tap { refundStatus =>
-      s"$refundId in amount of $refund should be processed" assert (refundStatus == "Processed")
+    if (createRefund) {
+
+      val refundId = createRefundObject(refund, paymentId, guid) tap { _ =>
+        s"Refund object for $paymentId should be created" assert true
+      }
+      System.out.println(s"Refund with id $refundId created successfully")
+
+      getRefundStatus(refundId) tap { refundStatus =>
+        s"$refundId in amount of $refund should be processed" assert (refundStatus == "Processed")
+      }
+      System.out.println(s"Refund $refundId on payment $paymentId processed successfully")
+
     }
-    System.out.println(s"Refund processed successfully")
 
     if (adjustInvoices) {
       System.out.println(s"Attempting to adjust invoices")
       applyRefundOverItemAdjustments(adjustmentsRounded) tap { adjustments =>
         s"All $adjustments should be successful" assert adjustments.forall(_.Success)
       }
-      System.out.println(s"Checking account balance has not changed")
-      getAccountBalance(subscription.accountId) tap { balanceAfterRefund =>
-        s"${subscription.accountId} balance should not change after refund" assert (balanceBeforeRefund == balanceAfterRefund)
+      if (createRefund) {
+        System.out.println(s"Checking account balance has not changed")
+        getAccountBalance(subscription.accountId) tap { balanceAfterRefund =>
+          s"${subscription.accountId} balance should not change after refund" assert (balanceBeforeRefund == balanceAfterRefund)
+        }
       }
       System.out.println(s"Invoices adjusted successfully")
     } else {

@@ -1,8 +1,9 @@
 package com.gu.invoicing.refund
 
+import com.gu.invoicing.common.JsonSupport
+
 import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
-import com.gu.invoicing.common.JsonSupport
 
 /** Data models and JSON codecs
   */
@@ -89,6 +90,30 @@ object Model extends JsonSupport {
   )
   case class Account(metrics: Metrics)
 
+  sealed abstract class PaymentStatus(val status: String)
+
+  object PaymentStatus {
+    case object Draft extends PaymentStatus("Draft")
+
+    case object Processing extends PaymentStatus("Processing")
+
+    case object Processed extends PaymentStatus("Processed")
+
+    case object Error extends PaymentStatus("Error")
+
+    case object Canceled extends PaymentStatus("Canceled")
+
+    case object Posted extends PaymentStatus("Posted")
+
+    val all = List(Draft, Processing, Processed, Error, Canceled, Posted)
+
+    def fromString(status: String): Option[PaymentStatus] = all.find(_.status == status)
+  }
+
+  case class Payment(
+      status: PaymentStatus,
+  )
+
   implicit val subscriptionRW: ReadWriter[Subscription] = macroRW
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val invoiceQueryResultRW: ReadWriter[InvoiceQueryResult] = macroRW
@@ -109,6 +134,14 @@ object Model extends JsonSupport {
     macroRW
   implicit val metricsRW: ReadWriter[Metrics] = macroRW
   implicit val accountRW: ReadWriter[Account] = macroRW
+  implicit val paymentStatusRW: ReadWriter[PaymentStatus] =
+    readwriter[String].bimap[PaymentStatus](
+      _.status,
+      status => PaymentStatus.fromString(status).getOrElse(
+        throw upickle.core.Abort(s"Invalid status: $status expected ${PaymentStatus.all.map(_.status)}")
+      )
+    )
+  implicit val paymentRW: ReadWriter[Payment] = macroRW
   implicit val adjustmentResultRW: ReadWriter[AdjustmentResult] = macroRW
 
   case class RefundInput(
