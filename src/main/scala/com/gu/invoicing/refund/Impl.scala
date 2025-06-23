@@ -1,14 +1,12 @@
 package com.gu.invoicing.refund
 
+import com.gu.invoicing.common.Assert.StringAssert
+import com.gu.invoicing.common.Http
 import com.gu.invoicing.common.ZuoraAuth.{accessToken, zuoraApiHost}
+import com.gu.invoicing.refund.Model._
 
 import java.time.{LocalDate, ZoneId}
-import com.gu.invoicing.common.Http
-
 import scala.annotation.tailrec
-import Model._
-import com.gu.invoicing.common.Assert.StringAssert
-
 import scala.util.chaining._
 
 /** Zuora API client and implementation details
@@ -52,6 +50,9 @@ object Impl {
       .reverse
       .headOption
       .map(_.PaymentId)
+
+  def getPayment(paymentKey: String): PaymentStatus =
+    get[Payment](s"$zuoraApiHost/v1/payments/$paymentKey").status
 
   def createRefundObject(amount: BigDecimal, paymentId: String, comment: String): String =
     post[RefundResult](
