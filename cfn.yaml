@@ -1,6 +1,62 @@
-AWSTemplateFormatVersion: "2010-09-09"
+# =========================================================================
+# MIGRATION NOTICE: CloudFormation → CDK
+# =========================================================================
+# This CloudFormation template has been REPLACED with AWS CDK infrastructure
+# 
+# NEW DEPLOYMENT LOCATION: ./cdk/ directory
+# 
+# To deploy this service:
+# 1. cd cdk/
+# 2. npm install
+# 3. npm run deploy:code   (for CODE environment)
+# 4. npm run deploy:prod   (for PROD environment)
+# 
+# CDK Benefits:
+# - Type-safe infrastructure as code with TypeScript
+# - Better integration with Guardian CDK patterns  
+# - Improved testing and validation capabilities
+# - Consistent deployment patterns across Guardian services
+# - Better maintainability and code reuse
+# 
+# The CDK stack provides the same infrastructure as this CloudFormation:
+# - Multiple Lambda functions for invoice operations
+# - API Gateway with custom domain and API key authentication
+# - CloudWatch alarms for monitoring (PROD only)
+# - IAM roles with appropriate permissions
+# - Route53 DNS records
+# 
+# This file is kept for historical reference only.
+# =========================================================================
 
-Description: Zuora invoice management such as refunds, downloading PDF invoices, invoice preview
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "DEPRECATED - This infrastructure has been migrated to CDK. See cdk/ directory."
+
+Parameters:
+  Stage:
+    Description: "Migration notice - Use CDK instead"
+    Type: String
+    Default: "USE_CDK_INSTEAD"
+    AllowedValues:
+      - "USE_CDK_INSTEAD"
+
+Resources:
+  # This is a placeholder resource to make the template valid
+  # The actual infrastructure is now defined in CDK
+  MigrationNotice:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+Outputs:
+  MigrationNotice:
+    Description: 'This infrastructure has been migrated to CDK. Use the cdk/ directory for deployment.'
+    Value: 'Use: cd cdk && npm install && npm run deploy:code|prod'
+  
+  CDKDeployment:
+    Description: 'How to deploy via CDK'
+    Value: 'CODE: npm run deploy:code | PROD: npm run deploy:prod'
+    
+  OriginalResources:
+    Description: 'Original resources now in CDK'
+    Value: 'Lambda functions, API Gateway, CloudWatch alarms, IAM roles, DNS records'
 
 Parameters:
   Stage:
