@@ -81,7 +81,10 @@ object Program {
       case PaymentStatus.Error =>
         println("don't refund as they are in payment fail")
         false
-      case other => throw new RuntimeException(s"It's not clear how to deal with a payment in status: $other. Expected Processed or Error (payment failure)")
+      case other =>
+        throw new RuntimeException(
+          s"It's not clear how to deal with a payment in status: $other. Expected Processed or Error (payment failure)",
+        )
     }
 
     if (createRefund) {
