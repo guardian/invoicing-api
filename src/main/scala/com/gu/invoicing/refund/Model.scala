@@ -137,9 +137,12 @@ object Model extends JsonSupport {
   implicit val paymentStatusRW: ReadWriter[PaymentStatus] =
     readwriter[String].bimap[PaymentStatus](
       _.status,
-      status => PaymentStatus.fromString(status).getOrElse(
-        throw upickle.core.Abort(s"Invalid status: $status expected ${PaymentStatus.all.map(_.status)}")
-      )
+      status =>
+        PaymentStatus
+          .fromString(status)
+          .getOrElse(
+            throw upickle.core.Abort(s"Invalid status: $status expected ${PaymentStatus.all.map(_.status)}"),
+          ),
     )
   implicit val paymentRW: ReadWriter[Payment] = macroRW
   implicit val adjustmentResultRW: ReadWriter[AdjustmentResult] = macroRW
