@@ -35,7 +35,7 @@ object Model extends JsonSupport {
       GatewayState: String,
       RefundDate: LocalDate,
       ReasonCode: String,
-      GatewayResponse: String,
+      GatewayResponse: Option[String],
       Amount: BigDecimal,
       Comment: String,
       Status: String,
