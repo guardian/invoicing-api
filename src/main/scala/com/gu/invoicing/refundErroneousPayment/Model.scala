@@ -66,7 +66,40 @@ object Model extends JsonSupport {
   implicit val invoiceRW: ReadWriter[Invoice] = macroRW
   implicit val invoiceQueryResultRW: ReadWriter[InvoiceQueryResult] = macroRW
   implicit val refundResultRW: ReadWriter[RefundResult] = macroRW
-  implicit val refundRW: ReadWriter[Refund] = macroRW
+  implicit val refundRW: ReadWriter[Refund] = readwriter[ujson.Value].bimap[Refund](
+    refund =>
+      ujson.Obj(
+        "RefundNumber" -> writeJs(refund.RefundNumber),
+        "GatewayState" -> writeJs(refund.GatewayState),
+        "RefundDate" -> writeJs(refund.RefundDate),
+        "ReasonCode" -> writeJs(refund.ReasonCode),
+        "GatewayResponse" -> writeJs(refund.GatewayResponse),
+        "Amount" -> writeJs(refund.Amount),
+        "Comment" -> writeJs(refund.Comment),
+        "Status" -> writeJs(refund.Status),
+        "Gateway" -> writeJs(refund.Gateway),
+        "MethodType" -> writeJs(refund.MethodType),
+        "GatewayResponseCode" -> writeJs(refund.GatewayResponseCode),
+        "Id" -> writeJs(refund.Id),
+      ),
+    json => {
+      val obj = json.obj
+      Refund(
+        RefundNumber = read[String](obj("RefundNumber")),
+        GatewayState = read[String](obj("GatewayState")),
+        RefundDate = read[LocalDate](obj("RefundDate")),
+        ReasonCode = read[String](obj("ReasonCode")),
+        GatewayResponse = obj.get("GatewayResponse").flatMap(read[Option[String]](_)),
+        Amount = read[BigDecimal](obj("Amount")),
+        Comment = read[String](obj("Comment")),
+        Status = read[String](obj("Status")),
+        Gateway = read[String](obj("Gateway")),
+        MethodType = read[String](obj("MethodType")),
+        GatewayResponseCode = read[String](obj("GatewayResponseCode")),
+        Id = read[String](obj("Id")),
+      )
+    },
+  )
   implicit val metricsRW: ReadWriter[Metrics] = macroRW
   implicit val accountRW: ReadWriter[Account] = macroRW
   implicit val paymentsRW: ReadWriter[Payments] = macroRW
