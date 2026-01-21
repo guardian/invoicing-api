@@ -2,6 +2,8 @@ package com.gu.invoicing.refund
 
 import com.gu.invoicing.refund.Model.{RefundInput, _}
 
+import java.time.LocalDate
+
 class InputSerialisationSuite extends munit.FunSuite {
   test("Serialisation works when adjustInvoices parameter is omitted") {
     val inputString = """{"subscriptionName": "A-S00045160","refund": 0.1}"""
@@ -42,6 +44,52 @@ class InputSerialisationSuite extends munit.FunSuite {
     val actual = read[Payment](testData)
     val expected = Payment(PaymentStatus.Processed)
     assertEquals(actual, expected)
+  }
+
+  test("Can deserialise a refund without a GatewayResponse field") {
+    val testData = TestData.refundResponseNoGatewayResponse
+    val actual = read[Refund](testData)
+    assert(actual.Status == "Processed")
+  }
+
+  test("Serialising a refund should result in the same string") {
+    val expectedJson = TestData.refundResponse
+    val refundObject = Refund(
+      RefundNumber = "R-00000001",
+      GatewayState = "Submitted",
+      RefundDate = LocalDate.of(2026, 1, 1),
+      ReasonCode = "Standard-Refund",
+      GatewayResponse = Some("Response"),
+      Amount = 150,
+      Comment = "Refund-Comment",
+      Status = "Processed",
+      Gateway = "PayPal-Complete-Payments",
+      MethodType = "PayPal",
+      GatewayResponseCode = "COMPLETED",
+      Id = "Refund-ID"
+    )
+    val actualJson = write[Refund](refundObject).stripMargin
+    assertEquals(actualJson, expectedJson.replaceAll("\\s+", ""))
+  }
+
+  test("De-serialising a refund should result in the same object") {
+    val expectedObject = Refund(
+      RefundNumber = "R-00000001",
+      GatewayState = "Submitted",
+      RefundDate = LocalDate.of(2026, 1, 1),
+      ReasonCode = "Standard-Refund",
+      GatewayResponse = Some("Response"),
+      Amount = 150,
+      Comment = "Refund-Comment",
+      Status = "Processed",
+      Gateway = "PayPal-Complete-Payments",
+      MethodType = "PayPal",
+      GatewayResponseCode = "COMPLETED",
+      Id = "Refund-ID"
+    )
+    val testData = TestData.refundResponse
+    val actualObject = read[Refund](testData)
+    assertEquals(actualObject, expectedObject)
   }
 }
 
@@ -95,5 +143,36 @@ object TestData {
       |"unappliedAmount": 0,
       |"updatedById": "402881e522cf4f9b0122cf5d82860002",
       |"updatedDate": "2017-03-01 11:30:37"
+      |}""".stripMargin
+
+  val refundResponse =
+    """{
+      |"RefundNumber": "R-00000001",
+      |"GatewayState": "Submitted",
+      |"RefundDate": "2026-01-01",
+      |"ReasonCode": "Standard-Refund",
+      |"GatewayResponse": "Response",
+      |"Amount": 150,
+      |"Comment": "Refund-Comment",
+      |"Status": "Processed",
+      |"Gateway": "PayPal-Complete-Payments",
+      |"MethodType": "PayPal",
+      |"GatewayResponseCode": "COMPLETED",
+      |"Id": "Refund-ID"
+      |}""".stripMargin
+
+  val refundResponseNoGatewayResponse =
+    """{
+      |"RefundNumber": "R-00000001",
+      |"GatewayState": "Submitted",
+      |"RefundDate": "2026-01-01",
+      |"ReasonCode": "Standard-Refund",
+      |"Amount": 150,
+      |"Comment": "Refund-Comment",
+      |"Status": "Processed",
+      |"Gateway": "PayPal-Complete-Payments",
+      |"MethodType": "PayPal",
+      |"GatewayResponseCode": "COMPLETED",
+      |"Id": "Refund-ID"
       |}""".stripMargin
 }
