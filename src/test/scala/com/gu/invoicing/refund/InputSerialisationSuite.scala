@@ -66,7 +66,7 @@ class InputSerialisationSuite extends munit.FunSuite {
       Gateway = "PayPal-Complete-Payments",
       MethodType = "PayPal",
       GatewayResponseCode = "COMPLETED",
-      Id = "Refund-ID"
+      Id = "Refund-ID",
     )
     val actualJson = write[Refund](refundObject).stripMargin
     assertEquals(actualJson, expectedJson.replaceAll("\\s+", ""))
@@ -85,7 +85,7 @@ class InputSerialisationSuite extends munit.FunSuite {
       Gateway = "PayPal-Complete-Payments",
       MethodType = "PayPal",
       GatewayResponseCode = "COMPLETED",
-      Id = "Refund-ID"
+      Id = "Refund-ID",
     )
     val testData = TestData.refundResponse
     val actualObject = read[Refund](testData)
